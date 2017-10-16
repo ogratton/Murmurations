@@ -1,6 +1,7 @@
 # Adapted from code by Tom Marble
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
+import math
 import random
 import pygame
 import pygame.locals as pyg
@@ -14,12 +15,14 @@ TODO:
     - think about attractors and predators when so doing
 """
 
-# GLOBALS
+# GLOBALS (but mostly just parameters for easy tweaking)
+# TODO this may be bad practice
 cube_min = Vector3(0, 0, 0)  # cube min vertex
 edge_length = 50.0
-camera_pos = Vector3(0.5 * edge_length, 0.5 * edge_length, 1.5 * edge_length)
 cube_centre = Vector3(0.5 * edge_length, 0.5 * edge_length, 0.5 * edge_length)
+cam_r = 2 * edge_length  # distance of camera from cube_centre
 focal_point = cube_centre
+random.seed(72)  # for repeatability
 
 
 def random_range(lower=0.0, upper=1.0):
@@ -120,7 +123,6 @@ class Separation(Rule):
         boid.adjustment = boid.adjustment + self.change
 
 
-# TODO rule for constaining to cube
 class Constraint(Rule):
     """ Bonus Rule: Boids must stay within the bounding cube. """
     def __init__(self):
@@ -143,8 +145,9 @@ class Boid(object):
 
     def __init__(self):
         self.color = random_vector3(0.5)  # R G B
-        self.location = cube_centre
         # TODO start at random locations (and remove 'centre')
+        #self.location = cube_centre
+        self.location = random_vector3(0, edge_length)
         self.velocity = random_vector3(-1.0, 1.0)  # vx vy vz
         self.adjustment = Vector3(0.0, 0.0, 0.0)  # to accumulate corrections
         self.turning = False
@@ -201,7 +204,7 @@ class Boid(object):
         self.limit_speed(1.0)
         self.location = self.location + self.velocity
         # bool to keep the boid in the box (technically this describes a sphere)
-        self.turning = (self.location.distance_to(cube_centre) >= edge_length*0.75/2)
+        self.turning = (self.location.distance_to(cube_centre) >= edge_length*0.85/2)
 
 
 class Swarm(object):
@@ -219,12 +222,10 @@ class Swarm(object):
         return "TODO - Swarm"
 
     def render(self):
-        # TODO
         for boid in self.boids:
             boid.render()
 
     def update(self):
-        # TODO
         for boid in self.boids:
             boid.calc_v(self.boids)
         for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
@@ -234,7 +235,6 @@ class Swarm(object):
 class Renderer(object):
     """
     Contains the swarm object(s) and renders everything
-    TODO should be able to accept more than one swarm
     """
 
     def __init__(self, swarms):
@@ -250,6 +250,9 @@ class Renderer(object):
 
     def __repr__(self):
         return "TODO - Renderer"
+
+    def add_swarm(self, swarm):
+        self.swarms.append(swarm)
 
     def top_square(self):
         """
@@ -290,11 +293,30 @@ class Renderer(object):
             gl.glVertex(point2)
         gl.glEnd()
 
+    def render_axes(self):
+        """ Draw the XYZ axes """
+        d = 1000
+        gl.glBegin(gl.GL_LINES)
+        # X
+        gl.glColor(1,0,0)
+        gl.glVertex([0,0,0])
+        gl.glVertex([d,0,0])
+        # Y
+        gl.glColor(0, 1, 0)
+        gl.glVertex([0, 0, 0])
+        gl.glVertex([0, d, 0])
+        # Z
+        gl.glColor(0, 0, 1)
+        gl.glVertex([0, 0, 0])
+        gl.glVertex([0, 0, d])
+        gl.glEnd()
+
     def render(self):
         """
         Render everything
         """
         self.render_cube()
+        self.render_axes()
         for swarm in self.swarms:
             swarm.render()
 
@@ -312,9 +334,9 @@ def main():
     title = "Swarm Music Demo v.-1000"
     window_size = 700
     xy_ratio = 1  # x side / y side
-    camera_rotation = 0.1
+    cam_rotation = math.radians(0.1)
+    cam_angle = 0  # keep track of how far we have rotated
     rotation_delay = 0
-    # random.seed(72)  # for repeatability
 
     pygame.init()
     pygame.display.set_caption(title, title)
@@ -328,12 +350,14 @@ def main():
     gl.glMatrixMode(gl.GL_MODELVIEW)
     gl.glLoadIdentity()
     # look at the middle of the cube
-    glu.gluLookAt(camera_pos.x, camera_pos.y, camera_pos.z, focal_point.x, focal_point.y, focal_point.z, 0.0, 1.0, 0.0)
+    cam_pos = Vector3(0.5 * edge_length, 0.5 * edge_length, cam_r)
+    glu.gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, focal_point.x, focal_point.y, focal_point.z, 0.0, 1.0, 0.0)
     # diameter of rasterised points
     gl.glPointSize(3.0)
 
-    swarm = Swarm(100)
-    renderer = Renderer([swarm])
+    swarm = Swarm(50)
+    swarm2 = Swarm(20)
+    renderer = Renderer([swarm, swarm2])
 
     while True:
         event = pygame.event.poll()
@@ -342,7 +366,19 @@ def main():
             break
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         renderer.render()
-        #gl.glRotatef(camera_rotation, 0, 1, 0)  # orbit camera around by angle
+
+        # rotate the camera around the focal point
+        # METHOD 1 (rotates around origin only)
+        #gl.glRotatef(math.degrees(cam_rotation), 0, 1, 0)  # orbit camera around by angle
+
+        # METHOD 2 (broken)
+        # cam_pos.x = cam_r * math.sin(cam_angle) + (0.5 * edge_length)  # TODO
+        # cam_pos.z = cam_r * math.cos(cam_angle) + (0.5 * edge_length)  # TODO
+        # glu.gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, focal_point.x, focal_point.y, focal_point.z, 0.0, 1.0, 0.0)
+        # cam_angle += cam_rotation
+        # #print(cam_pos)
+        # #cam_angle %= 2 * math.pi
+
         pygame.display.flip()  # update screen
         if rotation_delay > 0:
             pygame.time.wait(rotation_delay)

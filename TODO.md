@@ -4,7 +4,7 @@ Move points to logbook when done
 
 ## Swarm
 
-* Tweak values in rules and
+* Tweak values in rules
 * Add attractors
 * Add predators
 
