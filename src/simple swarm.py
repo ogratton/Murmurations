@@ -18,7 +18,8 @@ TODO:
 cube_min = Vector3(0, 0, 0)  # cube min vertex
 edge_length = 30.0
 camera_pos = Vector3(0.5 * edge_length, 0.5 * edge_length, 2.5 * edge_length)
-focal_point = Vector3(0.5 * edge_length, 0.5 * edge_length, 0.5 * edge_length)
+cube_centre = Vector3(0.5 * edge_length, 0.5 * edge_length, 0.5 * edge_length)
+focal_point = cube_centre
 
 
 def random_range(lower=0.0, upper=1.0):
@@ -62,13 +63,13 @@ class Cohesion(Rule):
         self.neighbourhood = 25.0
 
     def accumulate(self, boid, other, distance):
-        """ save any cohesion corrections based on other boid to self.change """
+        """ Save any cohesion corrections based on other boid to self.change """
         if other != boid:
             self.change = self.change + other.location
             self.num += 1
 
     def add_adjustment(self, boid):
-        """ add the accumulated self.change to boid.adjustment """
+        """ Add the accumulated self.change to boid.adjustment """
         if self.num > 0:
             centroid = self.change / self.num
             desired = centroid - boid.location
@@ -84,13 +85,13 @@ class Alignment(Rule):
         self.neighbourhood = 10.0  # operating area for this correction
 
     def accumulate(self, boid, other, distance):
-        """ save any alignment corrections based on other boid to self.change """
+        """ Save any alignment corrections based on other boid to self.change """
         if other != boid:
             self.change = self.change + other.velocity
             self.num += 1
 
     def add_adjustment(self, boid):
-        """ add the accumulated self.change to boid.adjustment """
+        """ Add the accumulated self.change to boid.adjustment """
         if self.num > 0:
             group_velocity = self.change / self.num
             self.change = (group_velocity - boid.velocity) * 0.03
@@ -104,7 +105,7 @@ class Separation(Rule):
         super().__init__()
 
     def accumulate(self, boid, other, distance):
-        """save any separation corrections based on other boid to self.change"""
+        """ Save any separation corrections based on other boid to self.change """
         if other != boid:
             separation = boid.location - other.location
             if separation.length() > 0:
@@ -112,13 +113,27 @@ class Separation(Rule):
             self.num += 1
 
     def add_adjustment(self, boid):
-        """add the accumulated self.change to boid.adjustment"""
+        """ Add the accumulated self.change to boid.adjustment """
         if self.change.length() > 0:
             group_separation = self.change / self.num
             self.change = (group_separation - boid.velocity) * 0.01
         boid.adjustment = boid.adjustment + self.change
 
+
 # TODO rule for constaining to cube
+class Constraint(Rule):
+    """ Bonus Rule: Boids must stay within the bounding cube. """
+    def __init__(self):
+        super().__init__()
+
+    def accumulate(self, boid, other, distance):
+        pass
+
+    def add_adjustment(self, boid):
+        if boid.turning:
+            direction = cube_centre - boid.location
+            self.change = direction * 0.001  # TODO experimental value
+        boid.adjustment = boid.adjustment + self.change
 
 
 class Boid(object):
@@ -128,10 +143,11 @@ class Boid(object):
 
     def __init__(self):
         self.color = random_vector3(0.5)  # R G B
-        self.location = focal_point
+        self.location = cube_centre
         # TODO start at random locations (and remove 'centre')
         self.velocity = random_vector3(-1.0, 1.0)  # vx vy vz
         self.adjustment = Vector3(0.0, 0.0, 0.0)  # to accumulate corrections
+        self.turning = False
 
     def __repr__(self):
         # TODO
@@ -142,7 +158,7 @@ class Boid(object):
         Calculate velocity for next tick by applying the three basic swarming rules
         """
         # Apply the rules to each of the boids
-        rules = [Cohesion(), Alignment(), Separation()]
+        rules = [Cohesion(), Alignment(), Separation(), Constraint()]
         for boid in all_boids:
             distance = self.location.distance_to(boid.location)
             for rule in rules:
@@ -184,6 +200,8 @@ class Boid(object):
         self.velocity = velocity
         self.limit_speed(1.0)
         self.location = self.location + self.velocity
+        # bool to keep the boid in the box (technically this describes a sphere)
+        self.turning = (self.location.distance_to(cube_centre) >= edge_length*0.75/2)
 
 
 class Swarm(object):
@@ -324,7 +342,7 @@ def main():
             break
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         renderer.render()
-        # gl.glRotatef(camera_rotation, 0, 1, 0)  # orbit camera around by angle
+        gl.glRotatef(camera_rotation, 0, 1, 0)  # orbit camera around by angle
         pygame.display.flip()  # update screen
         if rotation_delay > 0:
             pygame.time.wait(rotation_delay)
