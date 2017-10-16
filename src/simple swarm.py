@@ -16,8 +16,8 @@ TODO:
 
 # GLOBALS
 cube_min = Vector3(0, 0, 0)  # cube min vertex
-edge_length = 30.0
-camera_pos = Vector3(0.5 * edge_length, 0.5 * edge_length, 2.5 * edge_length)
+edge_length = 50.0
+camera_pos = Vector3(0.5 * edge_length, 0.5 * edge_length, 1.5 * edge_length)
 cube_centre = Vector3(0.5 * edge_length, 0.5 * edge_length, 0.5 * edge_length)
 focal_point = cube_centre
 
@@ -332,7 +332,7 @@ def main():
     # diameter of rasterised points
     gl.glPointSize(3.0)
 
-    swarm = Swarm(50)
+    swarm = Swarm(100)
     renderer = Renderer([swarm])
 
     while True:
@@ -342,7 +342,7 @@ def main():
             break
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         renderer.render()
-        gl.glRotatef(camera_rotation, 0, 1, 0)  # orbit camera around by angle
+        #gl.glRotatef(camera_rotation, 0, 1, 0)  # orbit camera around by angle
         pygame.display.flip()  # update screen
         if rotation_delay > 0:
             pygame.time.wait(rotation_delay)
