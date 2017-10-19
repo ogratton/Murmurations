@@ -161,7 +161,7 @@ class Boid(object):
         Calculate velocity for next tick by applying the three basic swarming rules
         """
         # Apply the rules to each of the boids
-        rules = [Cohesion(), Alignment(), Separation(), Constraint()]
+        rules = [Cohesion(), Separation(), Constraint(), Alignment()]  # flocks use alignment, swarms do not
         for boid in all_boids:
             distance = self.location.distance_to(boid.location)
             for rule in rules:
