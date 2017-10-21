@@ -144,7 +144,7 @@ class Boid(object):
     """
 
     def __init__(self):
-        self.color = random_vector3(0.5)  # R G B
+        self.colour = random_vector3(0.5)  # R G B
         # TODO start at random locations (and remove 'centre')
         #self.location = cube_centre
         self.location = random_vector3(0, edge_length)
@@ -182,7 +182,7 @@ class Boid(object):
         """
         # TODO make it cooler than just a line
         gl.glBegin(gl.GL_LINES)
-        gl.glColor(self.color.x, self.color.y, self.color.z)
+        gl.glColor(self.colour.x, self.colour.y, self.colour.z)
         gl.glVertex(self.location.x, self.location.y, self.location.z)
         if self.velocity.length() > 0:
             head = self.location + self.velocity.normalize() * 2.5
@@ -207,6 +207,37 @@ class Boid(object):
         self.turning = (self.location.distance_to(cube_centre) >= edge_length*0.85/2)
 
 
+class CentOfMass(object):
+    """
+    The centre of mass of a swarm
+    """
+    def __init__(self, location, velocity):
+        self.location = location
+        self.velocity = velocity
+
+    def __repr__(self):
+        return "TODO - C_O_M"
+
+    def render(self):
+        """
+        TEMP Draw as just a long white boid
+        """
+        # TODO make it a sphere or something
+        gl.glBegin(gl.GL_LINES)
+        gl.glColor(0.5, 0.5, 0.5)
+        gl.glVertex(self.location.x, self.location.y, self.location.z)
+        if self.velocity.length() > 0:
+            head = self.location + self.velocity.normalize() * 10
+        else:
+            head = self.location
+        gl.glVertex(head.x, head.y, head.z)
+        gl.glEnd()
+
+    def set(self, location, velocity):
+        self.location = location
+        self.velocity = velocity
+
+
 class Swarm(object):
     """
     A swarm of boids
@@ -217,6 +248,7 @@ class Swarm(object):
         self.boids = []
         for _ in range(num_boids):
             self.boids.append(Boid())
+        self.c_o_m = CentOfMass(cube_centre, Vector3(0,0,0))
 
     def __repr__(self):
         return "TODO - Swarm"
@@ -224,12 +256,19 @@ class Swarm(object):
     def render(self):
         for boid in self.boids:
             boid.render()
+        self.c_o_m.render()
 
     def update(self):
+        p_acc = Vector3()
+        v_acc = Vector3()
         for boid in self.boids:
             boid.calc_v(self.boids)
         for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
+            # TODO this needs to do clustering and calculate the centre of the densest point
+            p_acc = p_acc + boid.location
+            v_acc = v_acc + boid.velocity
+        self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
 
 
 class Renderer(object):
@@ -293,7 +332,8 @@ class Renderer(object):
             gl.glVertex(point2)
         gl.glEnd()
 
-    def render_axes(self):
+    @staticmethod
+    def render_axes():
         """ Draw the XYZ axes """
         d = 1000
         gl.glBegin(gl.GL_LINES)
