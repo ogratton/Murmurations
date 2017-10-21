@@ -2,24 +2,29 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
+import math
 from pygame.math import Vector3
 
 """
 TODO:
-- implement basic swarming behaviour constrained in a cube
-    - think about attractors and predators when so doing
+- add attractors
+- fiddle with values in rules
 """
 
 random.seed(72)  # for repeatability
 
 
 def random_range(lower=0.0, upper=1.0):
-    """return a random number between lower and upper"""
+    """
+    :return: a random number between lower and upper
+    """
     return lower + (random.random() * (upper - lower))
 
 
 def random_vector3(lower=0.0, upper=1.0):
-    """return a Vector3 with random elements between lower and upper"""
+    """
+    :return: a Vector3 with random elements between lower and upper
+    """
     return Vector3(random_range(lower, upper),
                    random_range(lower, upper),
                    random_range(lower, upper))
@@ -29,16 +34,24 @@ class Cube(object):
     """
     Bounding box for swarm
     """
-    def __init__(self, v_min, edge_length, angle):
+
+    def __init__(self, v_min, edge_length):
+        """
+        Set up a bounding box that constrains the swarm(s)
+        :param v_min:       Vector3     the minimum vertex of the cube (closest to origin)
+        :param edge_length: float       the length of each edge (currently always a perfect cube)
+        """
+
         self.v_min = v_min
         self.edge_length = edge_length
-        self.angle = angle  # TODO vector3 angle away from axes
-        self.centre = Vector3(0.5 * edge_length, 0.5 * edge_length, 0.5 * edge_length)
+        self.centre = Vector3(v_min.x + 0.5 * edge_length,
+                              v_min.y + 0.5 * edge_length,
+                              v_min.z + 0.5 * edge_length)
 
+        # used for rendering
         self.x0 = v_min.x
         self.y0 = v_min.y
         self.z0 = v_min.z
-        # TODO account for angles here with some basic trig
         self.x1 = self.x0 + edge_length
         self.y1 = self.y0 + edge_length
         self.z1 = self.z0 + edge_length
@@ -50,18 +63,26 @@ class Rule(object):
     """
 
     def __init__(self):
+        """
+        Initialise aggregators change and num
+        Set potency of rule ('neighbourhood')
+        """
         self.change = Vector3(0.0, 0.0, 0.0)    # velocity correction
         self.num = 0                            # number of participants
         self.neighbourhood = 5.0                # number of boids to account for around one boid
 
     @staticmethod
     def accumulate(self, boid, other, distance):
-        """ save any corrections based on other boid to self.change """
+        """
+        Save any corrections based on other boid to self.change
+        """
         pass
 
     @staticmethod
     def add_adjustment(self, boid):
-        """ add the accumulated self.change to boid.adjustment """
+        """
+        Add the accumulated self.change to boid.adjustment
+        """
         pass
 
 
@@ -73,13 +94,11 @@ class Cohesion(Rule):
         self.neighbourhood = 25.0
 
     def accumulate(self, boid, other, distance):
-        """ Save any cohesion corrections based on other boid to self.change """
         if other != boid:
             self.change = self.change + other.location
             self.num += 1
 
     def add_adjustment(self, boid):
-        """ Add the accumulated self.change to boid.adjustment """
         if self.num > 0:
             centroid = self.change / self.num
             desired = centroid - boid.location
@@ -95,13 +114,11 @@ class Alignment(Rule):
         self.neighbourhood = 10.0  # operating area for this correction
 
     def accumulate(self, boid, other, distance):
-        """ Save any alignment corrections based on other boid to self.change """
         if other != boid:
             self.change = self.change + other.velocity
             self.num += 1
 
     def add_adjustment(self, boid):
-        """ Add the accumulated self.change to boid.adjustment """
         if self.num > 0:
             group_velocity = self.change / self.num
             self.change = (group_velocity - boid.velocity) * 0.03
@@ -115,7 +132,6 @@ class Separation(Rule):
         super().__init__()
 
     def accumulate(self, boid, other, distance):
-        """ Save any separation corrections based on other boid to self.change """
         if other != boid:
             separation = boid.location - other.location
             if separation.length() > 0:
@@ -123,7 +139,6 @@ class Separation(Rule):
             self.num += 1
 
     def add_adjustment(self, boid):
-        """ Add the accumulated self.change to boid.adjustment """
         if self.change.length() > 0:
             group_separation = self.change / self.num
             self.change = (group_separation - boid.velocity) * 0.01
@@ -132,6 +147,7 @@ class Separation(Rule):
 
 class Constraint(Rule):
     """ Bonus Rule: Boids must stay within the bounding cube. """
+
     def __init__(self):
         super().__init__()
 
@@ -151,9 +167,13 @@ class Boid(object):
     """
 
     def __init__(self, cube):
+        """
+        Make a baby boid
+        :param cube: Cube   bounding box for this boid
+        """
         self.colour = random_vector3(0.5)  # R G B
         self.cube = cube
-        # TODO start at random locations (and remove 'centre')
+        # either start at centre or at a random location:
         # self.location = cube.centre
         self.location = random_vector3(0, cube.edge_length)
         self.velocity = random_vector3(-1.0, 1.0)  # vx vy vz
@@ -180,7 +200,10 @@ class Boid(object):
             rule.add_adjustment(self)
 
     def limit_speed(self, max_speed):
-        """ensure the speed does not exceed max_speed"""
+        """
+        Ensure the speed does not exceed max_speed
+        :param max_speed: float
+        """
         if self.velocity.length() > max_speed:
             self.velocity = self.velocity.normalize() * max_speed
 
@@ -191,6 +214,7 @@ class Boid(object):
         velocity = self.velocity + self.adjustment
         # Add a constant velocity in whatever direction
         # they are moving so they don't ever stop.
+        # TODO can probably remove once attractors are done
         if velocity.length() > 0:
             velocity = velocity + (velocity.normalize() * random_range(0.0, 0.007))
         self.velocity = velocity
@@ -205,6 +229,11 @@ class CentOfMass(object):
     The centre of mass of a swarm
     """
     def __init__(self, location, velocity):
+        """
+        Set up an initial (probably wrong) centre of mass object
+        :param location: Vector3
+        :param velocity: Vector3
+        """
         self.location = location
         self.velocity = velocity
 
@@ -212,6 +241,11 @@ class CentOfMass(object):
         return "TODO - C_O_M"
 
     def set(self, location, velocity):
+        """
+        Set the location and velocity of the c.o.m
+        :param location: Vector3
+        :param velocity: Vector3
+        """
         self.location = location
         self.velocity = velocity
 
@@ -222,17 +256,25 @@ class Swarm(object):
     """
 
     def __init__(self, num_boids, cube):
+        """
+        Set up a swarm
+        :param num_boids: int   number of boids in the swarm
+        :param cube:      Cube  bounding box of swarm (and its boids)
+        """
         self.num_boids = num_boids
         self.boids = []
         self.cube = cube
         for _ in range(num_boids):
             self.boids.append(Boid(cube))
-        self.c_o_m = CentOfMass(cube.centre, Vector3(0,0,0))
+        self.c_o_m = CentOfMass(cube.centre, Vector3(0, 0, 0))
 
     def __repr__(self):
         return "TODO - Swarm"
 
     def update(self):
+        """
+        Update every boid in the swarm and calculate the swarm's centre of mass
+        """
         p_acc = Vector3()
         v_acc = Vector3()
         for boid in self.boids:

@@ -33,11 +33,12 @@ class CubeView:
 
     @staticmethod
     def render(cube):
-        """ Draw the bounding box """
+        """
+        Draw the bounding box
+        """
         # TODO make more elegant
         ts = CubeView.top_square(cube)
         bs = CubeView.bottom_square(cube)
-        # TODO doesn't currently account for angle
         GL.glColor(0.5, 0.5, 0.5)
         # XY plane, positive Z
         GL.glBegin(GL.GL_LINE_LOOP)
@@ -64,7 +65,7 @@ class Renderer(object):
 
     def __init__(self, swarms):
         """
-        :param swarms: set of swarm objects
+        :param swarms: set{Swarm}
         """
         self.swarms = swarms
         self.cubes = set()
@@ -75,11 +76,17 @@ class Renderer(object):
         return "TODO - Renderer"
 
     def add_swarm(self, swarm):
+        """
+        Allows a swarm to be added in real-time without restarting
+        :param swarm: Swarm     new swarm
+        """
         self.swarms.append(swarm)
 
     @staticmethod
     def render_axes():
-        """ Draw the XYZ axes """
+        """
+        Draw the XYZ axes
+        """
         d = 1000
         GL.glBegin(GL.GL_LINES)
         # X
