@@ -1,13 +1,8 @@
 # Adapted from code by Tom Marble
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
-import math
 import random
-import pygame
-import pygame.locals as pyg
 from pygame.math import Vector3
-import OpenGL.GL as gl
-import OpenGL.GLU as glu
 
 """
 TODO:
@@ -15,13 +10,6 @@ TODO:
     - think about attractors and predators when so doing
 """
 
-# GLOBALS (but mostly just parameters for easy tweaking)
-# TODO this may be bad practice
-cube_min = Vector3(0, 0, 0)  # cube min vertex
-edge_length = 50.0
-cube_centre = Vector3(0.5 * edge_length, 0.5 * edge_length, 0.5 * edge_length)
-cam_r = 2 * edge_length  # distance of camera from cube_centre
-focal_point = cube_centre
 random.seed(72)  # for repeatability
 
 
@@ -35,6 +23,25 @@ def random_vector3(lower=0.0, upper=1.0):
     return Vector3(random_range(lower, upper),
                    random_range(lower, upper),
                    random_range(lower, upper))
+
+
+class Cube(object):
+    """
+    Bounding box for swarm
+    """
+    def __init__(self, v_min, edge_length, angle):
+        self.v_min = v_min
+        self.edge_length = edge_length
+        self.angle = angle  # TODO vector3 angle away from axes
+        self.centre = Vector3(0.5 * edge_length, 0.5 * edge_length, 0.5 * edge_length)
+
+        self.x0 = v_min.x
+        self.y0 = v_min.y
+        self.z0 = v_min.z
+        # TODO account for angles here with some basic trig
+        self.x1 = self.x0 + edge_length
+        self.y1 = self.y0 + edge_length
+        self.z1 = self.z0 + edge_length
 
 
 class Rule(object):
@@ -133,7 +140,7 @@ class Constraint(Rule):
 
     def add_adjustment(self, boid):
         if boid.turning:
-            direction = cube_centre - boid.location
+            direction = boid.cube.centre - boid.location
             self.change = direction * 0.001  # TODO experimental value
         boid.adjustment = boid.adjustment + self.change
 
@@ -143,11 +150,12 @@ class Boid(object):
     A single swarm agent
     """
 
-    def __init__(self):
+    def __init__(self, cube):
         self.colour = random_vector3(0.5)  # R G B
+        self.cube = cube
         # TODO start at random locations (and remove 'centre')
-        #self.location = cube_centre
-        self.location = random_vector3(0, edge_length)
+        # self.location = cube.centre
+        self.location = random_vector3(0, cube.edge_length)
         self.velocity = random_vector3(-1.0, 1.0)  # vx vy vz
         self.adjustment = Vector3(0.0, 0.0, 0.0)  # to accumulate corrections
         self.turning = False
@@ -176,21 +184,6 @@ class Boid(object):
         if self.velocity.length() > max_speed:
             self.velocity = self.velocity.normalize() * max_speed
 
-    def render(self):
-        """
-        Draw this boid
-        """
-        # TODO make it cooler than just a line
-        gl.glBegin(gl.GL_LINES)
-        gl.glColor(self.colour.x, self.colour.y, self.colour.z)
-        gl.glVertex(self.location.x, self.location.y, self.location.z)
-        if self.velocity.length() > 0:
-            head = self.location + self.velocity.normalize() * 2.5
-        else:
-            head = self.location
-        gl.glVertex(head.x, head.y, head.z)
-        gl.glEnd()
-
     def update(self):
         """
         Move to new position using calculated velocity
@@ -204,7 +197,7 @@ class Boid(object):
         self.limit_speed(1.0)
         self.location = self.location + self.velocity
         # bool to keep the boid in the box (technically this describes a sphere)
-        self.turning = (self.location.distance_to(cube_centre) >= edge_length*0.85/2)
+        self.turning = (self.location.distance_to(self.cube.centre) >= self.cube.edge_length*0.85/2)
 
 
 class CentOfMass(object):
@@ -218,21 +211,6 @@ class CentOfMass(object):
     def __repr__(self):
         return "TODO - C_O_M"
 
-    def render(self):
-        """
-        TEMP Draw as just a long white boid
-        """
-        # TODO make it a sphere or something
-        gl.glBegin(gl.GL_LINES)
-        gl.glColor(0.5, 0.5, 0.5)
-        gl.glVertex(self.location.x, self.location.y, self.location.z)
-        if self.velocity.length() > 0:
-            head = self.location + self.velocity.normalize() * 10
-        else:
-            head = self.location
-        gl.glVertex(head.x, head.y, head.z)
-        gl.glEnd()
-
     def set(self, location, velocity):
         self.location = location
         self.velocity = velocity
@@ -243,20 +221,16 @@ class Swarm(object):
     A swarm of boids
     """
 
-    def __init__(self, num_boids):
+    def __init__(self, num_boids, cube):
         self.num_boids = num_boids
         self.boids = []
+        self.cube = cube
         for _ in range(num_boids):
-            self.boids.append(Boid())
-        self.c_o_m = CentOfMass(cube_centre, Vector3(0,0,0))
+            self.boids.append(Boid(cube))
+        self.c_o_m = CentOfMass(cube.centre, Vector3(0,0,0))
 
     def __repr__(self):
         return "TODO - Swarm"
-
-    def render(self):
-        for boid in self.boids:
-            boid.render()
-        self.c_o_m.render()
 
     def update(self):
         p_acc = Vector3()
@@ -269,160 +243,3 @@ class Swarm(object):
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
-
-
-class Renderer(object):
-    """
-    Contains the swarm object(s) and renders everything
-    """
-
-    def __init__(self, swarms):
-        self.x0 = cube_min.x
-        self.y0 = cube_min.y
-        self.z0 = cube_min.z
-        self.x1 = self.x0 + edge_length
-        self.y1 = self.y0 + edge_length
-        self.z1 = self.z0 + edge_length
-
-        self.swarms = swarms
-        self.edge_length = edge_length
-
-    def __repr__(self):
-        return "TODO - Renderer"
-
-    def add_swarm(self, swarm):
-        self.swarms.append(swarm)
-
-    def top_square(self):
-        """
-        :return: Array of points that make up the top of the cube
-        """
-        return [[self.x0, self.y1, self.z0],
-                [self.x1, self.y1, self.z0],
-                [self.x1, self.y1, self.z1],
-                [self.x0, self.y1, self.z1]]
-
-    def bottom_square(self):
-        """
-        :return: Array of points that make up the bottom of the cube
-        """
-        return [[self.x0, self.y0, self.z0],
-                [self.x1, self.y0, self.z0],
-                [self.x1, self.y0, self.z1],
-                [self.x0, self.y0, self.z1]]
-
-    def render_cube(self):
-        """ Draw the bounding box """
-        # TODO make more elegant
-        gl.glColor(0.5, 0.5, 0.5)
-        # XY plane, positive Z
-        gl.glBegin(gl.GL_LINE_LOOP)
-        for point in self.top_square():
-            gl.glVertex(point)
-        gl.glEnd()
-        # XY plane, negative Z
-        gl.glBegin(gl.GL_LINE_LOOP)
-        for point in self.bottom_square():
-            gl.glVertex(point)
-        gl.glEnd()
-        # The connecting lines in the Z direction
-        gl.glBegin(gl.GL_LINES)
-        for (point1, point2) in zip(self.top_square(), self.bottom_square()):
-            gl.glVertex(point1)
-            gl.glVertex(point2)
-        gl.glEnd()
-
-    @staticmethod
-    def render_axes():
-        """ Draw the XYZ axes """
-        d = 1000
-        gl.glBegin(gl.GL_LINES)
-        # X
-        gl.glColor(1,0,0)
-        gl.glVertex([0,0,0])
-        gl.glVertex([d,0,0])
-        # Y
-        gl.glColor(0, 1, 0)
-        gl.glVertex([0, 0, 0])
-        gl.glVertex([0, d, 0])
-        # Z
-        gl.glColor(0, 0, 1)
-        gl.glVertex([0, 0, 0])
-        gl.glVertex([0, 0, d])
-        gl.glEnd()
-
-    def render(self):
-        """
-        Render everything
-        """
-        self.render_cube()
-        self.render_axes()
-        for swarm in self.swarms:
-            swarm.render()
-
-    def update(self):
-        """
-        Update all the swarms
-        """
-        for swarm in self.swarms:
-            swarm.update()
-
-
-def main():
-    # TODO I don't get most of this, it's just boring setup code. Mostly Tom Marble:
-    # set up display window
-    title = "Swarm Music Demo v.-1000"
-    window_size = 700
-    xy_ratio = 1  # x side / y side
-    cam_rotation = math.radians(0.1)
-    cam_angle = 0  # keep track of how far we have rotated
-    rotation_delay = 0
-
-    pygame.init()
-    pygame.display.set_caption(title, title)
-    pygame.display.set_mode((window_size, window_size), pyg.OPENGL | pyg.DOUBLEBUF)
-    gl.glEnable(gl.GL_DEPTH_TEST)
-    gl.glClearColor(0, 0, 0, 0)
-    # set up the camera
-    gl.glMatrixMode(gl.GL_PROJECTION)
-    gl.glLoadIdentity()
-    glu.gluPerspective(edge_length * 2, xy_ratio, 1.0, (6 * edge_length) + 10)  # setup lens
-    gl.glMatrixMode(gl.GL_MODELVIEW)
-    gl.glLoadIdentity()
-    # look at the middle of the cube
-    cam_pos = Vector3(0.5 * edge_length, 0.5 * edge_length, cam_r)
-    glu.gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, focal_point.x, focal_point.y, focal_point.z, 0.0, 1.0, 0.0)
-    # diameter of rasterised points
-    gl.glPointSize(3.0)
-
-    swarm = Swarm(50)
-    swarm2 = Swarm(20)
-    renderer = Renderer([swarm, swarm2])
-
-    while True:
-        event = pygame.event.poll()
-        if event.type == pyg.QUIT or (event.type == pyg.KEYDOWN and
-            (event.key == pyg.K_ESCAPE or event.key == pyg.K_q)):
-            break
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        renderer.render()
-
-        # rotate the camera around the focal point
-        # METHOD 1 (rotates around origin only)
-        #gl.glRotatef(math.degrees(cam_rotation), 0, 1, 0)  # orbit camera around by angle
-
-        # METHOD 2 (broken)
-        # cam_pos.x = cam_r * math.sin(cam_angle) + (0.5 * edge_length)  # TODO
-        # cam_pos.z = cam_r * math.cos(cam_angle) + (0.5 * edge_length)  # TODO
-        # glu.gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, focal_point.x, focal_point.y, focal_point.z, 0.0, 1.0, 0.0)
-        # cam_angle += cam_rotation
-        # #print(cam_pos)
-        # #cam_angle %= 2 * math.pi
-
-        pygame.display.flip()  # update screen
-        if rotation_delay > 0:
-            pygame.time.wait(rotation_delay)
-        renderer.update()
-
-if __name__ == '__main__':
-    main()
