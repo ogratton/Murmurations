@@ -30,8 +30,8 @@ def main():
     cube = Swarm.Cube(cube_min, edge_length)
 
     # MAKE SWARM OBJECTS
-    swarm = Swarm.Swarm(7, cube)
-    swarm2 = Swarm.Swarm(7, cube)
+    swarm = Swarm.Swarm(50, cube)
+    swarm2 = Swarm.Swarm(20, cube)
     renderer = SwarmRender.Renderer(set([swarm, swarm2]))
 
     # CAMERA/GL STUFF

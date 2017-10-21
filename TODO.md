@@ -18,6 +18,7 @@ Move points to logbook when done
 
 ## Graphics
 
+* **CHANGE FROM PYGAME TO PYGLET**
 * Change boids from lines to spheres/circles
 * Manual rotation about the focal point with mouse/arrow keys
 
