@@ -171,11 +171,15 @@ class Boid(object):
         Make a baby boid
         :param cube: Cube   bounding box for this boid
         """
-        self.colour = random_vector3(0.5)  # R G B
         self.cube = cube
+
+        # doesn't seem to matter that much where you start
+        # even if it's outside the cube
         # either start at centre or at a random location:
         # self.location = cube.centre
         self.location = random_vector3(0, cube.edge_length)
+        # self.location = Vector3(0.0, 0.0, 0.0)
+
         self.velocity = random_vector3(-1.0, 1.0)  # vx vy vz
         self.adjustment = Vector3(0.0, 0.0, 0.0)  # to accumulate corrections
         self.turning = False
@@ -189,7 +193,7 @@ class Boid(object):
         Calculate velocity for next tick by applying the three basic swarming rules
         """
         # Apply the rules to each of the boids
-        rules = [Cohesion(), Separation(), Constraint(), Alignment()]  # flocks use alignment, swarms do not
+        rules = [Cohesion(), Separation(), Constraint(), Alignment()]  # TODO flocks use alignment, swarms do not
         for boid in all_boids:
             distance = self.location.distance_to(boid.location)
             for rule in rules:

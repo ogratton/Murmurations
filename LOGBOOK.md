@@ -17,10 +17,14 @@
 ### 2017/10/20 - Week 4
 
 * Written basic swarm code in Python with OpenGL
+* Completed Project Proposal
 
 ### 2017/10/27 - Week 5
 
-*
+* Refactored all current work to fit Observer model
+* Colour-coded swarms
+* Added docstrings
+* Added centre of mass calculation as first step toward sound
 
 ### 2017/11/03 - Week 6
 

@@ -72,6 +72,12 @@ class Renderer(object):
         for swarm in swarms:
             self.cubes.add(swarm.cube)
 
+        # (finite) array of colours to colour-code swarms
+        # TODO extend as more swarms are needed (preferably algorithmically)
+        self.colours = [[0.5, 0.0, 0.0],
+                        [0.0, 0.5, 0.0],
+                        [0.0, 0.0, 0.5]]
+
     def __repr__(self):
         return "TODO - Renderer"
 
@@ -104,13 +110,16 @@ class Renderer(object):
         GL.glEnd()
 
     @staticmethod
-    def render_boid(boid):
+    def render_boid(boid, colour):
         """
         Draw a boid
+        :param boid:    Boid
+        :param colour:  Vector3 colour of boid
+        :return:
         """
         # TODO make it cooler than just a line
         GL.glBegin(GL.GL_LINES)
-        GL.glColor(boid.colour.x, boid.colour.y, boid.colour.z)
+        GL.glColor(colour[0], colour[1], colour[2])
         GL.glVertex(boid.location.x, boid.location.y, boid.location.z)
         if boid.velocity.length() > 0:
             head = boid.location + boid.velocity.normalize() * 2.5
@@ -135,9 +144,9 @@ class Renderer(object):
         GL.glVertex(head.x, head.y, head.z)
         GL.glEnd()
 
-    def render_swarm(self, swarm):
+    def render_swarm(self, swarm, i):
         for boid in swarm.boids:
-            self.render_boid(boid)
+            self.render_boid(boid, self.colours[i])
         self.render_com(swarm.c_o_m)
 
     def render(self):
@@ -145,8 +154,8 @@ class Renderer(object):
         Render everything
         """
         self.render_axes()
-        for swarm in self.swarms:
-            self.render_swarm(swarm)
+        for i, swarm in enumerate(self.swarms):
+            self.render_swarm(swarm, i)
         for cube in self.cubes:
             CubeView.render(cube)
 

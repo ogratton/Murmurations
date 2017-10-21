@@ -24,7 +24,7 @@ def main():
     rotation_delay = 0
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = Vector3(10, -5, 6)  # cube min vertex
+    cube_min = Vector3(10, -5, 7)  # cube min vertex
     edge_length = 50.0
 
     cube = Swarm.Cube(cube_min, edge_length)
