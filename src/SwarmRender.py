@@ -1,4 +1,3 @@
-from sound import Receiver
 import OpenGL.GL as GL
 
 """
@@ -69,12 +68,10 @@ class Renderer(object):
         :param visual: bool         whether to render graphics or not
         :param swarms: set{Swarm}   set of swarms
         """
-        self.sound = Receiver()
         self.visual = visual
         self.swarms = swarms
         self.cubes = set()
         for swarm in swarms:
-            swarm.register(self.sound)
             self.cubes.add(swarm.cube)
 
         # (finite) array of colours to colour-code swarms
@@ -91,7 +88,6 @@ class Renderer(object):
         Allows a swarm to be added in real-time without restarting
         :param swarm: Swarm     new swarm
         """
-        swarm.register(self.sound)
         self.swarms.append(swarm)
         self.cubes.add(swarm.cube)
 

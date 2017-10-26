@@ -237,14 +237,16 @@ class CentOfMass(object):
     """
     The centre of mass of a swarm
     """
-    def __init__(self, location, velocity):
+    def __init__(self, location, velocity, v_min):
         """
         Set up an initial (probably wrong) centre of mass object
         :param location: Vector3
         :param velocity: Vector3
+        :param v_min:    min vertex of bounding box
         """
         self.location = location
         self.velocity = velocity
+        self.v_min = v_min
 
     def __repr__(self):
         return "Centre of Mass - pos:{0}, vel:{1}".format(self.location, self.velocity)
@@ -257,6 +259,13 @@ class CentOfMass(object):
         """
         self.location = location
         self.velocity = velocity
+
+    def get_location(self):
+        """
+        USE THIS RATHER THAN ACCESSING location
+        :return: Location relative to v_min (i.e v_min is origin)
+        """
+        return self.location - self.v_min
 
 
 class Swarm(Observable):
@@ -276,7 +285,7 @@ class Swarm(Observable):
         self.cube = cube
         for _ in range(num_boids):
             self.boids.append(Boid(cube))
-        self.c_o_m = CentOfMass(cube.centre, Vector3(0, 0, 0))
+        self.c_o_m = CentOfMass(cube.centre, Vector3(0, 0, 0), cube.v_min)
 
     def __repr__(self):
         return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)
@@ -295,7 +304,10 @@ class Swarm(Observable):
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
-        # self.update_observers(self.c_o_m, self.cube)  # TODO publish to observers
 
     def get_COM(self):
-        return self.c_o_m
+        """
+        :return: the centre of mass of the swarm relative, but treating v_min as the origin
+        """
+        com = self.c_o_m
+        return com

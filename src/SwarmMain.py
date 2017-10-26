@@ -1,5 +1,6 @@
 import Swarm
 import SwarmRender
+import Interpreter
 
 import math
 import pygame
@@ -33,7 +34,17 @@ def main():
     swarm = Swarm.Swarm(7, cube)
     swarm2 = Swarm.Swarm(7, cube)
     swarm3 = Swarm.Swarm(7, cube)
-    renderer = SwarmRender.Renderer(True, {swarm, swarm2, swarm3})
+
+    swarms = [swarm]  # , swarm2, swarm3]
+    renderer = SwarmRender.Renderer(True, swarms)
+
+    # START AUDIO THREADS
+    threads = []
+    for i, _ in enumerate(swarms):
+        thread = Interpreter.Listener(i, "listener " + str(i), renderer)
+        threads.append(thread)
+        thread.start()
+        print("Started sound thread " + str(i))
 
     # CAMERA/GL STUFF
     cam_r = 2 * cube.edge_length  # distance of camera from cube_centre
@@ -60,6 +71,8 @@ def main():
         event = pygame.event.poll()
         if event.type == pyg.QUIT or (event.type == pyg.KEYDOWN and
             (event.key == pyg.K_ESCAPE or event.key == pyg.K_q)):
+            for thread in threads:
+                thread.stop()
             break
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         renderer.render()

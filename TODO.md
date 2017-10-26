@@ -4,11 +4,11 @@ Move points to logbook when done
 
 ## Swarm
 
-* Add hierarchical clustering to determing centre of mass of largest part of a swarm
+* Make n-dimensional (just make my own vector class)
+* (?) Add hierarchical clustering to determing centre of mass of largest part of a swarm
 * Tweak values in rules
 * Add attractors
 * Add predators
-* Add string representations to objects for debugging
 
 
 ## Music
