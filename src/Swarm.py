@@ -2,7 +2,7 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
-import math
+from obs import Observable
 from pygame.math import Vector3
 
 """
@@ -55,6 +55,9 @@ class Cube(object):
         self.x1 = self.x0 + edge_length
         self.y1 = self.y0 + edge_length
         self.z1 = self.z0 + edge_length
+
+    def __repr__(self):
+        return "Cube from {0} with edge length {1}".format(self.v_min, self.edge_length)
 
 
 class Rule(object):
@@ -185,15 +188,16 @@ class Boid(object):
         self.turning = False
 
     def __repr__(self):
-        # TODO
-        return "TODO - Boid"
+        return "Boid - pos:{0}, vel:{1}".format(self.location, self.velocity)
 
     def calc_v(self, all_boids):
         """
         Calculate velocity for next tick by applying the three basic swarming rules
         """
         # Apply the rules to each of the boids
-        rules = [Cohesion(), Separation(), Constraint(), Alignment()]  # TODO flocks use alignment, swarms do not
+        # TODO flocks use alignment, swarms do not
+        rules = [Cohesion(), Separation(), Constraint(), Alignment()]
+        # rules = [Cohesion(), Separation(), Constraint()]
         for boid in all_boids:
             distance = self.location.distance_to(boid.location)
             for rule in rules:
@@ -225,7 +229,8 @@ class Boid(object):
         self.limit_speed(1.0)
         self.location = self.location + self.velocity
         # bool to keep the boid in the box (technically this describes a sphere)
-        self.turning = (self.location.distance_to(self.cube.centre) >= self.cube.edge_length*0.85/2)
+        # TODO experimental values
+        self.turning = (self.location.distance_to(self.cube.centre) >= self.cube.edge_length*0.80/2)
 
 
 class CentOfMass(object):
@@ -242,7 +247,7 @@ class CentOfMass(object):
         self.velocity = velocity
 
     def __repr__(self):
-        return "TODO - C_O_M"
+        return "Centre of Mass - pos:{0}, vel:{1}".format(self.location, self.velocity)
 
     def set(self, location, velocity):
         """
@@ -254,7 +259,7 @@ class CentOfMass(object):
         self.velocity = velocity
 
 
-class Swarm(object):
+class Swarm(Observable):
     """
     A swarm of boids
     """
@@ -265,6 +270,7 @@ class Swarm(object):
         :param num_boids: int   number of boids in the swarm
         :param cube:      Cube  bounding box of swarm (and its boids)
         """
+        super().__init__()
         self.num_boids = num_boids
         self.boids = []
         self.cube = cube
@@ -273,7 +279,7 @@ class Swarm(object):
         self.c_o_m = CentOfMass(cube.centre, Vector3(0, 0, 0))
 
     def __repr__(self):
-        return "TODO - Swarm"
+        return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)
 
     def update(self):
         """
@@ -285,7 +291,11 @@ class Swarm(object):
             boid.calc_v(self.boids)
         for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
-            # TODO this needs to do clustering and calculate the centre of the densest point
+            # TODO may need to do clustering and calculate the centre of the densest point
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
+        # self.update_observers(self.c_o_m, self.cube)  # TODO publish to observers
+
+    def get_COM(self):
+        return self.c_o_m

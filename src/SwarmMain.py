@@ -30,9 +30,10 @@ def main():
     cube = Swarm.Cube(cube_min, edge_length)
 
     # MAKE SWARM OBJECTS
-    swarm = Swarm.Swarm(50, cube)
-    swarm2 = Swarm.Swarm(20, cube)
-    renderer = SwarmRender.Renderer(set([swarm, swarm2]))
+    swarm = Swarm.Swarm(7, cube)
+    swarm2 = Swarm.Swarm(7, cube)
+    swarm3 = Swarm.Swarm(7, cube)
+    renderer = SwarmRender.Renderer(True, {swarm, swarm2, swarm3})
 
     # CAMERA/GL STUFF
     cam_r = 2 * cube.edge_length  # distance of camera from cube_centre

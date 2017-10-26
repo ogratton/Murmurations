@@ -21,10 +21,11 @@
 
 ### 2017/10/27 - Week 5
 
-* Refactored all current work to fit Observer model
+* Refactored all current work into neater class structures
 * Colour-coded swarms
 * Added docstrings
 * Added centre of mass calculation as first step toward sound
+* Trialled Observer pattern but need more of a 'polling' approach (only get COM when needed)
 
 ### 2017/11/03 - Week 6
 

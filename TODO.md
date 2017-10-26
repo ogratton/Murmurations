@@ -13,7 +13,8 @@ Move points to logbook when done
 
 ## Music
 
-* Add "listener" to convert centre of mass of swarm to a single note
+* Add "poller" to convert centre of mass of swarm to a single note
+	* It should run on a separate thread and only request COM when it needs it 
 
 
 ## Graphics
@@ -26,6 +27,7 @@ Move points to logbook when done
 ## Admin
 
 * Fill in README
+* Write some unit tests (see Observable folder on home PC)
 
 
 ## Misc

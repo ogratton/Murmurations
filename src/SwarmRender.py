@@ -1,3 +1,4 @@
+from sound import Receiver
 import OpenGL.GL as GL
 
 """
@@ -63,20 +64,24 @@ class Renderer(object):
     Contains the swarm object(s) and cubes and renders everything
     """
 
-    def __init__(self, swarms):
+    def __init__(self, visual, swarms):
         """
-        :param swarms: set{Swarm}
+        :param visual: bool         whether to render graphics or not
+        :param swarms: set{Swarm}   set of swarms
         """
+        self.sound = Receiver()
+        self.visual = visual
         self.swarms = swarms
         self.cubes = set()
         for swarm in swarms:
+            swarm.register(self.sound)
             self.cubes.add(swarm.cube)
 
         # (finite) array of colours to colour-code swarms
         # TODO extend as more swarms are needed (preferably algorithmically)
-        self.colours = [[0.5, 0.0, 0.0],
-                        [0.0, 0.5, 0.0],
-                        [0.0, 0.0, 0.5]]
+        self.colours = [[60/255, 240/255, 240/255],
+                        [240/255, 160/255, 60/255],
+                        [240/255, 60/255, 240/255]]
 
     def __repr__(self):
         return "TODO - Renderer"
@@ -86,7 +91,9 @@ class Renderer(object):
         Allows a swarm to be added in real-time without restarting
         :param swarm: Swarm     new swarm
         """
+        swarm.register(self.sound)
         self.swarms.append(swarm)
+        self.cubes.add(swarm.cube)
 
     @staticmethod
     def render_axes():
@@ -153,11 +160,12 @@ class Renderer(object):
         """
         Render everything
         """
-        self.render_axes()
-        for i, swarm in enumerate(self.swarms):
-            self.render_swarm(swarm, i)
-        for cube in self.cubes:
-            CubeView.render(cube)
+        if self.visual:
+            self.render_axes()
+            for i, swarm in enumerate(self.swarms):
+                self.render_swarm(swarm, i)
+            for cube in self.cubes:
+                CubeView.render(cube)
 
     def update(self):
         """
