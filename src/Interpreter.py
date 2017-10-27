@@ -101,7 +101,7 @@ def main():
     swarm_data = [
                     (Swarm.Swarm(7, cube), 1, 56),
                     (Swarm.Swarm(7, cube), 2, 1),
-                    # (Swarm.Swarm(7, cube), 3, 57)
+                    (Swarm.Swarm(7, cube), 3, 26)
                 ]
     swarms = list(map(lambda x: x[0], swarm_data))
     renderer = SwarmRender.Renderer(False, swarms)
@@ -109,7 +109,8 @@ def main():
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
     seqs = [Sequencer('1', midiout, swarm_data[0]),
-            Sequencer('2', midiout, swarm_data[1])]
+            Sequencer('2', midiout, swarm_data[1]),
+            Sequencer('3', midiout, swarm_data[2])]
 
     print("Playing random shit. Press Control-C to quit.")
 

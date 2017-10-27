@@ -2,7 +2,6 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
-from obs import Observable
 from pygame.math import Vector3
 
 """
@@ -268,7 +267,7 @@ class CentOfMass(object):
         return self.location - self.v_min
 
 
-class Swarm(Observable):
+class Swarm(object):
     """
     A swarm of boids
     """
