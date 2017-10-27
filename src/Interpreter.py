@@ -20,13 +20,12 @@ dynam_min = 0       # min dynamic TODO this is just silence, so maybe higher
 
 
 class Listener(threading.Thread):
-    def __init__(self, swarm_index, name, renderer):
+    def __init__(self, swarm_index, name, swarm, player):
         threading.Thread.__init__(self)
         self.swarm_index = swarm_index
         self.name = name
-        self.renderer = renderer
-        self.com = renderer.swarms[swarm_index].get_COM()
-        self.sound = Sound.Player()  # TODO need multiple channels
+        self.swarm = swarm
+        self.player = player
         self.running = False
 
     def run(self):
@@ -35,11 +34,9 @@ class Listener(threading.Thread):
         # TODO hard exit (this waits for current sleep to finish)
         while self.running:
             # Get the centre of mass of our swarm and interpret it
-            our_swarm = self.renderer.swarms[self.swarm_index]
-            self.com = our_swarm.get_COM()
-            data = interpret(our_swarm.cube.edge_length, self.com.get_location())
+            data = interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
             print(str(self.swarm_index) + ": " + str(data))
-            self.sound.play_note(data)
+            self.player.play_note(data)
             time.sleep(data[2])
         print("Ending " + self.name)
 

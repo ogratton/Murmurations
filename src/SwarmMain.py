@@ -1,3 +1,4 @@
+import Sound
 import Swarm
 import SwarmRender
 import Interpreter
@@ -33,16 +34,19 @@ def main():
     # MAKE SWARM OBJECTS
     swarm = Swarm.Swarm(7, cube)
     swarm2 = Swarm.Swarm(7, cube)
-    swarm3 = Swarm.Swarm(7, cube)
+    # swarm3 = Swarm.Swarm(7, cube)
 
-    swarms = [swarm]  # , swarm2, swarm3]
+    swarm_data = [(swarm, 1, 56), (swarm2, 2, 67)]  # , (swarm3, 3, 57)]
+    swarms = list(map(lambda x: x[0], swarm_data))
+
     renderer = SwarmRender.Renderer(True, swarms)
 
     # START AUDIO THREADS
-    threads = []
-    for i, _ in enumerate(swarms):
-        thread = Interpreter.Listener(i, "listener " + str(i), renderer)
-        threads.append(thread)
+    threads_and_players = []
+    for i, (swarm, port, instrument) in enumerate(swarm_data):
+        player = Sound.Player(port, instrument)
+        thread = Interpreter.Listener(i, "listener " + str(i), swarm, player)
+        threads_and_players.append((thread, player))
         thread.start()
         print("Started sound thread " + str(i))
 
@@ -71,9 +75,12 @@ def main():
         event = pygame.event.poll()
         if event.type == pyg.QUIT or (event.type == pyg.KEYDOWN and
             (event.key == pyg.K_ESCAPE or event.key == pyg.K_q)):
-            for thread in threads:
+            # CLEANUP
+            for thread, player in threads_and_players:
                 thread.stop()
+                # del player
             break
+
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         renderer.render()
 
