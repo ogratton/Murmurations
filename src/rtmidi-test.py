@@ -1,5 +1,6 @@
 import time
 import rtmidi
+from rtmidi import midiconstants as mc
 
 note_list = [[63,65,0.55],
 [63,65,0.55],
@@ -50,10 +51,13 @@ else:
 
 
 def play_fifths(data):
-    note_on = [0x90, data[1], data[0]] # channel 1, middle C, velocity 112
-    note2_on = [0x90, data[1]+7, data[0]] # channel 1, middle C, velocity 112
-    note_off = [0x80, data[1], 0]
-    note2_off = [0x80, data[1]+7, data[0]]
+    note_on = [mc.NOTE_ON, data[1], data[0]] # channel 1, middle C, velocity 112
+    note2_on = [mc.NOTE_ON, data[1]+7, data[0]] # channel 1, middle C, velocity 112
+    note_off = [mc.NOTE_OFF, data[1], 0]
+    note2_off = [mc.NOTE_OFF, data[1]+7, data[0]]
+    midiout.send_message([mc.PROGRAM_CHANGE, 65])
+    midiout.send_message([mc.CONTROLLER_CHANGE, mc.MODULATION_WHEEL, 15])
+    midiout.send_message([mc.CONTROLLER_CHANGE, mc.SUSTAIN, 65])
     midiout.send_message(note_on)
     midiout.send_message(note2_on)
     time.sleep(data[2])
