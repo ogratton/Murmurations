@@ -1,6 +1,11 @@
-import Sound
+import Swarm
+import SwarmRender
+import rtmidi
+from pygame.math import Vector3
 import threading
-import time
+from time import sleep
+from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
+                                  CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE)
 
 
 """
@@ -19,29 +24,39 @@ dynam_range = 127   # range of dynamics
 dynam_min = 0       # min dynamic TODO this is just silence, so maybe higher
 
 
-class Listener(threading.Thread):
-    def __init__(self, swarm_index, name, swarm, player):
-        threading.Thread.__init__(self)
-        self.swarm_index = swarm_index
-        self.name = name
-        self.swarm = swarm
-        self.player = player
-        self.running = False
+class Sequencer(threading.Thread):
+    """MIDI output thread."""
+
+    def __init__(self, name, midiout, swarm_data, volume=127):
+        super(Sequencer, self).__init__()
+        self.name = name  # TODO
+        self.midiout = midiout
+        self.swarm = swarm_data[0]
+        self.channel = swarm_data[1]
+        self.instrument = swarm_data[2]
+        self.volume = volume
+        self.start()
 
     def run(self):
-        print("Starting " + self.name)
-        self.running = True
-        # TODO hard exit (this waits for current sleep to finish)
-        while self.running:
-            # Get the centre of mass of our swarm and interpret it
-            data = interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
-            print(str(self.swarm_index) + ": " + str(data))
-            self.player.play_note(data)
-            time.sleep(data[2])
-        print("Ending " + self.name)
+        self.done = False
+        self.activate_instrument(self.instrument)
+        cc = CONTROL_CHANGE | self.channel
+        self.midiout.send_message([cc, CHANNEL_VOLUME, self.volume & 0x7F])
 
-    def stop(self):
-        self.running = False
+        # give MIDI instrument some time to activate instrument
+        sleep(0.3)
+
+        while not self.done:
+            data = interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
+            self.midiout.send_message([NOTE_ON | self.channel, data[1], data[0] & 127])
+            sleep(data[2])
+            self.midiout.send_message([NOTE_ON | self.channel, data[1], 0])
+
+        self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
+
+    def activate_instrument(self, instrument):
+        # TODO this is massively shorter than drumseq cos it doesn't account for banks
+        self.midiout.send_message([PROGRAM_CHANGE | self.channel, instrument & 0x7F])
 
 
 def interpret(max_v, data):
@@ -51,7 +66,9 @@ def interpret(max_v, data):
     :return: the list with the functions applied to each dimension
     """
     # TODO hard-coded for 3D
-    return [interpret_dynamic(max_v, data[0]), interpret_pitch(max_v, data[1]), interpret_time(max_v, data[2])]
+    return [interpret_dynamic(max_v, data[0]),
+            interpret_pitch(max_v, data[1]),
+            interpret_time(max_v, data[2])]
 
 
 def interpret_pitch(max_v, value):
@@ -70,3 +87,45 @@ def interpret_time(max_v, value):
 
 def interpret_dynamic(max_v, value):
     return int((value/max_v) * dynam_range + dynam_min)
+
+
+def main():
+
+    # DEFINE BOUNDING BOX(ES)
+    cube_min = Vector3(10, -5, 7)  # cube min vertex
+    edge_length = 50.0
+    cube = Swarm.Cube(cube_min, edge_length)
+
+    # MAKE SWARM OBJECTS
+    # swarm, channel (starting from 1), instrument code
+    swarm_data = [
+                    (Swarm.Swarm(7, cube), 1, 56),
+                    (Swarm.Swarm(7, cube), 2, 1),
+                    # (Swarm.Swarm(7, cube), 3, 57)
+                ]
+    swarms = list(map(lambda x: x[0], swarm_data))
+    renderer = SwarmRender.Renderer(False, swarms)
+
+    # SET UP MIDI
+    midiout = rtmidi.MidiOut().open_port(0)
+    seqs = [Sequencer('1', midiout, swarm_data[0]),
+            Sequencer('2', midiout, swarm_data[1])]
+
+    print("Playing random shit. Press Control-C to quit.")
+
+    try:
+        while True:
+            renderer.update()
+            # sleep(0.001)
+    except KeyboardInterrupt:
+        print('')
+    finally:
+        for seq in seqs:
+            seq.done = True  # And kill it.
+            seq.join()
+        del midiout
+        print("Done")
+
+
+if __name__ == "__main__":
+    main()

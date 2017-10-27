@@ -13,9 +13,13 @@ Move points to logbook when done
 
 ## Music
 
-* Add "poller" to convert centre of mass of swarm to a single note
-	* It should run on a separate thread and only request COM when it needs it 
-
+* Add sustain & modulation and stuff
+	* 'let ring'
+* Quantize time axis, but maybe with some gaussian noise for human-like sloppiness
+* Custom interpretation types for different instruments (restrict pitch to its range)
+* Snap-to-scale pitch
+* Dynamics need to change less regularly (but still have the ability for subitos)
+* Allow for silence/rests (this should come with the note duration dimension)
 
 ## Graphics
 

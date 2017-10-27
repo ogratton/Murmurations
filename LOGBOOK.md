@@ -26,6 +26,7 @@
 * Added docstrings
 * Added centre of mass calculation as first step toward sound
 * Trialled Observer pattern but need more of a 'polling' approach (only get COM when needed)
+* Added basic sound interpretation
 
 ### 2017/11/03 - Week 6
 

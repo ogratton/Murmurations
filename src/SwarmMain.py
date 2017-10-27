@@ -1,7 +1,5 @@
-import Sound
 import Swarm
 import SwarmRender
-import Interpreter
 
 import math
 import pygame
@@ -12,6 +10,9 @@ import OpenGL.GLU as GLU
 
 """
 Main method for running the swarm simulation
+
+NOW USELESS FOR AUDIO
+Use Interpreter for audio and this for visualisation until I do the graphics in pyglet
 """
 
 
@@ -32,23 +33,15 @@ def main():
     cube = Swarm.Cube(cube_min, edge_length)
 
     # MAKE SWARM OBJECTS
-    swarm = Swarm.Swarm(7, cube)
-    swarm2 = Swarm.Swarm(7, cube)
-    # swarm3 = Swarm.Swarm(7, cube)
-
-    swarm_data = [(swarm, 1, 56), (swarm2, 2, 67)]  # , (swarm3, 3, 57)]
+    # swarm, channel (starting from 1), instrument code
+    swarm_data = [
+                    (Swarm.Swarm(7, cube), 1, 56),
+                    (Swarm.Swarm(7, cube), 2, 67),
+                    # (Swarm.Swarm(7, cube), 3, 57)
+    ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
     renderer = SwarmRender.Renderer(True, swarms)
-
-    # START AUDIO THREADS
-    threads_and_players = []
-    for i, (swarm, port, instrument) in enumerate(swarm_data):
-        player = Sound.Player(port, instrument)
-        thread = Interpreter.Listener(i, "listener " + str(i), swarm, player)
-        threads_and_players.append((thread, player))
-        thread.start()
-        print("Started sound thread " + str(i))
 
     # CAMERA/GL STUFF
     cam_r = 2 * cube.edge_length  # distance of camera from cube_centre
@@ -75,30 +68,16 @@ def main():
         event = pygame.event.poll()
         if event.type == pyg.QUIT or (event.type == pyg.KEYDOWN and
             (event.key == pyg.K_ESCAPE or event.key == pyg.K_q)):
-            # CLEANUP
-            for thread, player in threads_and_players:
-                thread.stop()
-                # del player
+            print("Shutting down")
             break
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         renderer.render()
 
-        # rotate the camera around the focal point
-        # METHOD 1 (rotates around origin only)
-        #GL.glRotatef(math.degrees(cam_rotation), 0, 1, 0)  # orbit camera around by angle
-
-        # METHOD 2 (broken)
-        # cam_pos.x = cam_r * math.sin(cam_angle) + (0.5 * edge_length)  # TODO
-        # cam_pos.z = cam_r * math.cos(cam_angle) + (0.5 * edge_length)  # TODO
-        # GLU.gluLookAt(cam_pos.x, cam_pos.y, cam_pos.z, focal_point.x, focal_point.y, focal_point.z, 0.0, 1.0, 0.0)
-        # cam_angle += cam_rotation
-        # #print(cam_pos)
-        # #cam_angle %= 2 * math.pi
-
         pygame.display.flip()  # update screen
         if rotation_delay > 0:
             pygame.time.wait(rotation_delay)
+
         renderer.update()
 
 if __name__ == '__main__':
