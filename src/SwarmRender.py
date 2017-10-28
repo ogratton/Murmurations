@@ -1,5 +1,10 @@
 import OpenGL.GL as GL
 
+# TODO temp
+import random
+import Swarm
+from pygame.math import Vector3
+
 """
 Render the swarm objects
 Contains render methods for the displayable classes
@@ -78,7 +83,8 @@ class Renderer(object):
         # TODO extend as more swarms are needed (preferably algorithmically)
         self.colours = [[60/255, 240/255, 240/255],
                         [240/255, 160/255, 60/255],
-                        [240/255, 60/255, 240/255]]
+                        [240/255, 60/255, 240/255],
+                        [180/255, 140,     20/255]]
 
     def __repr__(self):
         return "TODO - Renderer"
@@ -168,4 +174,9 @@ class Renderer(object):
         Update all the swarms
         """
         for swarm in self.swarms:
+            # TODO temporary way of changing attractor:
+            if random.random() < 0.009:
+                att = Swarm.rand_point_in_cube(swarm.cube, 3)
+                swarm.attractor = Vector3(att[0], att[1], att[2])
+
             swarm.update()

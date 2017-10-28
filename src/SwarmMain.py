@@ -36,8 +36,9 @@ def main():
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
                     (Swarm.Swarm(7, cube), 1, 56),
-                    (Swarm.Swarm(7, cube), 2, 67),
-                    # (Swarm.Swarm(7, cube), 3, 57)
+                    (Swarm.Swarm(50, cube), 2, 67),
+                    (Swarm.Swarm(4, cube), 3, 57),
+                    (Swarm.Swarm(25, cube), 4, 24)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 

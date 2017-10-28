@@ -30,7 +30,7 @@
 
 ### 2017/11/03 - Week 6
 
-*
+* Added attractors for the swarm agents
 
 ### 2017/11/10 - Week 7
 

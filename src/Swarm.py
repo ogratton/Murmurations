@@ -29,6 +29,28 @@ def random_vector3(lower=0.0, upper=1.0):
                    random_range(lower, upper))
 
 
+def rand_point_in_cube(cube, dimensions):
+    """
+    done with gauss for n dims rather than uniform for 3
+    :param cube:
+    :param dimensions:
+    :return:
+    """
+    edge = cube.edge_length
+    sd = edge/7.5
+
+    points = []
+
+    for i in range(dimensions):
+        while True:
+            p = random.gauss(edge/2, sd)
+            if max(0, min(p, edge)) not in [0, edge]:
+                break
+        points.append(p + cube.v_min[i])
+
+    return points
+
+
 class Cube(object):
     """
     Bounding box for swarm
@@ -73,14 +95,12 @@ class Rule(object):
         self.num = 0                            # number of participants
         self.neighbourhood = 5.0                # number of boids to account for around one boid
 
-    @staticmethod
     def accumulate(self, boid, other, distance):
         """
         Save any corrections based on other boid to self.change
         """
         pass
 
-    @staticmethod
     def add_adjustment(self, boid):
         """
         Add the accumulated self.change to boid.adjustment
@@ -147,20 +167,26 @@ class Separation(Rule):
         boid.adjustment = boid.adjustment + self.change
 
 
-class Constraint(Rule):
+class Attraction:
+    """ Bonus Rule: Fly towards the attractor """
+
+    @staticmethod
+    def add_adjustment(boid):
+        to_attractor = boid.attractor - boid.location
+        change = to_attractor * 0.005  # TODO experimental value
+        boid.adjustment = boid.adjustment + change
+
+
+class Constraint:
     """ Bonus Rule: Boids must stay within the bounding cube. """
 
-    def __init__(self):
-        super().__init__()
-
-    def accumulate(self, boid, other, distance):
-        pass
-
-    def add_adjustment(self, boid):
+    @staticmethod
+    def add_adjustment(boid):
+        change = Vector3(0, 0, 0)
         if boid.turning:
             direction = boid.cube.centre - boid.location
-            self.change = direction * 0.001  # TODO experimental value
-        boid.adjustment = boid.adjustment + self.change
+            change = direction * 0.001  # TODO experimental value
+        boid.adjustment = boid.adjustment + change
 
 
 class Boid(object):
@@ -168,12 +194,13 @@ class Boid(object):
     A single swarm agent
     """
 
-    def __init__(self, cube):
+    def __init__(self, cube, attractor):
         """
         Make a baby boid
         :param cube: Cube   bounding box for this boid
         """
         self.cube = cube
+        self.attractor = attractor
 
         # doesn't seem to matter that much where you start
         # even if it's outside the cube
@@ -195,8 +222,13 @@ class Boid(object):
         """
         # Apply the rules to each of the boids
         # TODO flocks use alignment, swarms do not
-        rules = [Cohesion(), Separation(), Constraint(), Alignment()]
-        # rules = [Cohesion(), Separation(), Constraint()]
+        flock = True
+        rules = [Cohesion(), Separation()]
+        if flock:
+            rules.append(Alignment())
+        # bonus rules don't need the accumulate stage
+        bonus_rules = [Constraint(), Attraction()]
+
         for boid in all_boids:
             distance = self.location.distance_to(boid.location)
             for rule in rules:
@@ -204,6 +236,8 @@ class Boid(object):
                     rule.accumulate(self, boid, distance)
         self.adjustment = Vector3(0.0, 0.0, 0.0)  # reset adjustment vector
         for rule in rules:  # save corrections to the adjustment
+            rule.add_adjustment(self)
+        for rule in bonus_rules:
             rule.add_adjustment(self)
 
     def limit_speed(self, max_speed):
@@ -230,6 +264,17 @@ class Boid(object):
         # bool to keep the boid in the box (technically this describes a sphere)
         # TODO experimental values
         self.turning = (self.location.distance_to(self.cube.centre) >= self.cube.edge_length*0.80/2)
+
+
+class Attractor(object):
+    """
+    Attracts boid towards it
+    """
+    def __init__(self, location):
+        self.location = location
+
+    def set_pos(self, new_l):
+        self.location = new_l
 
 
 class CentOfMass(object):
@@ -272,7 +317,7 @@ class Swarm(object):
     A swarm of boids
     """
 
-    def __init__(self, num_boids, cube):
+    def __init__(self, num_boids, cube, attractor=None):
         """
         Set up a swarm
         :param num_boids: int   number of boids in the swarm
@@ -282,8 +327,12 @@ class Swarm(object):
         self.num_boids = num_boids
         self.boids = []
         self.cube = cube
+        if attractor is None:
+            self.attractor = cube.centre
+        else:
+            self.attractor = attractor
         for _ in range(num_boids):
-            self.boids.append(Boid(cube))
+            self.boids.append(Boid(cube, self.attractor))
         self.c_o_m = CentOfMass(cube.centre, Vector3(0, 0, 0), cube.v_min)
 
     def __repr__(self):
@@ -297,6 +346,7 @@ class Swarm(object):
         v_acc = Vector3()
         for boid in self.boids:
             boid.calc_v(self.boids)
+            boid.attractor = self.attractor
         for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
             # TODO may need to do clustering and calculate the centre of the densest point

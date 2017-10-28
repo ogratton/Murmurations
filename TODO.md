@@ -7,7 +7,6 @@ Move points to logbook when done
 * Make n-dimensional (just make my own vector class)
 * (?) Add hierarchical clustering to determing centre of mass of largest part of a swarm
 * Tweak values in rules
-* Add attractors
 * Add predators
 
 
