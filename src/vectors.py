@@ -1,7 +1,7 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import List
 from math import sqrt
-from operator import add, sub, mul, truediv
+from operator import add, sub, truediv
 
 """
 n-dimensional vector class
@@ -12,6 +12,8 @@ mimics the base functionality of pygame.math.Vector3
 # TODO NOTE THAT THIS IS REALLY LAGGY COMPARED TO PYGAME'S COS THEIR'S IS WRITTEN IN C
 # If you're feeling brave/desperate you could try and write your own in c like they did
 # https://github.com/pygame/pygame/blob/master/src/math.c
+# https://www.safaribooksonline.com/library/view/python-cookbook/0596001673/ch16s06.html
+# http://intermediate-and-advanced-software-carpentry.readthedocs.io/en/latest/c++-wrapping.html
 # TODO docstrings
 
 
@@ -32,16 +34,17 @@ class VectorN(object):
     def __sub__(self, other):
         return self.maths(sub, other)
 
+    def __truediv__(self, other):
+        # will probably never be used
+        return self.maths(truediv, other)
+
     def __mul__(self, other):
+        # different from others because we want dot product, not Hadamard
         if isinstance(other, VectorN):
             assert other.dims == self.dims
             return sum([a*b for a, b in zip(self.data, other.data)])
         else:
             return self.cls(list(map(lambda x: x*other, self.data)))
-
-    def __truediv__(self, other):
-        # will probably never be used
-        return self.maths(truediv, other)
 
     def get(self, index):
         assert index < self.dims
@@ -63,7 +66,6 @@ class VectorN(object):
         """
         :return: a vector with the same direction but length 1
         """
-        # TODO WRONG!
         s = self.length()
         if s:
             return self.cls(list(map(lambda x: x / s, self.data)))
