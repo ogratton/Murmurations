@@ -2,7 +2,7 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
-from pygame.math import Vector3
+from vectors import Vector3
 
 """
 TODO:
@@ -20,20 +20,19 @@ def random_range(lower=0.0, upper=1.0):
     return lower + (random.random() * (upper - lower))
 
 
-def random_vector3(lower=0.0, upper=1.0):
+def random_vector(cls, lower=0.0, upper=1.0):
     """
-    :return: a Vector3 with random elements between lower and upper
+    :param cls: vector class to produce
+    :return: a vector with random elements between lower and upper
     """
-    return Vector3(random_range(lower, upper),
-                   random_range(lower, upper),
-                   random_range(lower, upper))
+    data = [random_range(lower, upper) for _ in range(cls.n)]
+    return cls(data)
 
-
-def rand_point_in_cube(cube, dimensions):
+def rand_point_in_cube(cube, cls):
     """
     done with gauss for n dims rather than uniform for 3
-    :param cube:
-    :param dimensions:
+    :param cube: Cube object
+    :param cls: vector class to produce
     :return:
     """
     edge = cube.edge_length
@@ -41,14 +40,14 @@ def rand_point_in_cube(cube, dimensions):
 
     points = []
 
-    for i in range(dimensions):
+    for i in range(cls.n):
         while True:
             p = random.gauss(edge/2, sd)
             if max(0, min(p, edge)) not in [0, edge]:
                 break
-        points.append(p + cube.v_min[i])
+        points.append(p + cube.v_min.get(i))
 
-    return points
+    return cls(points)
 
 
 class Cube(object):
@@ -65,14 +64,14 @@ class Cube(object):
 
         self.v_min = v_min
         self.edge_length = edge_length
-        self.centre = Vector3(v_min.x + 0.5 * edge_length,
-                              v_min.y + 0.5 * edge_length,
-                              v_min.z + 0.5 * edge_length)
+        self.centre = Vector3([v_min.get(0) + 0.5 * edge_length,
+                              v_min.get(1) + 0.5 * edge_length,
+                              v_min.get(2) + 0.5 * edge_length])
 
         # used for rendering
-        self.x0 = v_min.x
-        self.y0 = v_min.y
-        self.z0 = v_min.z
+        self.x0 = v_min.get(0)
+        self.y0 = v_min.get(1)
+        self.z0 = v_min.get(2)
         self.x1 = self.x0 + edge_length
         self.y1 = self.y0 + edge_length
         self.z1 = self.z0 + edge_length
@@ -91,9 +90,9 @@ class Rule(object):
         Initialise aggregators change and num
         Set potency of rule ('neighbourhood')
         """
-        self.change = Vector3(0.0, 0.0, 0.0)    # velocity correction
-        self.num = 0                            # number of participants
-        self.neighbourhood = 5.0                # number of boids to account for around one boid
+        self.change = Vector3()    # velocity correction
+        self.num = 0               # number of participants
+        self.neighbourhood = 5.0   # number of boids to account for around one boid
 
     def accumulate(self, boid, other, distance):
         """
@@ -182,7 +181,7 @@ class Constraint:
 
     @staticmethod
     def add_adjustment(boid):
-        change = Vector3(0, 0, 0)
+        change = Vector3()
         if boid.turning:
             direction = boid.cube.centre - boid.location
             change = direction * 0.001  # TODO experimental value
@@ -206,11 +205,11 @@ class Boid(object):
         # even if it's outside the cube
         # either start at centre or at a random location:
         # self.location = cube.centre
-        self.location = random_vector3(0, cube.edge_length)
-        # self.location = Vector3(0.0, 0.0, 0.0)
+        self.location = rand_point_in_cube(cube, Vector3)
+        # self.location = Vector3()
 
-        self.velocity = random_vector3(-1.0, 1.0)  # vx vy vz
-        self.adjustment = Vector3(0.0, 0.0, 0.0)  # to accumulate corrections
+        self.velocity = random_vector(Vector3, -1.0, 1.0)  # vx vy vz
+        self.adjustment = Vector3()  # to accumulate corrections
         self.turning = False
 
     def __repr__(self):
@@ -234,7 +233,7 @@ class Boid(object):
             for rule in rules:
                 if distance < rule.neighbourhood:
                     rule.accumulate(self, boid, distance)
-        self.adjustment = Vector3(0.0, 0.0, 0.0)  # reset adjustment vector
+        self.adjustment = Vector3()  # reset adjustment vector
         for rule in rules:  # save corrections to the adjustment
             rule.add_adjustment(self)
         for rule in bonus_rules:
@@ -333,7 +332,7 @@ class Swarm(object):
             self.attractor = attractor
         for _ in range(num_boids):
             self.boids.append(Boid(cube, self.attractor))
-        self.c_o_m = CentOfMass(cube.centre, Vector3(0, 0, 0), cube.v_min)
+        self.c_o_m = CentOfMass(cube.centre, Vector3(), cube.v_min)
 
     def __repr__(self):
         return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)
