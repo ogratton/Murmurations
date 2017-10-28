@@ -9,8 +9,10 @@ n-dimensional vector class
 mimics the base functionality of pygame.math.Vector3
 """
 
+# TODO NOTE THAT THIS IS REALLY LAGGY COMPARED TO PYGAME'S COS THEIR'S IS WRITTEN IN C
+# If you're feeling brave/desperate you could try and write your own in c like they did
+# https://github.com/pygame/pygame/blob/master/src/math.c
 # TODO docstrings
-# TODO try and make maths and normalize not abstract
 
 
 class VectorN(object):

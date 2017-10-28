@@ -254,9 +254,10 @@ class Boid(object):
         velocity = self.velocity + self.adjustment
         # Add a constant velocity in whatever direction
         # they are moving so they don't ever stop.
-        # TODO can probably remove once attractors are done
-        if velocity.length() > 0:
-            velocity = velocity + (velocity.normalize() * random_range(0.0, 0.007))
+        # Now that we have attractors, this is unnecessary
+        # if velocity.length() > 0:
+        #     velocity = velocity + (velocity.normalize() * random_range(0.0, 0.007))
+
         self.velocity = velocity
         self.limit_speed(1.0)
         self.location = self.location + self.velocity

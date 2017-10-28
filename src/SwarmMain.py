@@ -1,3 +1,5 @@
+from datetime import datetime  # temp
+
 import Swarm
 import SwarmRender
 
@@ -36,9 +38,9 @@ def main():
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
                     (Swarm.Swarm(7, cube), 1, 56),
-                    # (Swarm.Swarm(50, cube), 2, 67),
-                    # (Swarm.Swarm(4, cube), 3, 57),
-                    # (Swarm.Swarm(25, cube), 4, 24)
+                    (Swarm.Swarm(7, cube), 2, 1),
+                    (Swarm.Swarm(7, cube), 3, 26),
+                    (Swarm.Swarm(7, cube), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
@@ -67,6 +69,8 @@ def main():
     # diameter of rasterised points
     GL.glPointSize(3.0)
 
+    counter = 0
+    time = datetime.now()
     while True:
         event = pygame.event.poll()
         if event.type == pyg.QUIT or (event.type == pyg.KEYDOWN and
@@ -82,6 +86,11 @@ def main():
             pygame.time.wait(rotation_delay)
 
         renderer.update()
+
+        if counter % 100 == 0:
+            print(datetime.now() - time)
+            time = datetime.now()
+        counter += 1
 
 if __name__ == '__main__':
     main()
