@@ -10,7 +10,7 @@ TODO:
 - fiddle with values in rules
 """
 
-random.seed(72)  # for repeatability
+# random.seed(72)  # for repeatability
 
 
 def random_range(lower=0.0, upper=1.0):

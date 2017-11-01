@@ -21,9 +21,9 @@ Move points to logbook when done
 
 ## Graphics
 
-* **CHANGE FROM PYGAME TO PYGLET**
-* Change boids from lines to spheres/circles
-* Manual rotation about the focal point with mouse/arrow keys
+* Add centre of gravity model? (triangle?)
+* Change the way the camera movement works
+* Add rotation for boids
 
 
 ## Admin

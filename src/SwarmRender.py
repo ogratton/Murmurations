@@ -22,7 +22,7 @@ Contains render methods for the displayable classes
 # TODO actually change the whole camera movement controls
 
 # constants
-UPDATE_RATE = 100  # Hz
+UPDATE_RATE = 60  # Hz
 DIST_BACK = 25
 
 # colours

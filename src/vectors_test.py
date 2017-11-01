@@ -1,5 +1,7 @@
 from vectors import Vector3, Vector4, Vector5, Vector6
 from pygame.math import Vector3 as pgVect3
+from numpy import r_
+from numpy.linalg import norm
 
 # i = Vector4([1, 2, 3, 4])
 # j = Vector4([5, 4, 3, 2])
@@ -32,9 +34,17 @@ a = Vector3([1, 2, 3])
 b = Vector3([4, 5, 6])
 i = pgVect3(1, 2, 3)
 j = pgVect3(4, 5, 6)
+x = r_[1, 2, 3]
+y = r_[4, 5, 6]
 
 print(a*5)
 print(i*5)
+print(x*5)
+
+print(a+5)
+#print(i+5)  # lol no
+print(x+5)
 
 print(a.normalize())
 print(i.normalize())
+print(x/norm(x))
