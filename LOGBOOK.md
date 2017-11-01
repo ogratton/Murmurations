@@ -31,6 +31,8 @@
 ### 2017/11/03 - Week 6
 
 * Added attractors for the swarm agents
+* Changed visual code from Pygame to Pyglet
+* (Changed normal constants to prevent "overfitting" of sorts)
 
 ### 2017/11/10 - Week 7
 

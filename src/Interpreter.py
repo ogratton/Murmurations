@@ -1,5 +1,5 @@
 import Swarm
-import SwarmRender
+import PYGAMESwarmRender
 import rtmidi
 from vectors import Vector3
 import threading
@@ -106,7 +106,7 @@ def main():
                     (Swarm.Swarm(7, cube), 9, 0)
                 ]
     swarms = list(map(lambda x: x[0], swarm_data))
-    renderer = SwarmRender.Renderer(False, swarms)
+    renderer = PYGAMESwarmRender.Renderer(False, swarms)
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
