@@ -4,7 +4,6 @@ Move points to logbook when done
 
 ## Swarm
 
-* Make n-dimensional (just make my own vector class)
 * (?) Add hierarchical clustering to determing centre of mass of largest part of a swarm
 * Tweak values in rules
 * Add predators
@@ -39,3 +38,6 @@ Move points to logbook when done
 * Look at Numba & CUDA for GPU use
 	* https://developer.nvidia.com/how-to-cuda-python
 	* https://github.com/numba/numba/blob/master/examples/objects.py
+* If you can't speed up VectorN with CUDA etc., try writing it in C
+	* http://intermediate-and-advanced-software-carpentry.readthedocs.io/en/latest/c++-wrapping.html
+	* Maybe outdated: https://www.safaribooksonline.com/library/view/python-cookbook/0596001673/ch16s06.html

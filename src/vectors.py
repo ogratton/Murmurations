@@ -46,6 +46,9 @@ class VectorN(object):
         else:
             return self.cls(list(map(lambda x: x*other, self.data)))
 
+    def as_list(self):
+        return self.data
+
     def get(self, index):
         assert index < self.dims
         return self.data[index]

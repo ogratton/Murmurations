@@ -28,6 +28,7 @@ def random_vector(cls, lower=0.0, upper=1.0):
     data = [random_range(lower, upper) for _ in range(cls.n)]
     return cls(data)
 
+
 def rand_point_in_cube(cube, cls):
     """
     done with gauss for n dims rather than uniform for 3
@@ -162,7 +163,7 @@ class Separation(Rule):
     def add_adjustment(self, boid):
         if self.change.length() > 0:
             group_separation = self.change / self.num
-            self.change = (group_separation - boid.velocity) * 0.01
+            self.change = (group_separation - boid.velocity) * 0.05  # TODO experimental value
         boid.adjustment = boid.adjustment + self.change
 
 
@@ -266,15 +267,15 @@ class Boid(object):
         self.turning = (self.location.distance_to(self.cube.centre) >= self.cube.edge_length*0.80/2)
 
 
-class Attractor(object):
-    """
-    Attracts boid towards it
-    """
-    def __init__(self, location):
-        self.location = location
-
-    def set_pos(self, new_l):
-        self.location = new_l
+# class Attractor(object):
+#     """
+#     Attracts boid towards it
+#     """
+#     def __init__(self, location):
+#         self.location = location
+#
+#     def set_pos(self, new_l):
+#         self.location = new_l
 
 
 class CentOfMass(object):
