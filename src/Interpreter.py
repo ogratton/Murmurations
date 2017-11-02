@@ -1,7 +1,7 @@
 import Swarm
 import PYGAMESwarmRender
 import rtmidi
-from vectors import Vector3
+from numpy import r_
 import threading
 from time import sleep
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
@@ -67,9 +67,9 @@ def interpret(max_v, data):
     :return: the list with the functions applied to each dimension
     """
     # TODO hard-coded for 3D
-    return [interpret_dynamic(max_v, data.get(0)),
-            interpret_pitch(max_v, data.get(1)),
-            interpret_time(max_v, data.get(2))]
+    return [interpret_dynamic(max_v, data[0]),
+            interpret_pitch(max_v, data[1]),
+            interpret_time(max_v, data[2])]
 
 
 def interpret_pitch(max_v, value):
@@ -93,7 +93,7 @@ def interpret_dynamic(max_v, value):
 def main():
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = Vector3([10, -5, 7])  # cube min vertex
+    cube_min = r_[10, -5, 7]  # cube min vertex
     edge_length = 50.0
     cube = Swarm.Cube(cube_min, edge_length)
 

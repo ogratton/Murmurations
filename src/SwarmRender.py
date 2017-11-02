@@ -7,7 +7,6 @@ from pyglet.gl import gl
 from pyglet.gl import glu
 import random
 import Swarm
-from vectors import Vector3
 import os
 from copy import deepcopy
 
@@ -57,7 +56,7 @@ class World:
         self.boxes = []
         for cube in self.cubes:
             box_model = deepcopy(self.models[0])
-            box_model.x, box_model.y, box_model.z = cube.centre.as_list()[:3]  # TODO atm just take the first 3 dims
+            box_model.x, box_model.y, box_model.z = list(cube.centre)[:3]  # TODO atm just take the first 3 dims
             box_model.color = red  # doesn't matter cos not filled in
             box_model.scale = cube.edge_length/2
             self.boxes.append(box_model)
@@ -72,13 +71,13 @@ class World:
             boid_models = []
             for boid in swarm.boids:
                 boid_model = deepcopy(self.models[0])
-                boid_model.x, boid_model.y, boid_model.z = boid.location.as_list()[:3]  # TODO !!
+                boid_model.x, boid_model.y, boid_model.z = list(boid.location)[:3]  # TODO !!
                 boid_model.color = self.swarm_colours[-1]  # TODO update after dict switch
                 boid_model.scale = model_size
                 boid_models.append(boid_model)
 
             attractor_model = deepcopy(self.models[1])
-            attractor_model.x, attractor_model.y, attractor_model.z = swarm.attractor.as_list()[:3]  # TODO !!
+            attractor_model.x, attractor_model.y, attractor_model.z = list(swarm.attractor)[:3]  # TODO !!
             attractor_model.color = blue
             attractor_model.scale = model_size
             self.swarm_models.append((boid_models, attractor_model))
@@ -120,10 +119,10 @@ class World:
         for i, (boids_m, att) in enumerate(self.swarm_models):
             swarm = self.swarms[i]
             for j, boid_m in enumerate(boids_m):
-                new_loc = swarm.boids[j].location.as_list()[:3]
+                new_loc = list(swarm.boids[j].location)[:3]
                 boid_m.x, boid_m.y, boid_m.z = new_loc
                 self.render_model(boid_m, True)
-            new_att = swarm.attractor.as_list()[:3]
+            new_att = list(swarm.attractor)[:3]
             att.x, att.y, att.z = new_att
             self.render_model(att, True)
 
@@ -195,7 +194,7 @@ class World:
             # TODO put this in swarm, silly:
             # TODO temporary way of changing attractor:
             if random.random() < 0.015:
-                att = Swarm.rand_point_in_cube(swarm.cube, Vector3)
+                att = Swarm.rand_point_in_cube(swarm.cube, 3)
                 swarm.attractor = att
             swarm.update()
             # update our models with the new coords

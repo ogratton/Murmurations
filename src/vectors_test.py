@@ -48,3 +48,18 @@ print(x+5)
 print(a.normalize())
 print(i.normalize())
 print(x/norm(x))
+
+
+c = Vector5([4,6,6,7,6])
+d = Vector5([2,7,4,7,4])
+
+g = r_[4,6,6,7,6]
+h = r_[2,7,4,7,4]
+
+print(c*5)
+print(g*5)
+
+print(d.normalize())
+print(h/norm(h))
+
+print(h[0])

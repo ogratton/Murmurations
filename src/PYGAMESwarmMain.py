@@ -6,7 +6,7 @@ import PYGAMESwarmRender
 import math
 import pygame
 import pygame.locals as pyg
-from vectors import Vector3
+from numpy import r_
 import OpenGL.GL as GL
 import OpenGL.GLU as GLU
 
@@ -29,7 +29,7 @@ def main():
     rotation_delay = 0
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = Vector3([10, -5, 7])  # cube min vertex
+    cube_min = r_[10, -5, 7]  # cube min vertex
     edge_length = 50.0
 
     cube = Swarm.Cube(cube_min, edge_length)
@@ -37,8 +37,8 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube), 1, 56),
-                    (Swarm.Swarm(7, cube), 2, 1),
+                    (Swarm.Swarm(2, cube), 1, 56),
+                    (Swarm.Swarm(5, cube), 2, 1),
                     (Swarm.Swarm(7, cube), 3, 26),
                     (Swarm.Swarm(7, cube), 9, 0)
     ]
@@ -62,9 +62,9 @@ def main():
     GL.glMatrixMode(GL.GL_MODELVIEW)
     GL.glLoadIdentity()
     # look at the middle of the cube
-    cam_pos = Vector3([0.5 * edge_length, 0.5 * edge_length, cam_r])
-    GLU.gluLookAt(cam_pos.get(0), cam_pos.get(1), cam_pos.get(2),
-                  focal_point.get(0), focal_point.get(1), focal_point.get(2),
+    cam_pos = r_[0.5 * edge_length, 0.5 * edge_length, cam_r]
+    GLU.gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2],
+                  focal_point[0], focal_point[1], focal_point[2],
                   0.0, 1.0, 0.0)
     # diameter of rasterised points
     GL.glPointSize(3.0)

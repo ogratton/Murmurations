@@ -5,10 +5,8 @@ from SwarmRender import (Window)
 import pyglet
 import rtmidi
 from Interpreter import Sequencer
-from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
-                                  CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE)
 
-from vectors import Vector3
+from numpy import r_
 
 # TODO IN THE MIDDLE OF TRANSITIONING TO PYGLET SO THIS IS ALL SHIT
 
@@ -21,17 +19,17 @@ Main method for running the swarm simulation
 def main():
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = Vector3([10, 5, 7])  # cube min vertex
+    cube_min = r_[10, 5, 7]  # cube min vertex
     edge_length = 20.0
 
     cube = Swarm.Cube(cube_min, edge_length)
 
-    cube2 = Swarm.Cube(Vector3([40, -10, 17]), 30)
+    cube2 = Swarm.Cube(r_[40, -10, 17], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(20, cube), 1, 56),
+                    (Swarm.Swarm(7, cube), 1, 56),
                     (Swarm.Swarm(7, cube), 2, 1),
                     (Swarm.Swarm(7, cube2), 3, 26),
                     # (Swarm.Swarm(7, cube2), 9, 0)

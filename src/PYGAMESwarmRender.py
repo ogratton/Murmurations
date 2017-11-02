@@ -3,7 +3,9 @@ import OpenGL.GL as GL
 # TODO temp
 import random
 import Swarm
-from vectors import Vector3
+from Swarm import normalise
+from numpy import r_
+from numpy.linalg import norm
 
 """
 Render the swarm objects
@@ -129,12 +131,12 @@ class Renderer(object):
         # TODO make it cooler than just a line
         GL.glBegin(GL.GL_LINES)
         GL.glColor(colour[0], colour[1], colour[2])
-        GL.glVertex(boid.location.get(0), boid.location.get(1), boid.location.get(2))
-        if boid.velocity.length() > 0:
-            head = boid.location + boid.velocity.normalize() * 2.5
+        GL.glVertex(boid.location[0], boid.location[1], boid.location[2])
+        if norm(boid.velocity) > 0:
+            head = boid.location + normalise(boid.velocity) * 2.5
         else:
             head = boid.location
-        GL.glVertex(head.get(0), head.get(1), head.get(2))
+        GL.glVertex(head[0], head[1], head[2])
         GL.glEnd()
 
     @staticmethod
@@ -145,12 +147,12 @@ class Renderer(object):
         # TODO make it a sphere or something
         GL.glBegin(GL.GL_LINES)
         GL.glColor(0.5, 0.5, 0.5)
-        GL.glVertex(com.location.get(0), com.location.get(1), com.location.get(2))
-        if com.velocity.length() > 0:
-            head = com.location + com.velocity.normalize() * 10
+        GL.glVertex(com.location[0], com.location[1], com.location[2])
+        if norm(com.velocity) > 0:
+            head = com.location + normalise(com.velocity) * 10
         else:
             head = com.location
-        GL.glVertex(head.get(0), head.get(1), head.get(2))
+        GL.glVertex(head[0], head[1], head[2])
         GL.glEnd()
 
     def render_swarm(self, swarm, i):
@@ -176,6 +178,6 @@ class Renderer(object):
         for swarm in self.swarms:
             # TODO temporary way of changing attractor:
             if random.random() < 0.009:
-                att = Swarm.rand_point_in_cube(swarm.cube, Vector3)
+                att = Swarm.rand_point_in_cube(swarm.cube, 3)
                 swarm.attractor = att
             swarm.update()
