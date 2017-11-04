@@ -16,13 +16,17 @@ Interpret each boid as a musical note
 
 # CONSTANTS
 
-pitch_range = 25    # 88   - 88 keys on a piano, so seems suitable
-pitch_min = 50      # 21   - A0
-time_range = 0.75      # 1    - range in time between events
+pitch_range = 50    # 88   - 88 keys on a piano, so seems suitable
+pitch_min = 30      # 21   - A0
+time_range = 0.15   # 1    - range in time between events
 time_min = 0.05     # 0.05 - min time between events
 dynam_max = 127     # 127  - max dynamic
-dynam_min = 25      # 0    - min dynamic TODO this is just silence, so maybe higher
+dynam_min = 25      # 0    - min dynamic
 dynam_range = dynam_max - dynam_min
+
+dynam_axis = 0
+pitch_axis = 1
+time_axis = 2
 
 
 class ChordSequencer(threading.Thread):
@@ -47,26 +51,37 @@ class ChordSequencer(threading.Thread):
         # give MIDI instrument some time to activate instrument
         sleep(0.3)
 
-        # TODO deal with negative values for when the boids get excited
+        time_elapsed = 0.0
+        time_step = 0.1
+        boid_heap = []
+
+        # set up the heap with an element for each boid
+        for i, boid in enumerate(self.swarm.boids):
+            data = interpret(self.swarm.cube.edge_length, boid.location) + [i]
+            heappush(boid_heap, (time_elapsed + data[time_axis], data))
 
         while not self.done:
-            boid_locs = (boid.location for boid in self.swarm.boids)
-            data_heap = []
-            for loc in boid_locs:
-                data = interpret(self.swarm.cube.edge_length, loc)
-                heappush(data_heap, (data[2], data[1]))
-                self.midiout.send_message([NOTE_ON | self.channel, data[1], data[0] & 127])
 
-            # TODO the problem with this is that all the boids wait for the last to finish before the next event
+            # print(time_elapsed)
 
-            time_elapsed = 0.0
-            time_step = 0.01
-            while data_heap:
-                sleep(time_step)
-                time_elapsed += time_step
-                if data_heap[0][0] <= time_elapsed:
-                    data = heappop(data_heap)
-                    self.midiout.send_message([NOTE_ON | self.channel, data[1], 0])
+            # stop the notes that have ended and load the next ones
+            while boid_heap[0][0] <= time_elapsed:
+                data = heappop(boid_heap)[1]
+                self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], 0])
+                boid_index = data[-1]
+                next_data = interpret(self.swarm.cube.edge_length, self.swarm.boids[boid_index].location) + [boid_index]
+                # play the new note
+                self.midiout.send_message([NOTE_ON | self.channel, next_data[pitch_axis], data[dynam_axis] & 127])
+                # add to the heap so it can be turned off when it's done
+                heappush(boid_heap, (time_elapsed + next_data[time_axis], next_data))
+
+            # finally, enforce time step
+            sleep(time_step)
+            time_elapsed += time_step
+
+            # print(boid_heap)
+
+            # assert len(boid_heap) == len(self.swarm.boids)
 
         self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
 

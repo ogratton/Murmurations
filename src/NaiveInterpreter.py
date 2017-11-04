@@ -17,7 +17,7 @@ Each c.o.m represents one musical line
 
 pitch_range = 88    # 88   - 88 keys on a piano, so seems suitable
 pitch_min = 21      # 21   - A0
-time_range = 1      # 1    - range in time between events
+time_range = 0.25      # 1    - range in time between events
 time_min = 0.05     # 0.05 - min time between events
 dynam_max = 127     # 127  - max dynamic
 dynam_min = 25      # 0    - min dynamic TODO this is just silence, so maybe higher
