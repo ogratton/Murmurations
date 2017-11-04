@@ -191,13 +191,7 @@ class World:
         # print(dt)
 
         for swarm in self.swarms:
-            # TODO put this in swarm, silly:
-            # TODO temporary way of changing attractor:
-            if random.random() < 0.015:
-                att = Swarm.rand_point_in_cube(swarm.cube, 3)
-                swarm.attractor = att
             swarm.update()
-            # update our models with the new coords
 
 
 class OBJModel:

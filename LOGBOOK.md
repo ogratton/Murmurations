@@ -35,8 +35,7 @@
 	* Boids are now cubes, and attractors spheres, rather than lines
 	* User can now move camera around in 3D space and snap to objects
 * (Changed normal constants to prevent "overfitting" of sorts)
-* Visual sim is laggy if I use the monkey head instead of cube for boid model
-	* Probably not a problem and may be better once using faster vector class(?)
+* Converted to numpy's r_ vector class, which doesn't seem that much faster than my own...
 
 ### 2017/11/10 - Week 7
 

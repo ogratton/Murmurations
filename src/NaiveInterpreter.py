@@ -11,34 +11,34 @@ from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
 """
 Interpret the centre of mass of swarms as parameters for music
 Each c.o.m represents one musical line
-Needs to "listen" to a SwarmRender.Renderer to get c.o.m
 """
 
 # CONSTANTS
 
-pitch_range = 88    # 88 keys on a piano, so seems suitable
-pitch_min = 21      # A0
-time_range = 1      # range in time between events
-time_min = 0.05     # min time between events
-dynam_range = 127   # range of dynamics
-dynam_min = 0       # min dynamic TODO this is just silence, so maybe higher
+pitch_range = 88    # 88   - 88 keys on a piano, so seems suitable
+pitch_min = 21      # 21   - A0
+time_range = 1      # 1    - range in time between events
+time_min = 0.05     # 0.05 - min time between events
+dynam_max = 127     # 127  - max dynamic
+dynam_min = 25      # 0    - min dynamic TODO this is just silence, so maybe higher
+dynam_range = dynam_max - dynam_min
 
 
-class Sequencer(threading.Thread):
+class NaiveSequencer(threading.Thread):
     """MIDI output thread."""
 
     def __init__(self, name, midiout, swarm_data, volume=127):
-        super(Sequencer, self).__init__()
+        super(NaiveSequencer, self).__init__()
         self.name = name  # TODO
         self.midiout = midiout
         self.swarm = swarm_data[0]
         self.channel = swarm_data[1]
         self.instrument = swarm_data[2]
         self.volume = volume
+        self.done = False
         self.start()
 
     def run(self):
-        self.done = False
         self.activate_instrument(self.instrument)
         cc = CONTROL_CHANGE | self.channel
         self.midiout.send_message([cc, CHANNEL_VOLUME, self.volume & 0x7F])
@@ -46,10 +46,12 @@ class Sequencer(threading.Thread):
         # give MIDI instrument some time to activate instrument
         sleep(0.3)
 
+        # TODO deal with negative values for when the boids get excited
+
         while not self.done:
             data = interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
             self.midiout.send_message([NOTE_ON | self.channel, data[1], data[0] & 127])
-            sleep(data[2])
+            sleep(max(time_min, data[2]))
             self.midiout.send_message([NOTE_ON | self.channel, data[1], 0])
 
         self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
@@ -110,10 +112,10 @@ def main():
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [Sequencer('1', midiout, swarm_data[0]),
-            Sequencer('2', midiout, swarm_data[1]),
-            Sequencer('3', midiout, swarm_data[2]),
-            Sequencer('4', midiout, swarm_data[3])]
+    seqs = [NaiveSequencer('1', midiout, swarm_data[0]),
+            NaiveSequencer('2', midiout, swarm_data[1]),
+            NaiveSequencer('3', midiout, swarm_data[2]),
+            NaiveSequencer('4', midiout, swarm_data[3])]
 
     print("Playing random shit. Press Control-C to quit.")
 

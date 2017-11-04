@@ -4,9 +4,9 @@ Move points to logbook when done
 
 ## Swarm
 
-* (?) Add hierarchical clustering to determing centre of mass of largest part of a swarm
 * Tweak values in rules
 * Add predators
+* Think how swarms can interact with one another
 
 
 ## Music
@@ -23,7 +23,8 @@ Move points to logbook when done
 
 * Add centre of gravity model? (triangle?)
 * Change the way the camera movement works
-* Add rotation for boids
+* Add rotation for boids (match velocity)
+* Add GUI to add swarms and tweak settings on the fly
 
 
 ## Admin
@@ -34,7 +35,6 @@ Move points to logbook when done
 
 ## Misc
 
-* Tidy up SwarmMain.py cos it is horrible
 * Look at Numba & CUDA for GPU use
 	* https://developer.nvidia.com/how-to-cuda-python
 	* https://github.com/numba/numba/blob/master/examples/objects.py
