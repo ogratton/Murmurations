@@ -6,6 +6,7 @@ import threading
 from time import sleep
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
+from parameters import IP
 
 
 """
@@ -14,14 +15,7 @@ Each c.o.m represents one musical line
 """
 
 # CONSTANTS
-
-pitch_range = 88    # 88   - 88 keys on a piano, so seems suitable
-pitch_min = 21      # 21   - A0
-time_range = 0.25      # 1    - range in time between events
-time_min = 0.05     # 0.05 - min time between events
-dynam_max = 127     # 127  - max dynamic
-dynam_min = 25      # 0    - min dynamic TODO this is just silence, so maybe higher
-dynam_range = dynam_max - dynam_min
+DYNAM_RANGE = IP.DYNAM_MAX - IP.DYNAM_MIN
 
 
 class NaiveSequencer(threading.Thread):
@@ -46,12 +40,10 @@ class NaiveSequencer(threading.Thread):
         # give MIDI instrument some time to activate instrument
         sleep(0.3)
 
-        # TODO deal with negative values for when the boids get excited
-
         while not self.done:
             data = interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
             self.midiout.send_message([NOTE_ON | self.channel, data[1], data[0] & 127])
-            sleep(max(time_min, data[2]))
+            sleep(max(IP.TIME_MIN, data[2]))
             self.midiout.send_message([NOTE_ON | self.channel, data[1], 0])
 
         self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
@@ -81,15 +73,15 @@ def interpret_pitch(max_v, value):
     :param value: float, distance along the axis associated with pitch
     :return: int from 21-108 to stay within piano range
     """
-    return int((value / max_v) * pitch_range + pitch_min)
+    return int((value / max_v) * IP.PITCH_RANGE + IP.PITCH_MIN)
 
 
 def interpret_time(max_v, value):
-    return (value/max_v) * time_range + time_min
+    return (value/max_v) * IP.TIME_RANGE + IP.TIME_MIN
 
 
 def interpret_dynamic(max_v, value):
-    return int((value/max_v) * dynam_range + dynam_min)
+    return int((value/max_v) * DYNAM_RANGE + IP.DYNAM_MIN)
 
 
 def main():

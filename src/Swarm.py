@@ -4,29 +4,16 @@
 import random
 from numpy import r_
 from numpy.linalg import norm
-
+from parameters import SP
 """
 TODO:
 - add attractors
 - fiddle with values in rules
 """
 
-random.seed(72)  # for repeatability
-
-# PARAMS FOR TWEAKING
-IS_FLOCK = False  # flock or swarm
-MAX_SPEED = 0.3
-RAND_POINT_SD = 7.5                 # 7.5
-COHESION_NEIGHBOURHOOD = 0.5        # NEIGHBOURHOOD is ratio of edgelength (so 0.5 is from half the cube away)
-ALIGNMENT_NEIGHBOURHOOD = 0.5
-SEPARATION_NEIGHBOURHOOD = 0.1
-COHESION_MULTIPLIER = 0.0006        # 0.0006
-ALIGNMENT_MULTIPLIER = 0.03         # 0.03
-SEPARATION_MULTIPLIER = 0.09        # 0.05 - seems to be a sweet spot (TODO find out why)
-ATTRACTION_MULTIPLIER = 0.005       # 0.005 - larger means more clumping
-CONSTRAINT_MULTIPLIER = 0.001       # 0.001
-TURNING_RATIO = 0.80                # 0.80 - turning if boid is <this>*radius of bounding 'sphere' away from centre
-RAND_ATTRACTOR_CHANGE = 0.035        # 0.05
+# TODO when does this code actually get run (out of interest)?
+if SP.RANDOM_SEED != -1:
+    random.seed(SP.RANDOM_SEED)  # for repeatability
 
 
 def random_range(lower=0.0, upper=1.0):
@@ -55,7 +42,7 @@ def rand_point_in_cube(cube, dims):
     :return:
     """
     edge = cube.edge_length
-    sd = edge/RAND_POINT_SD
+    sd = edge/SP.RAND_POINT_SD
 
     points = []
 
@@ -140,7 +127,7 @@ class Cohesion(Rule):
 
     def __init__(self):
         super().__init__()
-        self.neighbourhood = COHESION_NEIGHBOURHOOD
+        self.neighbourhood = SP.COHESION_NEIGHBOURHOOD
 
     def accumulate(self, boid, other, distance):
         if other != boid:
@@ -151,7 +138,7 @@ class Cohesion(Rule):
         if self.num > 0:
             centroid = self.change / self.num
             desired = centroid - boid.location
-            self.change = (desired - boid.velocity) * COHESION_MULTIPLIER
+            self.change = (desired - boid.velocity) * SP.COHESION_MULTIPLIER
         boid.adjustment = boid.adjustment + self.change
 
 
@@ -160,7 +147,7 @@ class Alignment(Rule):
 
     def __init__(self):
         super().__init__()
-        self.neighbourhood = ALIGNMENT_NEIGHBOURHOOD  # operating area for this correction
+        self.neighbourhood = SP.ALIGNMENT_NEIGHBOURHOOD  # operating area for this correction
 
     def accumulate(self, boid, other, distance):
         if other != boid:
@@ -170,7 +157,7 @@ class Alignment(Rule):
     def add_adjustment(self, boid):
         if self.num > 0:
             group_velocity = self.change / self.num
-            self.change = (group_velocity - boid.velocity) * ALIGNMENT_MULTIPLIER
+            self.change = (group_velocity - boid.velocity) * SP.ALIGNMENT_MULTIPLIER
         boid.adjustment = boid.adjustment + self.change
 
 
@@ -179,7 +166,7 @@ class Separation(Rule):
 
     def __init__(self):
         super().__init__()
-        self.neighbourhood = SEPARATION_NEIGHBOURHOOD
+        self.neighbourhood = SP.SEPARATION_NEIGHBOURHOOD
 
     def accumulate(self, boid, other, distance):
         if other != boid:
@@ -192,7 +179,7 @@ class Separation(Rule):
         # here norm is vector magnitude
         if norm(self.change) > 0:
             group_separation = self.change / self.num
-            self.change = (group_separation - boid.velocity) * SEPARATION_MULTIPLIER
+            self.change = (group_separation - boid.velocity) * SP.SEPARATION_MULTIPLIER
         boid.adjustment = boid.adjustment + self.change
 
 
@@ -202,7 +189,7 @@ class Attraction:
     @staticmethod
     def add_adjustment(boid):
         to_attractor = boid.attractor - boid.location
-        change = to_attractor * ATTRACTION_MULTIPLIER
+        change = to_attractor * SP.ATTRACTION_MULTIPLIER
         boid.adjustment = boid.adjustment + change
 
 
@@ -214,7 +201,7 @@ class Constraint:
         change = r_[0., 0., 0.]
         if boid.turning:
             direction = boid.cube.centre - boid.location
-            change = direction * CONSTRAINT_MULTIPLIER
+            change = direction * SP.CONSTRAINT_MULTIPLIER
         boid.adjustment = boid.adjustment + change
 
 
@@ -251,7 +238,7 @@ class Boid(object):
         """
         # Apply the rules to each of the boids
         # TODO flocks use alignment, swarms do not
-        flock = IS_FLOCK
+        flock = SP.IS_FLOCK
         rules = [Cohesion(), Separation()]
         if flock:
             rules.append(Alignment())
@@ -289,11 +276,11 @@ class Boid(object):
         #     velocity = velocity + (normalise(velocity) * random_range(0.0, 0.007))
 
         self.velocity = velocity
-        self.limit_speed(MAX_SPEED)
+        self.limit_speed(SP.MAX_SPEED)
         self.location = self.location + self.velocity
         # bool to keep the boid in the box (technically this describes a sphere)
         # TODO experimental values
-        self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*TURNING_RATIO/2)
+        self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
 
 
 # class Attractor(object):
@@ -383,7 +370,7 @@ class Swarm(object):
             v_acc = v_acc + boid.velocity
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
         # TODO temporary way of changing attractor:
-        if random.random() < RAND_ATTRACTOR_CHANGE:
+        if random.random() < SP.RAND_ATTRACTOR_CHANGE:
             att = rand_point_in_cube(self.cube, 3)
             self.attractor = att
 

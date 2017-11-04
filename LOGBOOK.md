@@ -39,7 +39,9 @@
 
 ### 2017/11/10 - Week 7
 
-*
+* Added ChordInterpreter which treats each boid as a note
+* Made .ini file to allow for easier tweaking of variables
+
 
 ### 2017/11/17 - Week 8
 

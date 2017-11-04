@@ -7,6 +7,7 @@ import threading
 from time import sleep
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
+from parameters import IP
 
 # TODO merge this with Naive with a nice abstract class or something - they needn't be separate
 
@@ -15,14 +16,7 @@ Interpret each boid as a musical note
 """
 
 # CONSTANTS
-
-pitch_range = 40    # 88   - 88 keys on a piano, so seems suitable
-pitch_min = 30      # 21   - A0
-time_range = 1.5   # 1    - range in time between events
-time_min = 0.5     # 0.05 - min time between events
-dynam_max = 127     # 127  - max dynamic
-dynam_min = 25      # 0    - min dynamic
-dynam_range = dynam_max - dynam_min
+DYNAM_RANGE = IP.DYNAM_MAX - IP.DYNAM_MIN
 
 dynam_axis = 0
 pitch_axis = 1
@@ -110,15 +104,15 @@ def interpret_pitch(max_v, value):
     :param value: float, distance along the axis associated with pitch
     :return: int from 21-108 to stay within piano range
     """
-    return int((value / max_v) * pitch_range + pitch_min)
+    return int((value / max_v) * IP.PITCH_RANGE + IP.PITCH_MIN)
 
 
 def interpret_time(max_v, value):
-    return (value/max_v) * time_range + time_min
+    return (value/max_v) * IP.TIME_RANGE + IP.TIME_MIN
 
 
 def interpret_dynamic(max_v, value):
-    return int((value/max_v) * dynam_range + dynam_min)
+    return int((value/max_v) * DYNAM_RANGE + IP.DYNAM_MIN)
 
 
 def main():
@@ -141,10 +135,10 @@ def main():
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [NaiveSequencer('1', midiout, swarm_data[0]),
-            NaiveSequencer('2', midiout, swarm_data[1]),
-            NaiveSequencer('3', midiout, swarm_data[2]),
-            NaiveSequencer('4', midiout, swarm_data[3])]
+    seqs = [ChordSequencer('1', midiout, swarm_data[0]),
+            ChordSequencer('2', midiout, swarm_data[1]),
+            ChordSequencer('3', midiout, swarm_data[2]),
+            ChordSequencer('4', midiout, swarm_data[3])]
 
     print("Playing random shit. Press Control-C to quit.")
 

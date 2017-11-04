@@ -7,6 +7,9 @@ import rtmidi
 from NaiveInterpreter import NaiveSequencer
 from ChordInterpreter import ChordSequencer
 
+import configparser
+import parameters
+
 from numpy import r_
 
 # TODO IN THE MIDDLE OF TRANSITIONING TO PYGLET SO THIS IS ALL SHIT
@@ -17,7 +20,40 @@ Main method for running the swarm simulation
 """
 
 
+def load_config():
+    config = configparser.ConfigParser()
+    # TODO error catching
+    config.read('config.ini')
+
+    parameters.DP.UPDATE_RATE = int(config['DEFAULT']['UPDATE_RATE'])
+
+    parameters.IP.PITCH_RANGE = int(config['INTERPRETER']['PITCH_RANGE'])
+    parameters.IP.PITCH_MIN = int(config['INTERPRETER']['PITCH_MIN'])
+    parameters.IP.TIME_RANGE = float(config['INTERPRETER']['TIME_RANGE'])
+    parameters.IP.TIME_MIN = float(config['INTERPRETER']['TIME_MIN'])
+    parameters.IP.DYNAM_MAX = int(config['INTERPRETER']['DYNAM_MAX'])
+    parameters.IP.DYNAM_MIN = int(config['INTERPRETER']['DYNAM_MIN'])
+
+    parameters.SP.RANDOM_SEED = int(config['SWARM']['RANDOM_SEED'])
+    parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])  # TODO bool
+    parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
+    parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
+    parameters.SP.COHESION_NEIGHBOURHOOD = float(config['SWARM']['COHESION_NEIGHBOURHOOD'])
+    parameters.SP.ALIGNMENT_NEIGHBOURHOOD = float(config['SWARM']['ALIGNMENT_NEIGHBOURHOOD'])
+    parameters.SP.SEPARATION_NEIGHBOURHOOD = float(config['SWARM']['SEPARATION_NEIGHBOURHOOD'])
+    parameters.SP.COHESION_MULTIPLIER = float(config['SWARM']['COHESION_MULTIPLIER'])
+    parameters.SP.ALIGNMENT_MULTIPLIER = float(config['SWARM']['ALIGNMENT_MULTIPLIER'])
+    parameters.SP.SEPARATION_MULTIPLIER = float(config['SWARM']['SEPARATION_MULTIPLIER'])
+    parameters.SP.ATTRACTION_MULTIPLIER = float(config['SWARM']['ATTRACTION_MULTIPLIER'])
+    parameters.SP.CONSTRAINT_MULTIPLIER = float(config['SWARM']['CONSTRAINT_MULTIPLIER'])
+    parameters.SP.TURNING_RATIO = float(config['SWARM']['TURNING_RATIO'])
+    parameters.SP.RAND_ATTRACTOR_CHANGE = float(config['SWARM']['RAND_ATTRACTOR_CHANGE'])
+
+
 def main():
+
+    # LOAD PARAMS FROM CONFIG
+    load_config()
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 5, 7]  # cube min vertex
@@ -31,7 +67,7 @@ def main():
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
                     # (Swarm.Swarm(7, cube), 1, 56),
-                    (Swarm.Swarm(7, cube), 2, 88),
+                    (Swarm.Swarm(2, cube), 2, 88),
                     # (Swarm.Swarm(7, cube2), 3, 26),
                     # (Swarm.Swarm(7, cube2), 9, 0)
     ]

@@ -6,10 +6,9 @@ import pyglet
 from pyglet.gl import gl
 from pyglet.gl import glu
 import random
-import Swarm
 import os
 from copy import deepcopy
-
+from parameters import DP
 
 """
 Render the swarm objects
@@ -21,7 +20,6 @@ Contains render methods for the displayable classes
 # TODO actually change the whole camera movement controls
 
 # constants
-UPDATE_RATE = 60  # Hz
 DIST_BACK = 25
 
 # colours
@@ -335,4 +333,4 @@ class Window(pyglet.window.Window):
             self.world.cy = self.world.boxes[self.cube_index].y
             self.world.cz = self.world.boxes[self.cube_index].z
 
-        pyglet.clock.schedule_interval(update, 1/UPDATE_RATE)
+        pyglet.clock.schedule_interval(update, 1/DP.UPDATE_RATE)

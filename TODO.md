@@ -6,7 +6,7 @@ Move points to logbook when done
 
 * Tweak values in rules
 * Add predators
-* Think how swarms can interact with one another
+* Think about how swarms can interact with one another
 
 
 ## Music
@@ -15,7 +15,7 @@ Move points to logbook when done
 	* 'let ring'
 * Quantize time axis, but maybe with some gaussian noise for human-like sloppiness
 * Custom interpretation types for different instruments (restrict pitch to its range)
-* Snap-to-scale pitch
+* Snap-to-scale/mode pitch
 * Dynamics need to change less regularly (but still have the ability for subitos)
 * Allow for silence/rests (this should come with the note duration dimension)
 
@@ -41,3 +41,4 @@ Move points to logbook when done
 * If you can't speed up VectorN with CUDA etc., try writing it in C
 	* http://intermediate-and-advanced-software-carpentry.readthedocs.io/en/latest/c++-wrapping.html
 	* Maybe outdated: https://www.safaribooksonline.com/library/view/python-cookbook/0596001673/ch16s06.html
+* Error catching now we have a config file
