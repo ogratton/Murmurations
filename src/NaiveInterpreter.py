@@ -5,7 +5,7 @@ from numpy import r_
 import threading
 from time import sleep
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
-                                  CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE)
+                                  CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
 
 
 """

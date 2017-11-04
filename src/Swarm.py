@@ -15,14 +15,15 @@ random.seed(72)  # for repeatability
 
 # PARAMS FOR TWEAKING
 IS_FLOCK = False  # flock or swarm
+MAX_SPEED = 0.3
 RAND_POINT_SD = 7.5                 # 7.5
 COHESION_NEIGHBOURHOOD = 0.5        # NEIGHBOURHOOD is ratio of edgelength (so 0.5 is from half the cube away)
 ALIGNMENT_NEIGHBOURHOOD = 0.5
 SEPARATION_NEIGHBOURHOOD = 0.1
 COHESION_MULTIPLIER = 0.0006        # 0.0006
 ALIGNMENT_MULTIPLIER = 0.03         # 0.03
-SEPARATION_MULTIPLIER = 0.05        # 0.05
-ATTRACTION_MULTIPLIER = 0.005       # 0.005
+SEPARATION_MULTIPLIER = 0.09        # 0.05 - seems to be a sweet spot (TODO find out why)
+ATTRACTION_MULTIPLIER = 0.005       # 0.005 - larger means more clumping
 CONSTRAINT_MULTIPLIER = 0.001       # 0.001
 TURNING_RATIO = 0.80                # 0.80 - turning if boid is <this>*radius of bounding 'sphere' away from centre
 RAND_ATTRACTOR_CHANGE = 0.035        # 0.05
@@ -288,7 +289,7 @@ class Boid(object):
         #     velocity = velocity + (normalise(velocity) * random_range(0.0, 0.007))
 
         self.velocity = velocity
-        self.limit_speed(1.0)
+        self.limit_speed(MAX_SPEED)
         self.location = self.location + self.velocity
         # bool to keep the boid in the box (technically this describes a sphere)
         # TODO experimental values

@@ -6,7 +6,7 @@ from numpy import r_
 import threading
 from time import sleep
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
-                                  CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE)
+                                  CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
 
 # TODO merge this with Naive with a nice abstract class or something - they needn't be separate
 
@@ -16,10 +16,10 @@ Interpret each boid as a musical note
 
 # CONSTANTS
 
-pitch_range = 50    # 88   - 88 keys on a piano, so seems suitable
+pitch_range = 40    # 88   - 88 keys on a piano, so seems suitable
 pitch_min = 30      # 21   - A0
-time_range = 0.15   # 1    - range in time between events
-time_min = 0.05     # 0.05 - min time between events
+time_range = 1.5   # 1    - range in time between events
+time_min = 0.5     # 0.05 - min time between events
 dynam_max = 127     # 127  - max dynamic
 dynam_min = 25      # 0    - min dynamic
 dynam_range = dynam_max - dynam_min
