@@ -20,7 +20,7 @@ Contains render methods for the displayable classes
 # TODO actually change the whole camera movement controls
 
 # constants
-DIST_BACK = 25
+DIST_BACK = 50
 
 # colours
 dark_gray = (.75, .75, .75, 1)

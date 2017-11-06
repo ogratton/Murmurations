@@ -60,21 +60,20 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    # TODO ChordSeq is affected by where the cube is
     cube_min = r_[10, 50, 7]  # cube min vertex
     edge_length = 20.0
 
     cube = Swarm.Cube(cube_min, edge_length)
 
-    # cube2 = Swarm.Cube(r_[40, -10, 17], 30)
+    cube2 = Swarm.Cube(r_[40, -10, 17], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
                     (Swarm.Swarm(7, cube), 1, 56),
                     (Swarm.Swarm(7, cube), 2, 88),
-                    # (Swarm.Swarm(7, cube2), 3, 26),
-                    # (Swarm.Swarm(7, cube2), 9, 0)
+                    (Swarm.Swarm(7, cube2), 3, 26),
+                    (Swarm.Swarm(7, cube2), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
