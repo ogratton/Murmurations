@@ -1,14 +1,10 @@
-import pyglet
-import threading
 import Swarm
 import SwarmMain
 import rtmidi
 from numpy import r_
-from NaiveInterpreter import NaiveSequencer
-from ChordInterpreter import ChordSequencer
+from Interpreter import *
 
 # launch the program without the display
-# TODO ok so currently i'm making it do precisely the opposite but gimme a mo
 
 
 class Manager:
@@ -56,23 +52,24 @@ class Runner(threading.Thread):
         while not self.done:
             self.manager.update()
 
+
 def main():
 
     SwarmMain.load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[10, -5, 7]  # cube min vertex
-    edge_length = 50.0
+    cube_min = r_[10, 5, 7]  # cube min vertex
+    edge_length = 20.0
     cube = Swarm.Cube(cube_min, edge_length)
 
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
                     (Swarm.Swarm(7, cube), 1, 56),
-                    (Swarm.Swarm(7, cube), 2, 1),
-                    # (Swarm.Swarm(7, cube), 3, 26),
-                    # (Swarm.Swarm(7, cube), 9, 0)
-                ]
+                    (Swarm.Swarm(7, cube), 2, 88),
+                    # (Swarm.Swarm(7, cube2), 3, 26),
+                    # (Swarm.Swarm(7, cube2), 9, 0)
+    ]
     swarms = list(map(lambda x: x[0], swarm_data))
     manager = Manager(swarms)
 

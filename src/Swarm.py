@@ -262,6 +262,12 @@ class Boid(object):
         if norm(self.velocity) > max_speed:
             self.velocity = normalise(self.velocity) * max_speed
 
+    def get_location(self):
+        """
+        :return: position relative to cube (with v_min as origin)
+        """
+        return self.location - self.cube.v_min
+
     def update(self):
         """
         Move to new position using calculated velocity
@@ -373,7 +379,9 @@ class Swarm(object):
 
     def get_COM(self):
         """
-        :return: the centre of mass of the swarm relative, but treating v_min as the origin
+        WARNING: MUST USE com.get_location()
+        :return: the centre of mass of the swarm
         """
+        # TODO make this foolproof
         com = self.c_o_m
         return com

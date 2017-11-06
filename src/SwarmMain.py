@@ -2,8 +2,7 @@ import Swarm
 from SwarmRender import Window
 import pyglet
 import rtmidi
-from NaiveInterpreter import NaiveSequencer
-from ChordInterpreter import ChordSequencer
+from Interpreter import *
 
 import configparser
 import parameters
@@ -61,12 +60,13 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[10, 5, 7]  # cube min vertex
+    # TODO ChordSeq is affected by where the cube is
+    cube_min = r_[10, 50, 7]  # cube min vertex
     edge_length = 20.0
 
     cube = Swarm.Cube(cube_min, edge_length)
 
-    cube2 = Swarm.Cube(r_[40, -10, 17], 30)
+    # cube2 = Swarm.Cube(r_[40, -10, 17], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
