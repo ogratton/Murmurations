@@ -11,7 +11,9 @@ TODO:
 - fiddle with values in rules
 """
 
-random.seed(SP.RANDOM_SEED)  # for repeatability
+# TODO when does this code actually get run (out of interest)?
+if SP.RANDOM_SEED != -1:
+    random.seed(SP.RANDOM_SEED)  # for repeatability
 
 
 def random_range(lower=0.0, upper=1.0):
@@ -235,7 +237,7 @@ class Boid(object):
         Calculate velocity for next tick by applying the three basic swarming rules
         """
         # Apply the rules to each of the boids
-        # flocks use alignment, swarms do not
+        # TODO flocks use alignment, swarms do not
         flock = SP.IS_FLOCK
         rules = [Cohesion(), Separation()]
         if flock:
@@ -277,6 +279,7 @@ class Boid(object):
         self.limit_speed(SP.MAX_SPEED)
         self.location = self.location + self.velocity
         # bool to keep the boid in the box (technically this describes a sphere)
+        # TODO experimental values
         self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
 
 

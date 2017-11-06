@@ -8,7 +8,7 @@ from pyglet.gl import glu
 import random
 import os
 from copy import deepcopy
-from parameters import (DP, SP)
+from parameters import DP
 
 """
 Render the swarm objects
@@ -30,7 +30,6 @@ green     = (0.0, 1.0, 0.0, 1)
 blue      = (0.0, 0.0, 1.0, 1)
 sky       = (0.5, 0.7, 1.0, 1)
 
-random.seed(SP.RANDOM_SEED)  # for repeatability
 
 def rand_colour():
     return random.random(), random.random(), random.random(), 1

@@ -1,15 +1,18 @@
+from datetime import datetime  # temp
+
 import Swarm
 from SwarmRender import (Window)
 import pyglet
 import rtmidi
-from Interpreter import (NaiveSequencer, ChordSequencer)
+from NaiveInterpreter import NaiveSequencer
+from ChordInterpreter import ChordSequencer
 
 import configparser
 import parameters
-import random
-import sys
 
 from numpy import r_
+
+# TODO IN THE MIDDLE OF TRANSITIONING TO PYGLET SO THIS IS ALL SHIT
 
 """
 Main method for running the swarm simulation
@@ -30,15 +33,8 @@ def load_config():
     parameters.IP.TIME_MIN = float(config['INTERPRETER']['TIME_MIN'])
     parameters.IP.DYNAM_MAX = int(config['INTERPRETER']['DYNAM_MAX'])
     parameters.IP.DYNAM_MIN = int(config['INTERPRETER']['DYNAM_MIN'])
-    parameters.IP.CHANNEL_VOL = int(config['INTERPRETER']['CHANNEL_VOL'])
 
-    rs = int(config['SWARM']['RANDOM_SEED'])
-    if rs != -1:
-        parameters.SP.RANDOM_SEED = rs
-    else:
-        seed = random.randrange(sys.maxsize)  # TODO always gives me 5249979066121302517...
-        print("Using seed " + str(seed))
-        parameters.SP.RANDOM_SEED = seed
+    parameters.SP.RANDOM_SEED = int(config['SWARM']['RANDOM_SEED'])
     parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])  # TODO bool
     parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
     parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
@@ -60,7 +56,7 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[-10, -5, -7]  # cube min vertex
+    cube_min = r_[10, 5, 7]  # cube min vertex
     edge_length = 20.0
 
     cube = Swarm.Cube(cube_min, edge_length)
@@ -71,15 +67,15 @@ def main():
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
                     # (Swarm.Swarm(7, cube), 1, 56),
-                    (Swarm.Swarm(7, cube), 2, 88),
-                    (Swarm.Swarm(7, cube2), 3, 26),
+                    (Swarm.Swarm(2, cube), 2, 88),
+                    # (Swarm.Swarm(7, cube2), 3, 26),
                     # (Swarm.Swarm(7, cube2), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
