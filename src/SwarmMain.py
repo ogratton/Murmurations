@@ -2,8 +2,7 @@ import Swarm
 from SwarmRender import (Window)
 import pyglet
 import rtmidi
-from NaiveInterpreter import NaiveSequencer
-from ChordInterpreter import ChordSequencer
+from Interpreter import (NaiveSequencer, ChordSequencer)
 
 import configparser
 import parameters
