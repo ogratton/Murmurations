@@ -21,7 +21,7 @@ DYNAM_RANGE = IP.DYNAM_MAX - IP.DYNAM_MIN
 class NaiveSequencer(threading.Thread):
     """MIDI output thread."""
 
-    def __init__(self, name, midiout, swarm_data, volume=127):
+    def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
         super(NaiveSequencer, self).__init__()
         self.name = name  # TODO
         self.midiout = midiout
@@ -49,7 +49,7 @@ class NaiveSequencer(threading.Thread):
         self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
 
     def activate_instrument(self, instrument):
-        # (drums are one channel 9)
+        # (drums are on channel 9)
         if self.channel != 9:
             self.midiout.send_message([PROGRAM_CHANGE | self.channel, instrument & 0x7F])
 

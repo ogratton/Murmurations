@@ -26,7 +26,7 @@ time_axis = 2
 class ChordSequencer(threading.Thread):
     """MIDI output thread."""
 
-    def __init__(self, name, midiout, swarm_data, volume=127):
+    def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
         super(ChordSequencer, self).__init__()
         self.name = name  # TODO
         self.midiout = midiout
@@ -43,10 +43,10 @@ class ChordSequencer(threading.Thread):
         self.midiout.send_message([cc, CHANNEL_VOLUME, self.volume & 0x7F])
 
         # give MIDI instrument some time to activate instrument
-        sleep(0.3)
+        sleep(0.1)
 
         time_elapsed = 0.0
-        time_step = 0.1
+        time_step = 0.05
         boid_heap = []
 
         # set up the heap with an element for each boid

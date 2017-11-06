@@ -42,3 +42,4 @@ class IP:
     TIME_MIN = 0.05     # 0.05 - min time between events
     DYNAM_MAX = 127     # 127  - max dynamic
     DYNAM_MIN = 25      # 0    - min dynamic
+    CHANNEL_VOL = 110   # max 127
