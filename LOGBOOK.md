@@ -41,6 +41,9 @@
 
 * Added ChordInterpreter which treats each boid as a note
 * Made .ini file to allow for easier tweaking of variables
+* Realised that default class values are set at run-time (hence time bugs)
+* Implemented beat and scale snapping
+* Added lots of videos of system
 
 
 ### 2017/11/17 - Week 8

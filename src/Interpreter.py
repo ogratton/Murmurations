@@ -34,7 +34,7 @@ class Interpreter(threading.Thread):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
+    def __init__(self, name, midiout, swarm_data, volume=None):
         super(Interpreter, self).__init__()
         self.name = name  # TODO use or lose
         self.midiout = midiout
@@ -44,6 +44,8 @@ class Interpreter(threading.Thread):
         self.note_on = NOTE_ON | self.channel
         self.instrument = swarm_data[2]
         self.volume = volume
+        if self.volume is None:
+            self.volume = IP.CHANNEL_VOL
         self.done = False
         self.start()
 
@@ -107,7 +109,7 @@ class NaiveSequencer(Interpreter):
     Simple linear interpolation of position of CENTRE OF MASS of each swarm
     """
 
-    def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
+    def __init__(self, name, midiout, swarm_data, volume=None):
         super().__init__(name, midiout, swarm_data, volume)
         self.snap_to_beat = False
         self.snap_to_scale = False
@@ -134,8 +136,12 @@ class NaiveSequencer(Interpreter):
         self.notes = scales.gen_range(self.scale, lowest=IP.PITCH_MIN, note_range=IP.PITCH_RANGE)
         self.snap_to_scale = on
 
-    def set_beat(self, beat=IP.TIME_MIN + IP.TIME_RANGE, on=True):
+    def set_beat(self, beat=None, on=True):
+        # note on python:
+        # default value must be set in the body, otherwise it will take the value as it is on run-time
         self.beat = beat
+        if self.beat is None:
+            self.beat = IP.TIME_MIN + IP.TIME_RANGE
         self.snap_to_beat = on
 
     def interpret(self, max_v, data):
@@ -170,19 +176,11 @@ class NaiveSequencer(Interpreter):
         boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
         proportion = min(0.99, (boid_p / max_p))              # how far along the axis it is (1.0 -> IndexError)
         # TODO spoofing weighted probability:
-        divisions = [4, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 3/4, 1/2, 1/3, 1/4]
+        divisions = [4, 3, 2, 1, 3/4, 1/2, 1/3, 1/4]
         factor_index = int(proportion // (1/len(divisions)))  # find which note length to use
-        # return beat * (divisions[factor_index]/4)
 
-        try:
-            return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
-        except IndexError:
-            # TODO this sometimes happens...
-            print(boid_p)
-            print(max_p)
-            print(proportion)
-            print(factor_index)
-            raise IndexError
+        return beat * (divisions[factor_index]/4)
+        # return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
 
     @staticmethod
     def interpret_pitch_scale(max_p, boid_p, notes):
@@ -200,7 +198,7 @@ class ChordSequencer(Interpreter):
     treat each boid as a sound agent
     """
 
-    def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
+    def __init__(self, name, midiout, swarm_data, volume=None):
         super().__init__(name, midiout, swarm_data, volume)
 
     def loop(self):

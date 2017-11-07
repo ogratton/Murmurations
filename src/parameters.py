@@ -16,7 +16,8 @@ class SP:
     """
     Swarm parameters
     """
-    RANDOM_SEED = -1                    # -1 for 'true random'
+    RANDOM_SEED = 72                    # -1 for 'true random'
+    TRUE_RANDOM = -1                    # sets standard for above (not changeable from config.ini)
     IS_FLOCK = False                    # flock or swarm
     MAX_SPEED = 0.7                     # recommended max of 1.0
     RAND_POINT_SD = 7.5                 # 7.5

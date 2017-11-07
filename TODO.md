@@ -13,11 +13,9 @@ Move points to logbook when done
 
 * Add sustain & modulation and stuff
 	* 'let ring'
-* Quantize time axis, but maybe with some gaussian noise for human-like sloppiness
 * Custom interpretation types for different instruments (restrict pitch to its range)
-* Snap-to-scale/mode pitch
 * Dynamics need to change less regularly (but still have the ability for subitos)
-* Allow for silence/rests (this should come with the note duration dimension)
+* Allow for silence/rests (this _should_ come with the note duration dimension)
 
 ## Graphics
 

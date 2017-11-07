@@ -31,9 +31,6 @@ blue      = (0.0, 0.0, 1.0, 1)
 sky       = (0.5, 0.7, 1.0, 1)
 
 
-random.seed(SP.RANDOM_SEED)  # for repeatability
-
-
 def rand_colour():
     return random.random(), random.random(), random.random(), 1
 
@@ -274,6 +271,9 @@ class Window(pyglet.window.Window):
         self.cube_index = 0
 
         self.world = World(swarms, [0, 0, -DIST_BACK], self.models)
+
+        if SP.RANDOM_SEED != SP.TRUE_RANDOM:
+            random.seed(SP.RANDOM_SEED)  # for repeatability
 
         @self.event
         def on_resize(width, height):

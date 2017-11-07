@@ -3,6 +3,7 @@ import SwarmMain
 import rtmidi
 from numpy import r_
 from Interpreter import *
+import scales
 
 # launch the program without the display
 
@@ -68,14 +69,17 @@ def main():
                     (Swarm.Swarm(7, cube), 1, 56),
                     (Swarm.Swarm(7, cube), 2, 88),
                     (Swarm.Swarm(7, cube), 3, 26),
-                    (Swarm.Swarm(7, cube), 9, 0)
+                    # (Swarm.Swarm(7, cube), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
     manager = Manager(swarms)
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [VelSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+
+    map(lambda x: x.set_beat(beat=2.0), seqs)
+    map(lambda x: x.set_scale(scales.min_pen), seqs)
 
     print("Press Control-C to quit.")
 

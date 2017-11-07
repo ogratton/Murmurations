@@ -11,9 +11,6 @@ TODO:
 - fiddle with values in rules
 """
 
-random.seed(SP.RANDOM_SEED)  # for repeatability
-
-
 def random_range(lower=0.0, upper=1.0):
     """
     :return: a random number between lower and upper
@@ -354,6 +351,9 @@ class Swarm(object):
         for _ in range(num_boids):
             self.boids.append(Boid(cube, self.attractor))
         self.c_o_m = CentOfMass(cube.centre, r_[0., 0., 0.], cube.v_min)
+
+        if SP.RANDOM_SEED != SP.TRUE_RANDOM:
+            random.seed(SP.RANDOM_SEED)  # for repeatability
 
     def __repr__(self):
         return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)

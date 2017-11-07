@@ -33,13 +33,7 @@ def load_config():
     parameters.IP.DYNAM_MIN = int(config['INTERPRETER']['DYNAM_MIN'])
     parameters.IP.CHANNEL_VOL = int(config['INTERPRETER']['CHANNEL_VOL'])
 
-    rs = int(config['SWARM']['RANDOM_SEED'])
-    if rs != -1:
-        parameters.SP.RANDOM_SEED = rs
-    else:
-        seed = random.randrange(sys.maxsize)  # TODO always gives me 5249979066121302517...
-        print("Using seed " + str(seed))
-        parameters.SP.RANDOM_SEED = seed
+    parameters.SP.RANDOM_SEED = int(config['SWARM']['RANDOM_SEED'])
     parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])  # TODO bool
     parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
     parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
@@ -82,10 +76,12 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    seqs[0].set_beat()
-    seqs[0].set_scale(scales.min_pen)
-    seqs[1].set_beat()
-    seqs[1].set_scale(scales.min_pen)
+    # seqs[0].set_beat()
+    # seqs[1].set_beat()
+    # seqs[0].set_scale(scales.min_pen)
+    # seqs[1].set_scale(scales.min_pen)
+    map(lambda x: x.set_beat(beat=2.0), seqs)
+    map(lambda x: x.set_scale(scales.mixolydian), seqs)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
