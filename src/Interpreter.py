@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 import threading
 from heapq import (heappush, heappop)
 from time import sleep
-from parameters import IP
+from parameters import IP, SP
+from numpy.linalg import norm
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
 
@@ -13,6 +14,7 @@ time_axis = 2
 
 class Interpreter(threading.Thread):
     """
+    MIDI output thread
     Interpret the positions of boids as "music"
     """
     __metaclass__ = ABCMeta
@@ -46,9 +48,39 @@ class Interpreter(threading.Thread):
         """
         pass
 
+    @staticmethod
+    def interpret_pitch(max_v, value):
+        """
+        Default (simple linear interpolation)
+        To be overwritten for more complicated interpreters
+        Convert positional value into pitch for MIDI
+        :param max_v: int, the maximum value <value> can be
+        :param value: float, distance along the axis associated with pitch
+        :return: int from 21-108 to stay within piano range
+        """
+        return int((value / max_v) * IP.PITCH_RANGE + IP.PITCH_MIN)
+
+    @staticmethod
+    def interpret_time(max_v, value):
+        """
+        Default (simple linear interpolation)
+        To be overwritten for more complicated interpreters
+        """
+        return (value/max_v) * IP.TIME_RANGE + IP.TIME_MIN
+
+    @staticmethod
+    def interpret_dynamic(max_v, value):
+        """
+        Default (simple linear interpolation)
+        To be overwritten for more complicated interpreters
+        """
+        return int((value/max_v) * IP.DYNAM_RANGE + IP.DYNAM_MIN)
+
 
 class NaiveSequencer(Interpreter):
-    """MIDI output thread."""
+    """
+    Simple linear interpolation of position of CENTRE OF MASS of each swarm
+    """
 
     def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
         super().__init__(name, midiout, swarm_data, volume)
@@ -80,29 +112,11 @@ class NaiveSequencer(Interpreter):
                 self.interpret_pitch(max_v, data[pitch_axis]),
                 self.interpret_time(max_v, data[time_axis])]
 
-    @staticmethod
-    def interpret_pitch(max_v, value):
-        """
-        Convert positional value into pitch for MIDI
-        :param max_v: int, the maximum value <value> can be
-        :param value: float, distance along the axis associated with pitch
-        :return: int from 21-108 to stay within piano range
-        """
-        return int((value / max_v) * IP.PITCH_RANGE + IP.PITCH_MIN)
-
-    @staticmethod
-    def interpret_time(max_v, value):
-        return (value/max_v) * IP.TIME_RANGE + IP.TIME_MIN
-
-    @staticmethod
-    def interpret_dynamic(max_v, value):
-        return int((value/max_v) * IP.DYNAM_RANGE + IP.DYNAM_MIN)
-
 
 class ChordSequencer(Interpreter):
     """
-    MIDI output thread
-    Treat each boid as a sound agent
+    Simple linear interpolation of position, but
+    treat each boid as a sound agent
     """
 
     def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
@@ -166,20 +180,39 @@ class ChordSequencer(Interpreter):
                 self.interpret_pitch(max_v, data[pitch_axis]),
                 self.interpret_time(max_v, data[time_axis])]
 
-    @staticmethod
-    def interpret_pitch(max_v, value):
-        """
-        Convert positional value into pitch for MIDI
-        :param max_v: int, the maximum value <value> can be
-        :param value: float, distance along the axis associated with pitch
-        :return: int from 21-108 to stay within piano range
-        """
-        return int((value / max_v) * IP.PITCH_RANGE + IP.PITCH_MIN)
+
+class VelSequencer(NaiveSequencer):
+    """
+    Note length is a function of velocity of boids
+    """
+    def run(self):
+        self.activate_instrument(self.instrument)
+        cc = CONTROL_CHANGE | self.channel
+        self.midiout.send_message([cc, CHANNEL_VOLUME, self.volume & 127])
+
+        # give MIDI instrument some time to activate instrument
+        sleep(0.1)
+
+        while not self.done:
+            com = self.swarm.get_COM()
+            data = self.interpret(self.swarm.cube.edge_length, com.get_location())
+            note_length = self.interpret_velocity(SP.MAX_SPEED, com.velocity, data[time_axis])
+            self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], data[dynam_axis] & 127])
+            sleep(max(IP.TIME_MIN, note_length))
+            self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], 0])
+
+        self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
 
     @staticmethod
-    def interpret_time(max_v, value):
-        return (value/max_v) * IP.TIME_RANGE + IP.TIME_MIN
-
-    @staticmethod
-    def interpret_dynamic(max_v, value):
-        return int((value/max_v) * IP.DYNAM_RANGE + IP.DYNAM_MIN)
+    def interpret_velocity(max_vel, boid_vel, time):
+        """
+        The faster the boid goes, the more we subdivide the predetermined note length
+        :param max_vel: the fastest a boid can go
+        :param boid_vel: how fast it is going
+        :param time: the interpreted time value of the boid
+        :return:
+        """
+        pro_v = norm(boid_vel)/max_vel                   # proportion of max speed
+        divisions = [4, 2, 1, 3/4, 1/2, 1/3, 1/4]        # note lengths (1 is "crotchet" equivalent for readability)
+        factor_index = int(pro_v // (1/len(divisions)))  # find which note length to use
+        return time * (divisions[factor_index]/4)        # (now treat semibreve as 1)
