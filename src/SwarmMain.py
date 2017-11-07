@@ -72,7 +72,7 @@ def main():
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
                     (Swarm.Swarm(7, cube), 0, 56),
-                    #(Swarm.Swarm(7, cube), 2, 88),
+                    (Swarm.Swarm(7, cube), 2, 88),
                     #(Swarm.Swarm(7, cube2), 3, 26),
                     #(Swarm.Swarm(7, cube2), 9, 0)
     ]
@@ -83,7 +83,9 @@ def main():
     seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
     seqs[0].set_beat()
-    seqs[0].set_scale(scales.nat_min)
+    seqs[0].set_scale(scales.min_pen)
+    seqs[1].set_beat()
+    seqs[1].set_scale(scales.min_pen)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 

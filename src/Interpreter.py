@@ -167,11 +167,22 @@ class NaiveSequencer(Interpreter):
         :param beat: length of 1 beat, seconds
         :return: fraction of <beat>
         """
-        proportion = (boid_p / max_p)                            # how far along the axis it is
-        divisions = [4, 3, 2, 1, 3/4, 1/2, 1/3, 1/4]             # 1 = beat (to be /4 later for legibility)
-        factor_index = int(proportion // (1/len(divisions)))     # find which note length to use
+        boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
+        proportion = min(0.99, (boid_p / max_p))              # how far along the axis it is (1.0 -> IndexError)
+        # TODO spoofing weighted probability:
+        divisions = [4, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 3/4, 1/2, 1/3, 1/4]
+        factor_index = int(proportion // (1/len(divisions)))  # find which note length to use
         # return beat * (divisions[factor_index]/4)
-        return beat * (divisions[factor_index])                  # (now treat semibreve as 1) TODO /4 or not?
+
+        try:
+            return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
+        except IndexError:
+            # TODO this sometimes happens...
+            print(boid_p)
+            print(max_p)
+            print(proportion)
+            print(factor_index)
+            raise IndexError
 
     @staticmethod
     def interpret_pitch_scale(max_p, boid_p, notes):
