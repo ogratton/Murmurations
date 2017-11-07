@@ -7,6 +7,15 @@ from numpy.linalg import norm
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
 
+
+"""
+Ideas for more interpreters:
+
+- drummer:
+    - has a fixed bpm, and time axis dictates note division (much like VelSequencer)
+    - maybe velocity allows for slight rubato (so it's the inverse of VelSeq, then)
+"""
+
 dynam_axis = 0
 pitch_axis = 1
 time_axis = 2
@@ -25,6 +34,8 @@ class Interpreter(threading.Thread):
         self.midiout = midiout
         self.swarm = swarm_data[0]
         self.channel = swarm_data[1]
+        self.cc = CONTROL_CHANGE | self.channel
+        self.no = NOTE_ON | self.channel
         self.instrument = swarm_data[2]
         self.volume = volume
         self.done = False
@@ -33,6 +44,21 @@ class Interpreter(threading.Thread):
     @abstractmethod
     def run(self):
         pass
+
+    def run_dec(self):
+        """
+        Decorator for run method (common start and end behaviour)
+        """
+        def decorated(f):
+            def wrapper(*args, **kwargs):
+                self.activate_instrument(self.instrument)
+                self.midiout.send_message([self.cc, CHANNEL_VOLUME, self.volume & 127])
+                # give MIDI instrument some time to activate instrument
+                sleep(0.1)
+                f(*args, **kwargs)
+                self.midiout.send_message([self.cc, ALL_SOUND_OFF, 0])
+            return wrapper
+        return decorated
 
     def activate_instrument(self, instrument):
         # (drums are on channel 9)
@@ -86,20 +112,16 @@ class NaiveSequencer(Interpreter):
         super().__init__(name, midiout, swarm_data, volume)
 
     def run(self):
-        self.activate_instrument(self.instrument)
-        cc = CONTROL_CHANGE | self.channel
-        self.midiout.send_message([cc, CHANNEL_VOLUME, self.volume & 127])
 
-        # give MIDI instrument some time to activate instrument
-        sleep(0.1)
+        @self.run_dec()
+        def loop():
+            while not self.done:
+                data = self.interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
+                self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], data[dynam_axis] & 127])
+                sleep(max(IP.TIME_MIN, data[time_axis]))
+                self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], 0])
 
-        while not self.done:
-            data = self.interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
-            self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], data[dynam_axis] & 127])
-            sleep(max(IP.TIME_MIN, data[time_axis]))
-            self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], 0])
-
-        self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
+        loop()
 
     def interpret(self, max_v, data):
         """
@@ -123,51 +145,45 @@ class ChordSequencer(Interpreter):
         super().__init__(name, midiout, swarm_data, volume)
 
     def run(self):
-        self.activate_instrument(self.instrument)
-        cc = CONTROL_CHANGE | self.channel
-        no = NOTE_ON | self.channel
-        self.midiout.send_message([cc, CHANNEL_VOLUME, self.volume & 127])
 
-        # give MIDI instrument some time to activate instrument
-        sleep(0.1)
+        @self.run_dec()
+        def loop():
+            time_elapsed = 0.0
+            time_step = 0.1
+            boid_heap = []
 
-        time_elapsed = 0.0
-        time_step = 0.1
-        boid_heap = []
+            # set up the heap with an element for each boid
+            for i, boid in enumerate(self.swarm.boids):
+                data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
+                heappush(boid_heap, (time_elapsed + data[time_axis], data))
 
-        # set up the heap with an element for each boid
-        for i, boid in enumerate(self.swarm.boids):
-            data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
-            heappush(boid_heap, (time_elapsed + data[time_axis], data))
+            while not self.done:
 
-        while not self.done:
+                # print(time_elapsed)
 
-            # print(time_elapsed)
+                # TODO test properly...
+                # stop the notes that have ended and load the next ones
+                while boid_heap[0][0] <= time_elapsed:
+                    data = heappop(boid_heap)[1]
+                    pitch = max(0, data[pitch_axis]) & 127
+                    self.midiout.send_message([self.no, pitch, 0])
+                    boid_index = data[-1]
+                    next_data = self.interpret(self.swarm.cube.edge_length,
+                                               self.swarm.boids[boid_index].get_location()) + [boid_index]
+                    # play the new note
+                    new_pitch = max(0, next_data[pitch_axis]) & 127
+                    self.midiout.send_message([self.no, new_pitch, data[dynam_axis] & 127])
+                    # add to the heap so it can be turned off when it's done
+                    heappush(boid_heap, (time_elapsed + next_data[time_axis], next_data))
 
-            # TODO test properly...
-            # stop the notes that have ended and load the next ones
-            while boid_heap[0][0] <= time_elapsed:
-                data = heappop(boid_heap)[1]
-                pitch = max(0, data[pitch_axis]) & 127
-                self.midiout.send_message([no, pitch, 0])
-                boid_index = data[-1]
-                next_data = self.interpret(self.swarm.cube.edge_length,
-                                           self.swarm.boids[boid_index].get_location()) + [boid_index]
-                # play the new note
-                new_pitch = max(0, next_data[pitch_axis]) & 127
-                self.midiout.send_message([no, new_pitch, data[dynam_axis] & 127])
-                # add to the heap so it can be turned off when it's done
-                heappush(boid_heap, (time_elapsed + next_data[time_axis], next_data))
+                # finally, enforce time step
+                sleep(time_step)
+                time_elapsed += time_step
 
-            # finally, enforce time step
-            sleep(time_step)
-            time_elapsed += time_step
+                # print(boid_heap)
+                # assert len(boid_heap) == len(self.swarm.boids)
 
-            # print(boid_heap)
-
-            # assert len(boid_heap) == len(self.swarm.boids)
-
-        self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
+        loop()
 
     def interpret(self, max_v, data):
         """
@@ -186,22 +202,18 @@ class VelSequencer(NaiveSequencer):
     Note length is a function of velocity of boids
     """
     def run(self):
-        self.activate_instrument(self.instrument)
-        cc = CONTROL_CHANGE | self.channel
-        self.midiout.send_message([cc, CHANNEL_VOLUME, self.volume & 127])
 
-        # give MIDI instrument some time to activate instrument
-        sleep(0.1)
+        @self.run_dec()
+        def loop():
+            while not self.done:
+                com = self.swarm.get_COM()
+                data = self.interpret(self.swarm.cube.edge_length, com.get_location())
+                note_length = self.interpret_velocity(SP.MAX_SPEED, com.velocity, data[time_axis])
+                self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], data[dynam_axis] & 127])
+                sleep(max(IP.TIME_MIN, note_length))
+                self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], 0])
 
-        while not self.done:
-            com = self.swarm.get_COM()
-            data = self.interpret(self.swarm.cube.edge_length, com.get_location())
-            note_length = self.interpret_velocity(SP.MAX_SPEED, com.velocity, data[time_axis])
-            self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], data[dynam_axis] & 127])
-            sleep(max(IP.TIME_MIN, note_length))
-            self.midiout.send_message([NOTE_ON | self.channel, data[pitch_axis], 0])
-
-        self.midiout.send_message([cc, ALL_SOUND_OFF, 0])
+        loop()
 
     @staticmethod
     def interpret_velocity(max_vel, boid_vel, time):
