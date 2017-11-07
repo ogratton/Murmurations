@@ -4,16 +4,22 @@ from heapq import (heappush, heappop)
 from time import sleep
 from parameters import IP, SP
 from numpy.linalg import norm
+import scales
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
 
 
+# TODO refactor to make more modular so custom interpreters can be made
+# e.g. turning off velocity interpretation, locking to beat, etc
+
 """
 Ideas for more interpreters:
 
-- drummer:
+- beat:
     - has a fixed bpm, and time axis dictates note division (much like VelSequencer)
     - maybe velocity allows for slight rubato (so it's the inverse of VelSeq, then)
+- scale:
+    - pitch axis is "locked" to a scale/mode
 """
 
 dynam_axis = 0
@@ -30,7 +36,7 @@ class Interpreter(threading.Thread):
 
     def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
         super(Interpreter, self).__init__()
-        self.name = name  # TODO do something with it or remove it
+        self.name = name  # TODO use or lose
         self.midiout = midiout
         self.swarm = swarm_data[0]
         self.channel = swarm_data[1]
@@ -103,14 +109,34 @@ class NaiveSequencer(Interpreter):
 
     def __init__(self, name, midiout, swarm_data, volume=IP.CHANNEL_VOL):
         super().__init__(name, midiout, swarm_data, volume)
+        self.snap_to_beat = False
+        self.snap_to_scale = False
+        self.beat = None
+        self.set_beat(on=False)
+        self.scale = None
+        self.notes = None
+        self.set_scale(scales.chrom, on=False)
 
     def loop(self):
-
         while not self.done:
             data = self.interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
             self.midiout.send_message([self.note_on, data[pitch_axis], data[dynam_axis] & 127])
             sleep(max(IP.TIME_MIN, data[time_axis]))
             self.midiout.send_message([self.note_on, data[pitch_axis], 0])
+
+    def set_scale(self, scale, on=True):
+        """
+        Set the musical scale for the interpreter
+        :param scale: a scale from 'scales.py' (in the form of a list of intervals)
+        :param on: whether or not to set snap_to_scale to true
+        """
+        self.scale = scale
+        self.notes = scales.gen_range(self.scale, lowest=IP.PITCH_MIN, note_range=IP.PITCH_RANGE)
+        self.snap_to_scale = on
+
+    def set_beat(self, beat=IP.TIME_MIN + IP.TIME_RANGE, on=True):
+        self.beat = beat
+        self.snap_to_beat = on
 
     def interpret(self, max_v, data):
         """
@@ -118,10 +144,43 @@ class NaiveSequencer(Interpreter):
         :param data: list of positional data (x,y,z...)
         :return: the list with the functions applied to each dimension
         """
+        dyn = self.interpret_dynamic(max_v, data[dynam_axis])
+        if self.snap_to_scale:
+            pitch = self.interpret_pitch_scale(max_v, data[pitch_axis], self.notes)
+        else:
+            pitch = self.interpret_pitch(max_v, data[pitch_axis])
+        if self.snap_to_beat:
+
+            time = self.interpret_beat(max_v, data[time_axis], self.beat)
+        else:
+            time = self.interpret_time(max_v, data[time_axis])
+
         # TODO hard-coded for 3D
-        return [self.interpret_dynamic(max_v, data[dynam_axis]),
-                self.interpret_pitch(max_v, data[pitch_axis]),
-                self.interpret_time(max_v, data[time_axis])]
+        return [dyn, pitch, time]
+
+    @staticmethod
+    def interpret_beat(max_p, boid_p, beat):
+        """
+        Very similar to VelSequencer.interpret_velocity
+        :param max_p: length of time axis
+        :param boid_p: boid pos along the time axis
+        :param beat: length of 1 beat, seconds
+        :return: fraction of <beat>
+        """
+        proportion = (boid_p / max_p)                            # how far along the axis it is
+        divisions = [4, 3, 2, 1, 3/4, 1/2, 1/3, 1/4]             # 1 = beat (to be /4 later for legibility)
+        factor_index = int(proportion // (1/len(divisions)))     # find which note length to use
+        # return beat * (divisions[factor_index]/4)
+        return beat * (divisions[factor_index])                  # (now treat semibreve as 1) TODO /4 or not?
+
+    @staticmethod
+    def interpret_pitch_scale(max_p, boid_p, notes):
+        """
+        Pick notes from a list, rather than interpolation
+        """
+        proportion = boid_p / max_p
+        index = int(proportion // (1 / len(notes)))
+        return notes[index]
 
 
 class ChordSequencer(Interpreter):
@@ -185,6 +244,7 @@ class ChordSequencer(Interpreter):
 class VelSequencer(NaiveSequencer):
     """
     Note length is a function of velocity of boids
+    Otherwise identical to Naive
     """
     def loop(self):
 

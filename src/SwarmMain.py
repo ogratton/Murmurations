@@ -3,6 +3,7 @@ from SwarmRender import Window
 import pyglet
 import rtmidi
 from Interpreter import *
+import scales
 
 import configparser
 import parameters
@@ -61,7 +62,7 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7]  # cube min vertex
-    edge_length = 50.0
+    edge_length = 20.0
 
     cube = Swarm.Cube(cube_min, edge_length)
 
@@ -70,16 +71,19 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(3, cube), 1, 56),
-                    # (Swarm.Swarm(7, cube), 2, 88),
-                    # (Swarm.Swarm(7, cube2), 3, 26),
-                    # (Swarm.Swarm(7, cube2), 9, 0)
+                    (Swarm.Swarm(7, cube), 0, 56),
+                    #(Swarm.Swarm(7, cube), 2, 88),
+                    #(Swarm.Swarm(7, cube2), 3, 26),
+                    #(Swarm.Swarm(7, cube2), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [VelSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+
+    seqs[0].set_beat()
+    seqs[0].set_scale(scales.nat_min)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
