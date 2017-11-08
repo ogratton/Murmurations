@@ -65,7 +65,7 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube), 0, 56),
+                    (Swarm.Swarm(7, cube), 0, 87),
                     (Swarm.Swarm(7, cube), 2, 88),
                     #(Swarm.Swarm(7, cube2), 3, 26),
                     #(Swarm.Swarm(7, cube2), 9, 0)
@@ -76,11 +76,11 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    # seqs[0].set_beat()
-    # seqs[1].set_beat()
-    # seqs[0].set_scale(scales.min_pen)
-    # seqs[1].set_scale(scales.min_pen)
-    map(lambda x: x.set_beat(beat=2.0), seqs)
+    seqs[0].set_beat()
+    seqs[1].set_beat()
+    seqs[0].set_scale(scales.min_pen)
+    seqs[1].set_scale(scales.min_pen)
+    map(lambda x: x.set_beat(beat=1.0), seqs)
     map(lambda x: x.set_scale(scales.mixolydian), seqs)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)

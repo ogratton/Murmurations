@@ -11,6 +11,7 @@ Move points to logbook when done
 
 ## Music
 
+* Account for computation time for beats (like DrumSeq)
 * Add sustain & modulation and stuff
 	* 'let ring'
 * Custom interpretation types for different instruments (restrict pitch to its range)

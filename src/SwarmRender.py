@@ -10,6 +10,7 @@ import os
 from copy import deepcopy
 from parameters import DP, SP
 
+from Swarm import normalise
 """
 Render the swarm objects
 Contains render methods for the displayable classes
@@ -59,18 +60,16 @@ class World:
             box_model.scale = cube.edge_length/2
             self.boxes.append(box_model)
 
-        # TODO make this a dict so i can use it nicer
-        self.swarm_colours = []
         self.swarm_models = []
         for swarm in self.swarms:
-            self.swarm_colours.append(rand_colour())
+            colour = rand_colour()
             model_size = (swarm.cube.edge_length/2) * 0.02
 
             boid_models = []
             for boid in swarm.boids:
                 boid_model = deepcopy(self.models[0])
                 boid_model.x, boid_model.y, boid_model.z = list(boid.location)[:3]  # TODO !!
-                boid_model.color = self.swarm_colours[-1]  # TODO update after dict switch
+                boid_model.color = colour
                 boid_model.scale = model_size
                 boid_models.append(boid_model)
 
@@ -119,6 +118,11 @@ class World:
             for j, boid_m in enumerate(boids_m):
                 new_loc = list(swarm.boids[j].location)[:3]
                 boid_m.x, boid_m.y, boid_m.z = new_loc
+
+                # # TODO boid direction based on velocity
+                # new_vel = list(normalise(swarm.boids[j].velocity[:3]) * 10)
+                # boid_m.rx, boid_m.ry, boid_m.rz = new_vel
+
                 self.render_model(boid_m, True)
             new_att = list(swarm.attractor)[:3]
             att.x, att.y, att.z = new_att

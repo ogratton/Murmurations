@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import threading
 from heapq import (heappush, heappop)
-from time import sleep
+from time import sleep, time as timenow
 from parameters import IP, SP
 from numpy.linalg import norm
 import scales
@@ -18,8 +18,6 @@ Ideas for more interpreters:
 - beat:
     - has a fixed bpm, and time axis dictates note division (much like VelSequencer)
     - maybe velocity allows for slight rubato (so it's the inverse of VelSeq, then)
-- scale:
-    - pitch axis is "locked" to a scale/mode
 """
 
 dynam_axis = 0
@@ -121,9 +119,11 @@ class NaiveSequencer(Interpreter):
 
     def loop(self):
         while not self.done:
+            started = timenow()
             data = self.interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
             self.midiout.send_message([self.note_on, data[pitch_axis], data[dynam_axis] & 127])
-            sleep(max(IP.TIME_MIN, data[time_axis]))
+            time_taken = timenow() - started
+            sleep(max(0, data[time_axis] - time_taken))
             self.midiout.send_message([self.note_on, data[pitch_axis], 0])
 
     def set_scale(self, scale, on=True):
@@ -176,10 +176,10 @@ class NaiveSequencer(Interpreter):
         boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
         proportion = min(0.99, (boid_p / max_p))              # how far along the axis it is (1.0 -> IndexError)
         # TODO spoofing weighted probability:
-        divisions = [4, 3, 2, 1, 3/4, 1/2, 1/3, 1/4]
+        divisions = [1, 3/4, 1/2, 1/3, 1/4]
         factor_index = int(proportion // (1/len(divisions)))  # find which note length to use
 
-        return beat * (divisions[factor_index]/4)
+        return beat * (divisions[factor_index])
         # return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
 
     @staticmethod
