@@ -3,12 +3,11 @@ from SwarmRender import Window
 import pyglet
 import rtmidi
 from Interpreter import *
-import scales
 
+import scales
 import configparser
 import parameters
-import random
-import sys
+import instruments as inst
 
 from numpy import r_
 
@@ -65,10 +64,10 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube), 0, 87),
-                    (Swarm.Swarm(7, cube), 2, 88),
-                    #(Swarm.Swarm(7, cube2), 3, 26),
-                    #(Swarm.Swarm(7, cube2), 9, 0)
+                    (Swarm.Swarm(7, cube), 1, inst.KALIMBA),
+                    (Swarm.Swarm(7, cube), 2, inst.FX_2_SOUNDTRACK),
+                    # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
+                    # (Swarm.Swarm(7, cube2), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
@@ -76,12 +75,13 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    seqs[0].set_beat()
-    seqs[1].set_beat()
-    seqs[0].set_scale(scales.min_pen)
-    seqs[1].set_scale(scales.min_pen)
-    map(lambda x: x.set_beat(beat=1.0), seqs)
-    map(lambda x: x.set_scale(scales.mixolydian), seqs)
+    seqs[0].set_tempo(120)
+    seqs[1].set_tempo(120)
+    seqs[0].set_scale(scales.blues)
+    seqs[1].set_scale(scales.maj_sev)
+    # seqs[2].set_tempo(30)
+    # map(lambda x: x.set_tempo(120), seqs)
+    # map(lambda x: x.set_scale(scales.min_arp), seqs)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 

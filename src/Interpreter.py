@@ -67,7 +67,7 @@ class Interpreter(threading.Thread):
     @abstractmethod
     def interpret(self, max_v, data):
         """
-        :param max_v: the maximum value each data can have
+        :param max_v: the maximum value each data can have (cube edge length)
         :param data: list of positional data (x,y,z...)
         :return: the list with the functions applied to each dimension
         """
@@ -84,6 +84,15 @@ class Interpreter(threading.Thread):
         :return: int from 21-108 to stay within piano range
         """
         return int((value / max_v) * IP.PITCH_RANGE + IP.PITCH_MIN)
+
+    @staticmethod
+    def interpret_pitch_scale(max_p, boid_p, notes):
+        """
+        Pick notes from a list, rather than interpolation
+        """
+        proportion = boid_p / max_p
+        index = int(proportion // (1 / len(notes)))
+        return notes[index]
 
     @staticmethod
     def interpret_time(max_v, value):
@@ -112,7 +121,7 @@ class NaiveSequencer(Interpreter):
         self.snap_to_beat = False
         self.snap_to_scale = False
         self.beat = None
-        self.set_beat(on=False)
+        self.set_tempo(on=False)
         self.scale = None
         self.notes = None
         self.set_scale(scales.chrom, on=False)
@@ -136,17 +145,26 @@ class NaiveSequencer(Interpreter):
         self.notes = scales.gen_range(self.scale, lowest=IP.PITCH_MIN, note_range=IP.PITCH_RANGE)
         self.snap_to_scale = on
 
-    def set_beat(self, beat=None, on=True):
+    def set_tempo(self, tempo=None, on=True):
+        """
+        Set tempo
+        :param tempo: float, e.g. crotchet=120.0
+        :param on: whether or not to use this tempo
+        :return:
+        """
         # note on python:
         # default value must be set in the body, otherwise it will take the value as it is on run-time
-        self.beat = beat
-        if self.beat is None:
+
+        if tempo is None:
             self.beat = IP.TIME_MIN + IP.TIME_RANGE
+        else:
+            self.beat = (60 / tempo) * 4  # crotchet = 120, so semibreve is 2 seconds
+
         self.snap_to_beat = on
 
     def interpret(self, max_v, data):
         """
-        :param max_v: the maximum value each data can have
+        :param max_v: the maximum value each data can have (cube edge length)
         :param data: list of positional data (x,y,z...)
         :return: the list with the functions applied to each dimension
         """
@@ -175,21 +193,16 @@ class NaiveSequencer(Interpreter):
         """
         boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
         proportion = min(0.99, (boid_p / max_p))              # how far along the axis it is (1.0 -> IndexError)
-        # TODO spoofing weighted probability:
-        divisions = [1, 3/4, 1/2, 1/3, 1/4]
+        # TODO decide on what to put in this list
+        # triplets and stuff
+        divisions = [4, 3, 2, 3/2, 1, 1/2, 1/4, 1/8]
+        # divisions = [1, 3/4, 1/2, 1/3, 1/4]
         factor_index = int(proportion // (1/len(divisions)))  # find which note length to use
 
-        return beat * (divisions[factor_index])
-        # return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
+        # print(beat * (divisions[factor_index]/4))
 
-    @staticmethod
-    def interpret_pitch_scale(max_p, boid_p, notes):
-        """
-        Pick notes from a list, rather than interpolation
-        """
-        proportion = boid_p / max_p
-        index = int(proportion // (1 / len(notes)))
-        return notes[index]
+        return beat * (divisions[factor_index]/4)
+        # return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
 
 
 class ChordSequencer(Interpreter):
@@ -216,11 +229,11 @@ class ChordSequencer(Interpreter):
 
             # print(time_elapsed)
 
-            # TODO test properly...
+            # TODO test properly... and maybe account for computation time
             # stop the notes that have ended and load the next ones
             while boid_heap[0][0] <= time_elapsed:
                 data = heappop(boid_heap)[1]
-                pitch = max(0, data[pitch_axis]) & 127
+                pitch = data[pitch_axis] & 127
                 self.midiout.send_message([self.note_on, pitch, 0])
                 boid_index = data[-1]
                 next_data = self.interpret(self.swarm.cube.edge_length,
@@ -240,7 +253,7 @@ class ChordSequencer(Interpreter):
 
     def interpret(self, max_v, data):
         """
-        :param max_v: the maximum value each data can have
+        :param max_v: the maximum value each data can have (cube edge length)
         :param data: list of positional data (x,y,z...)
         :return: the list with the functions applied to each dimension
         """

@@ -345,7 +345,7 @@ class Swarm(object):
         self.boids = []
         self.cube = cube
         if attractor is None:
-            self.attractor = cube.centre
+            self.attractor = rand_point_in_cube(self.cube, 3)
         else:
             self.attractor = attractor
         for _ in range(num_boids):

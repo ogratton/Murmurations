@@ -21,9 +21,11 @@ blues   = [p, t, s, s, p, t]
 min_pen = [p, t, t, p, t]
 chrom   = [s]
 maj_arp = [4, 3, 5]
+maj_sev = [4, 3, 3, 2]
 min_arp = [3, 4, 5]
 whole   = [t, t, t, t, t]
 persian = [s, p, s, s, t, p, s]
+
 
 def gen_range(mode=aeolian, lowest=60, note_range=48):
     # start with lowest note
@@ -31,7 +33,7 @@ def gen_range(mode=aeolian, lowest=60, note_range=48):
     previous_note = lowest
     i = 0
     while previous_note < (lowest+note_range):
-        cur_note = previous_note + mode[i%len(mode)]
+        cur_note = previous_note + mode[i % len(mode)]
         notes.append(cur_note)
         previous_note = cur_note
         i += 1

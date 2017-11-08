@@ -78,7 +78,7 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    map(lambda x: x.set_beat(beat=2.0), seqs)
+    map(lambda x: x.set_tempo(tempo=2.0), seqs)
     map(lambda x: x.set_scale(scales.min_pen), seqs)
 
     print("Press Control-C to quit.")
