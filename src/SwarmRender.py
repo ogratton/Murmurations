@@ -75,7 +75,7 @@ class World:
 
             attractor_model = deepcopy(self.models[1])
             attractor_model.x, attractor_model.y, attractor_model.z = list(swarm.attractor)[:3]  # TODO !!
-            attractor_model.color = blue
+            attractor_model.color = colour
             attractor_model.scale = model_size
             self.swarm_models.append((boid_models, attractor_model))
 
@@ -110,7 +110,7 @@ class World:
         #     self.render_model(model)
 
         for box in self.boxes:
-            self.render_model(box, False)
+            self.render_model(box, fill=False)
 
         # TODO this may be very slow
         for i, (boids_m, att) in enumerate(self.swarm_models):
@@ -123,10 +123,10 @@ class World:
                 # new_vel = list(normalise(swarm.boids[j].velocity[:3]) * 10)
                 # boid_m.rx, boid_m.ry, boid_m.rz = new_vel
 
-                self.render_model(boid_m, True)
+                self.render_model(boid_m)
             new_att = list(swarm.attractor)[:3]
             att.x, att.y, att.z = new_att
-            self.render_model(att, True)
+            self.render_model(att, frame=False)  # TODO change attractor model to pyramid and turn this back on
 
     @staticmethod
     def draw_axes():
@@ -142,7 +142,7 @@ class World:
         gl.glColor4f(*blue)
         pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v3f', (0, 0, 0,  0, 0, d)))
 
-    def render_model(self, model, fill):
+    def render_model(self, model, fill=True, frame=True):
 
         if fill:
             # sets fill mode
@@ -151,14 +151,15 @@ class World:
             # draws the current model
             self.draw_model(model)
 
-        # sets wire-frame mode
-        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
+        if frame:
+            # sets wire-frame mode
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
 
-        # draws the current model wire-frame
-        temp_color = model.color
-        model.color = white
-        self.draw_model(model)
-        model.color = temp_color
+            # draws the current model wire-frame
+            temp_color = model.color
+            model.color = white
+            self.draw_model(model)
+            model.color = temp_color
 
     def draw_model(self, model):
 

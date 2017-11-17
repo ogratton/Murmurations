@@ -18,6 +18,12 @@ Ideas for more interpreters:
 - beat:
     - has a fixed bpm, and time axis dictates note division (much like VelSequencer)
     - maybe velocity allows for slight rubato (so it's the inverse of VelSeq, then)
+- gravity:
+    - treat attractors as gravity wells
+    - boids speed up as they get closer
+    - end up orbiting them (creates interest when attractor doesn't change)
+- probabilistic:
+    - based on Chord, but boids only have a *probability* to play at each update
 """
 
 dynam_axis = 0

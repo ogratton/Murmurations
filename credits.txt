@@ -1,0 +1,9 @@
+All non-library code by Oliver Gratton except:
+
+Swarm code adapted from this code by Tom Marble:
+https://github.com/tmarble/pyboids/blob/master/boids.py
+
+Pyglet code adapted from:
+https://github.com/jjstrydom/pyglet_examples
+which was in turn based off:
+http://www.poketcode.com/pyglet_demos.html

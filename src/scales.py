@@ -1,6 +1,5 @@
 from numpy import r_, roll
 
-k = 0  # keynote
 s = 1  # semitone
 t = 2  # tone
 p = 3  # tone+
@@ -25,9 +24,18 @@ maj_sev = [4, 3, 3, 2]
 min_arp = [3, 4, 5]
 whole   = [t, t, t, t, t]
 persian = [s, p, s, s, t, p, s]
+satie   = [t, s, p, s, t, p]      # from gnossienne no. 3 (min arp interlaced with the maj arp of one tone above root)
 
 
 def gen_range(mode=aeolian, lowest=60, note_range=48):
+    """
+    Generate a list of midi notes in the desired mode, treating the lowest note as the tonic
+    :param mode: musical mode, in the form of a list of intervals
+    :param lowest: midi number of tonic (and lowest) note
+    :param note_range: range in the chromatic scale (not the one we are making)
+    :return:
+    """
+    # TODO have tonic as optional separate variable so lowest != tonic
     # start with lowest note
     notes = [lowest]
     previous_note = lowest
