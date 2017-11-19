@@ -22,36 +22,40 @@ Move points to logbook when done
 * Account for computation time for beats (like DrumSeq)
 * Add sustain & modulation and stuff
 	* 'let ring'
+	* if using the Sonuus G2M, this could potentially be done via a breakout cable
 * Custom interpretation types for different instruments (restrict pitch to its range)
 * Dynamics need to change less regularly (but still have the ability for subitos)
 * Allow for silence/rests (this _should_ come with the note duration dimension)
-* Attractor input from
-	* MIDI File
-	* Live input
-		* Musician
-		* VR/Wii conductor
-		* Or Dancer...? (kinect)
+* Attractor input from live input
+    * Musician
+	* VR/Wii conductor
+	* Or Dancer...? (kinect)
 * Output midi file too so I can open in musescore (or at least write to log file)?
 * Use virtual ports (JACK or switch to UNIX) to play real MIDI instruments
 * Work out best configurations for jazz, classical etc.
 * A sort of loop pedal to capture phrase/melody ideas
+* Have a look at this interesting rhythm idea https://www.youtube.com/watch?v=2UphAzryVpY
 
 ## Graphics
 
 * Add centre of gravity model? (triangle?)
 * Change the way the camera movement works
 * Add rotation for boids (match velocity)
-* Add GUI to add swarms and tweak settings on the fly
+* Add MC-Edit-style GUI
+    * add swarms (by dragging and dropping?)
+	* tweak settings on the fly
 
 
 ## Admin
 
 * Fill in README
 * Write some unit tests (see Observable folder on home PC)
+* Start report paint-by-numbers style (top-down)
 
 
 ## Misc
 
+* Make code even more modular if possible (I don't like how pyglet is tied into it)
 * Look at Numba & CUDA for GPU use
 	* https://developer.nvidia.com/how-to-cuda-python
 	* https://github.com/numba/numba/blob/master/examples/objects.py

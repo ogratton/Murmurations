@@ -48,7 +48,7 @@
 
 ### 2017/11/17 - Week 8
 
-*
+* Reading for Literature Review
 
 ### 2017/11/24 - Week 9
 
