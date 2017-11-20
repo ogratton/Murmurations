@@ -77,7 +77,7 @@ class World:
             for attr in swarm.attractors:
                 attractor_model = deepcopy(self.models[2])
                 attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]  # TODO !!
-                attractor_model.color = colour
+                attractor_model.color = blue
                 attractor_model.scale = model_size
                 attr_models.append(attractor_model)
 

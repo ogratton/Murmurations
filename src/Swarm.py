@@ -6,6 +6,7 @@ from numpy import r_
 from numpy.linalg import norm
 from parameters import SP
 from heapq import (heappush, heappop)
+from math import (cos, sin, pi)
 """
 TODO:
 - add attractors
@@ -185,6 +186,7 @@ class Attraction:
         # change = to_attractor * SP.ATTRACTION_MULTIPLIER
         # boid.adjustment += change
 
+        # priority queue of (distance, change)
         dist_mat = []
 
         for attr in boid.attractors:
@@ -192,7 +194,7 @@ class Attraction:
             dist = norm(to_attractor)
             # TODO 1/dist needs tweaking
             change = to_attractor * SP.ATTRACTION_MULTIPLIER * (1/dist)
-            heappush(dist_mat, (dist, change))
+            heappush(dist_mat, (dist, list(change)))  # needs to be a list as r_ is ambiguous
 
         # only feel the pull of the nearest <x> attractors
         attention_span = min(SP.ATTRACTORS_NOTICED, len(boid.attractors))
@@ -302,11 +304,25 @@ class Attractor(object):
     """
     Attracts boid towards it
     """
-    def __init__(self, location):
+    def __init__(self, location, cube):
         self.location = location
+        # TODO set path stuff:
+        self.cube = cube
+        self.t = random.random()  # start a random way along
+        self.step = random.randrange(100, 300)/100000  # at a random speed too
 
     def set_pos(self, new_l):
         self.location = new_l
+
+    def step_path_equation(self):
+        # TODO set path in n dimensions
+        # parametric equations:
+        x = cos(3*pi*self.t)
+        y = sin(2*pi*self.t)
+        z = sin(5*pi*self.t)
+        self.t += self.step
+        new_point = r_[x, y, z]*0.4*self.cube.edge_length + self.cube.centre
+        self.set_pos(new_point)
 
 
 class CentOfMass(object):
@@ -363,7 +379,7 @@ class Swarm(object):
         self.cube = cube
         self.attractors = []
         for _ in range(num_attractors):
-            self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3)))
+            self.attractors.append(Attractor(cube.centre, cube))  # rand_point_in_cube(self.cube, 3)
 
         for _ in range(num_boids):
             self.boids.append(Boid(cube, self.attractors))
@@ -392,9 +408,10 @@ class Swarm(object):
         # TODO temporary way of changing attractors:
         # TODO uncomment and fix for lists
         for i, attr in enumerate(self.attractors):
-            if random.random() < SP.RAND_ATTRACTOR_CHANGE:
-                att = Attractor(rand_point_in_cube(self.cube, 3))
-                self.attractors[i] = att
+            attr.step_path_equation()
+            # if random.random() < SP.RAND_ATTRACTOR_CHANGE:
+            #     att = Attractor(rand_point_in_cube(self.cube, 3))
+            #     self.attractors[i] = att
 
     def get_COM(self):
         """

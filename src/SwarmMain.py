@@ -56,18 +56,16 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[10, 50, 7]  # cube min vertex
-    edge_length = 20.0
-
+    cube_min = r_[10, 50, 7]
+    edge_length = 50
     cube = Swarm.Cube(cube_min, edge_length)
-
-    cube2 = Swarm.Cube(r_[40, -10, 17], 30)
+    cube2 = Swarm.Cube(r_[40, 10, 17], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    # (Swarm.Swarm(7, cube, 1), 1, inst.PAD_2_WARM),
-                    (Swarm.Swarm(7, cube, 2), 2, inst.KALIMBA),
+                    (Swarm.Swarm(7, cube, 3), 1, inst.PAD_2_WARM),
+                    # (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
     ]
@@ -75,11 +73,11 @@ def main():
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    seqs[0].set_tempo(120)
+    # seqs[0].set_tempo(120)
     # seqs[1].set_tempo(60)
-    seqs[0].set_scale(scales.min_pen)
+    # seqs[0].set_scale(scales.min_pen)
     # seqs[1].set_scale(scales.min_arp)
     # map(lambda x: x.set_tempo(120), seqs)
     # map(lambda x: x.set_scale(scales.min_arp), seqs)
