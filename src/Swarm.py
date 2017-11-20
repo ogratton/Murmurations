@@ -5,6 +5,7 @@ import random
 from numpy import r_
 from numpy.linalg import norm
 from parameters import SP
+from heapq import (heappush, heappop)
 """
 TODO:
 - add attractors
@@ -42,11 +43,12 @@ def rand_point_in_cube(cube, dims):
     points = []
 
     for i in range(dims):
+        p = 0
         while True:
             p = random.gauss(edge/2, sd)
             if max(0, min(p, edge)) not in [0, edge]:
                 break
-        points.append(p + cube.v_min[i])  # TODO check scope of p
+        points.append(p + cube.v_min[i])
 
     return r_[points]
 
@@ -77,14 +79,6 @@ class Cube(object):
         self.centre = r_[v_min[0] + 0.5 * edge_length,
                          v_min[1] + 0.5 * edge_length,
                          v_min[2] + 0.5 * edge_length]
-
-        # # used for rendering in pygame version
-        # self.x0 = v_min[0]
-        # self.y0 = v_min[1]
-        # self.z0 = v_min[2]
-        # self.x1 = self.x0 + edge_length
-        # self.y1 = self.y0 + edge_length
-        # self.z1 = self.z0 + edge_length
 
     def __repr__(self):
         return "Cube from {0} with edge length {1}".format(self.v_min, self.edge_length)
@@ -135,7 +129,7 @@ class Cohesion(Rule):
             centroid = self.change / self.num
             desired = centroid - boid.location
             self.change = (desired - boid.velocity) * SP.COHESION_MULTIPLIER
-        boid.adjustment = boid.adjustment + self.change
+        boid.adjustment += self.change
 
 
 class Alignment(Rule):
@@ -154,7 +148,7 @@ class Alignment(Rule):
         if self.num > 0:
             group_velocity = self.change / self.num
             self.change = (group_velocity - boid.velocity) * SP.ALIGNMENT_MULTIPLIER
-        boid.adjustment = boid.adjustment + self.change
+        boid.adjustment += self.change
 
 
 class Separation(Rule):
@@ -176,17 +170,34 @@ class Separation(Rule):
         if norm(self.change) > 0:
             group_separation = self.change / self.num
             self.change = (group_separation - boid.velocity) * SP.SEPARATION_MULTIPLIER
-        boid.adjustment = boid.adjustment + self.change
+        boid.adjustment += self.change
 
 
 class Attraction:
-    """ Bonus Rule: Fly towards the attractor """
+    """ Bonus Rule: Fly towards the attractor(s) """
 
     @staticmethod
     def add_adjustment(boid):
-        to_attractor = boid.attractor - boid.location
-        change = to_attractor * SP.ATTRACTION_MULTIPLIER
-        boid.adjustment = boid.adjustment + change
+        # TODO test
+
+        # # OLD WAY only listen to the first attractor
+        # to_attractor = boid.attractors[0].location - boid.location
+        # change = to_attractor * SP.ATTRACTION_MULTIPLIER
+        # boid.adjustment += change
+
+        dist_mat = []
+
+        for attr in boid.attractors:
+            to_attractor = attr.location - boid.location
+            dist = norm(to_attractor)
+            # TODO 1/dist needs tweaking
+            change = to_attractor * SP.ATTRACTION_MULTIPLIER * (1/dist)
+            heappush(dist_mat, (dist, change))
+
+        # only feel the pull of the nearest <x> attractors
+        attention_span = min(SP.ATTRACTORS_NOTICED, len(boid.attractors))
+        for _ in range(attention_span):
+            boid.adjustment += heappop(dist_mat)[1]
 
 
 class Constraint:
@@ -206,13 +217,13 @@ class Boid(object):
     A single swarm agent
     """
 
-    def __init__(self, cube, attractor):
+    def __init__(self, cube, attractors):
         """
         Make a baby boid
         :param cube: Cube   bounding box for this boid
         """
         self.cube = cube
-        self.attractor = attractor
+        self.attractors = attractors
 
         # doesn't seem to matter that much where you start
         # even if it's outside the cube
@@ -235,7 +246,7 @@ class Boid(object):
         # Apply the rules to each of the boids
         # flocks use alignment, swarms do not
         flock = SP.IS_FLOCK
-        rules = [Cohesion(), Separation()]
+        rules = [Separation(), Cohesion()]
         if flock:
             rules.append(Alignment())
         # bonus rules don't need the accumulate stage
@@ -277,8 +288,8 @@ class Boid(object):
         # Add a constant velocity in whatever direction
         # they are moving so they don't ever stop.
         # Now that we have attractors, this is unnecessary
-        # if norm(velocity) > 0:
-        #     velocity = velocity + (normalise(velocity) * random_range(0.0, 0.007))
+        if norm(velocity) > 0:
+            velocity = velocity + (normalise(velocity) * random_range(0.0, SP.MOTION_CONSTANT))
 
         self.velocity = velocity
         self.limit_speed(SP.MAX_SPEED)
@@ -287,15 +298,15 @@ class Boid(object):
         self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
 
 
-# class Attractor(object):
-#     """
-#     Attracts boid towards it
-#     """
-#     def __init__(self, location):
-#         self.location = location
-#
-#     def set_pos(self, new_l):
-#         self.location = new_l
+class Attractor(object):
+    """
+    Attracts boid towards it
+    """
+    def __init__(self, location):
+        self.location = location
+
+    def set_pos(self, new_l):
+        self.location = new_l
 
 
 class CentOfMass(object):
@@ -338,7 +349,9 @@ class Swarm(object):
     A swarm of boids
     """
 
-    def __init__(self, num_boids, cube, attractor=None):
+    # TODO should have a list of attractors, not just one
+
+    def __init__(self, num_boids, cube, num_attractors=1):
         """
         Set up a swarm
         :param num_boids: int   number of boids in the swarm
@@ -348,12 +361,12 @@ class Swarm(object):
         self.num_boids = num_boids
         self.boids = []
         self.cube = cube
-        if attractor is None:
-            self.attractor = rand_point_in_cube(self.cube, 3)
-        else:
-            self.attractor = attractor
+        self.attractors = []
+        for _ in range(num_attractors):
+            self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3)))
+
         for _ in range(num_boids):
-            self.boids.append(Boid(cube, self.attractor))
+            self.boids.append(Boid(cube, self.attractors))
         self.c_o_m = CentOfMass(cube.centre, r_[0., 0., 0.], cube.v_min)
 
         if SP.RANDOM_SEED != SP.TRUE_RANDOM:
@@ -370,16 +383,18 @@ class Swarm(object):
         v_acc = r_[0., 0., 0.]
         for boid in self.boids:
             boid.calc_v(self.boids)
-            boid.attractor = self.attractor
+            boid.attractors = self.attractors
         for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
-        # TODO temporary way of changing attractor:
-        if random.random() < SP.RAND_ATTRACTOR_CHANGE:
-            att = rand_point_in_cube(self.cube, 3)
-            self.attractor = att
+        # TODO temporary way of changing attractors:
+        # TODO uncomment and fix for lists
+        for i, attr in enumerate(self.attractors):
+            if random.random() < SP.RAND_ATTRACTOR_CHANGE:
+                att = Attractor(rand_point_in_cube(self.cube, 3))
+                self.attractors[i] = att
 
     def get_COM(self):
         """

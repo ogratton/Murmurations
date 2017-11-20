@@ -4,6 +4,7 @@ Move points to logbook when done
 
 ## Swarm
 
+* Make separation spongier
 * Random noise on values for each boid to create actual individuals
 * Tweak values in rules/config.ini
 * Add predators
@@ -38,7 +39,7 @@ Move points to logbook when done
 
 ## Graphics
 
-* Add centre of gravity model? (triangle?)
+* Add centre of gravity model?
 * Change the way the camera movement works
 * Add rotation for boids (match velocity)
 * Add MC-Edit-style GUI

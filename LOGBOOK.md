@@ -52,7 +52,7 @@
 
 ### 2017/11/24 - Week 9
 
-*
+* Changed attractor model to pyramid
 
 ### 2017/12/01 - Week 10
 

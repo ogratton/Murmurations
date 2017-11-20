@@ -73,11 +73,15 @@ class World:
                 boid_model.scale = model_size
                 boid_models.append(boid_model)
 
-            attractor_model = deepcopy(self.models[1])
-            attractor_model.x, attractor_model.y, attractor_model.z = list(swarm.attractor)[:3]  # TODO !!
-            attractor_model.color = colour
-            attractor_model.scale = model_size
-            self.swarm_models.append((boid_models, attractor_model))
+            attr_models = []
+            for attr in swarm.attractors:
+                attractor_model = deepcopy(self.models[2])
+                attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]  # TODO !!
+                attractor_model.color = colour
+                attractor_model.scale = model_size
+                attr_models.append(attractor_model)
+
+            self.swarm_models.append((boid_models, attr_models))
 
         # sets the background color
         gl.glClearColor(*background_color)
@@ -113,10 +117,11 @@ class World:
             self.render_model(box, fill=False)
 
         # TODO this may be very slow
-        for i, (boids_m, att) in enumerate(self.swarm_models):
+        # TODO also it won't account for changing number of boids if that is implemented
+        for i, (boids_m, atts) in enumerate(self.swarm_models):
             swarm = self.swarms[i]
             for j, boid_m in enumerate(boids_m):
-                new_loc = list(swarm.boids[j].location)[:3]
+                new_loc = list(swarm.boids[j].location)[:3]  # TODO hard-coded 3d!!
                 boid_m.x, boid_m.y, boid_m.z = new_loc
 
                 # # TODO boid direction based on velocity
@@ -124,9 +129,11 @@ class World:
                 # boid_m.rx, boid_m.ry, boid_m.rz = new_vel
 
                 self.render_model(boid_m)
-            new_att = list(swarm.attractor)[:3]
-            att.x, att.y, att.z = new_att
-            self.render_model(att, frame=False)  # TODO change attractor model to pyramid and turn this back on
+
+            for j, att in enumerate(atts):
+                new_att = list(swarm.attractors[j].location)[:3]  # TODO !!
+                att.x, att.y, att.z = new_att
+                self.render_model(att, frame=True)
 
     @staticmethod
     def draw_axes():
@@ -268,7 +275,7 @@ class Window(pyglet.window.Window):
 
         # Load models from files
         self.models = []
-        self.model_names = ['box.obj', 'uv_sphere.obj', 'monkey.obj']
+        self.model_names = ['box.obj', 'uv_sphere.obj', 'pyramid.obj']
         for name in self.model_names:
             self.models.append(OBJModel((0, 0, 0), path=os.path.join('obj', name)))
 

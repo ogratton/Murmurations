@@ -46,6 +46,8 @@ def load_config():
     parameters.SP.CONSTRAINT_MULTIPLIER = float(config['SWARM']['CONSTRAINT_MULTIPLIER'])
     parameters.SP.TURNING_RATIO = float(config['SWARM']['TURNING_RATIO'])
     parameters.SP.RAND_ATTRACTOR_CHANGE = float(config['SWARM']['RAND_ATTRACTOR_CHANGE'])
+    parameters.SP.MOTION_CONSTANT = float(config['SWARM']['MOTION_CONSTANT'])
+    parameters.SP.ATTRACTORS_NOTICED = int(config['SWARM']['ATTRACTORS_NOTICED'])
 
 
 def main():
@@ -55,7 +57,7 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7]  # cube min vertex
-    edge_length = 50.0
+    edge_length = 20.0
 
     cube = Swarm.Cube(cube_min, edge_length)
 
@@ -64,8 +66,8 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube), 1, inst.PAD_2_WARM),
-                    (Swarm.Swarm(7, cube), 2, inst.CHOIR_AAHS),
+                    # (Swarm.Swarm(7, cube, 1), 1, inst.PAD_2_WARM),
+                    (Swarm.Swarm(7, cube, 2), 2, inst.KALIMBA),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
     ]
@@ -73,11 +75,11 @@ def main():
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    # seqs[0].set_tempo(60)
-    # seqs[1].set_tempo(30)
-    # seqs[0].set_scale(scales.satie)
+    seqs[0].set_tempo(120)
+    # seqs[1].set_tempo(60)
+    seqs[0].set_scale(scales.min_pen)
     # seqs[1].set_scale(scales.min_arp)
     # map(lambda x: x.set_tempo(120), seqs)
     # map(lambda x: x.set_scale(scales.min_arp), seqs)
