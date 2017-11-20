@@ -306,10 +306,16 @@ class Attractor(object):
     """
     def __init__(self, location, cube):
         self.location = location
-        # TODO set path stuff:
+        # TODO experimental values used here
         self.cube = cube
         self.t = random.random()  # start a random way along
-        self.step = random.randrange(100, 300)/100000  # at a random speed too
+        self.step = random.randrange(50, 200)/100000  # at a random speed too
+
+        # make a random parametric path
+        a, b, c = random.randint(1, 8), random.randint(1, 8), random.randint(1, 5)
+        self.x_f = lambda t: cos(a * pi * t)
+        self.y_f = lambda t: sin(b * pi * t)
+        self.z_f = lambda t: sin(c * pi * t)
 
     def set_pos(self, new_l):
         self.location = new_l
@@ -317,9 +323,12 @@ class Attractor(object):
     def step_path_equation(self):
         # TODO set path in n dimensions
         # parametric equations:
-        x = cos(3*pi*self.t)
-        y = sin(2*pi*self.t)
-        z = sin(5*pi*self.t)
+        # x = cos(3*pi*self.t)
+        # y = sin(2*pi*self.t)
+        # z = sin(5*pi*self.t)
+        x = self.x_f(self.t)
+        y = self.y_f(self.t)
+        z = self.z_f(self.t)
         self.t += self.step
         new_point = r_[x, y, z]*0.4*self.cube.edge_length + self.cube.centre
         self.set_pos(new_point)
