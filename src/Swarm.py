@@ -323,9 +323,6 @@ class Attractor(object):
     def step_path_equation(self):
         # TODO set path in n dimensions
         # parametric equations:
-        # x = cos(3*pi*self.t)
-        # y = sin(2*pi*self.t)
-        # z = sin(5*pi*self.t)
         x = self.x_f(self.t)
         y = self.y_f(self.t)
         z = self.z_f(self.t)
@@ -414,13 +411,18 @@ class Swarm(object):
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
-        # TODO temporary way of changing attractors:
-        # TODO uncomment and fix for lists
-        for i, attr in enumerate(self.attractors):
-            attr.step_path_equation()
-            # if random.random() < SP.RAND_ATTRACTOR_CHANGE:
-            #     att = Attractor(rand_point_in_cube(self.cube, 3))
-            #     self.attractors[i] = att
+        if SP.ATTRACTOR_MODE == 0:
+            for i, attr in enumerate(self.attractors):
+                if random.random() < SP.RAND_ATTRACTOR_CHANGE:
+                    att = Attractor(rand_point_in_cube(self.cube, 3), self.cube)
+                    self.attractors[i] = att
+        elif SP.ATTRACTOR_MODE == 1:
+            for i, attr in enumerate(self.attractors):
+                attr.step_path_equation()
+        else:
+            print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
+            SP.ATTRACTOR_MODE = 0
+
 
     def get_COM(self):
         """

@@ -30,9 +30,10 @@ class SP:
     ATTRACTION_MULTIPLIER = 0.005       # 0.005 - larger means more clumping
     CONSTRAINT_MULTIPLIER = 0.001       # 0.001
     TURNING_RATIO = 0.80                # 0.80 - turning if boid is <this>*radius of bounding 'sphere' away from centre
+    ATTRACTOR_MODE = 0                  # 0 = teleportation, 1 = paths
     RAND_ATTRACTOR_CHANGE = 0.035       # 0.05
-    MOTION_CONSTANT = 0.035
     ATTRACTORS_NOTICED = 2              # How many attractors to be attracted to at once
+    MOTION_CONSTANT = 0.035
 
 
 class IP:

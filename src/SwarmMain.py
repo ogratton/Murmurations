@@ -46,9 +46,9 @@ def load_config():
     parameters.SP.CONSTRAINT_MULTIPLIER = float(config['SWARM']['CONSTRAINT_MULTIPLIER'])
     parameters.SP.TURNING_RATIO = float(config['SWARM']['TURNING_RATIO'])
     parameters.SP.RAND_ATTRACTOR_CHANGE = float(config['SWARM']['RAND_ATTRACTOR_CHANGE'])
-    parameters.SP.MOTION_CONSTANT = float(config['SWARM']['MOTION_CONSTANT'])
+    parameters.SP.ATTRACTOR_MODE = int(config['SWARM']['ATTRACTOR_MODE'])
     parameters.SP.ATTRACTORS_NOTICED = int(config['SWARM']['ATTRACTORS_NOTICED'])
-
+    parameters.SP.MOTION_CONSTANT = float(config['SWARM']['MOTION_CONSTANT'])
 
 def main():
 
