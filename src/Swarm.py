@@ -78,13 +78,13 @@ class Cube(object):
                          v_min[1] + 0.5 * edge_length,
                          v_min[2] + 0.5 * edge_length]
 
-        # used for rendering
-        self.x0 = v_min[0]
-        self.y0 = v_min[1]
-        self.z0 = v_min[2]
-        self.x1 = self.x0 + edge_length
-        self.y1 = self.y0 + edge_length
-        self.z1 = self.z0 + edge_length
+        # # used for rendering in pygame version
+        # self.x0 = v_min[0]
+        # self.y0 = v_min[1]
+        # self.z0 = v_min[2]
+        # self.x1 = self.x0 + edge_length
+        # self.y1 = self.y0 + edge_length
+        # self.z1 = self.z0 + edge_length
 
     def __repr__(self):
         return "Cube from {0} with edge length {1}".format(self.v_min, self.edge_length)
@@ -102,7 +102,8 @@ class Rule(object):
         """
         self.change = r_[0., 0., 0.]    # velocity correction
         self.num = 0                    # number of participants
-        self.neighbourhood = 5.0        # number of boids to account for around one boid (overwritten later)
+        # TODO: this should be the NUMBER of boids it accounts for, not a distance
+        self.neighbourhood = 0.5        # field of view of boid as ratio of cube edge length (overwritten later)
 
     def accumulate(self, boid, other, distance):
         """
@@ -240,6 +241,9 @@ class Boid(object):
         # bonus rules don't need the accumulate stage
         bonus_rules = [Constraint(), Attraction()]
 
+        # TODO this makes the swarm O(n^2) instead of linear. Maybe find a better data structure than list
+        # in actual bird flocks, it is suggested they look at the nearest (say) 7 birds regardless of metric distance
+        # this is topological distance, and to do it I guess we need some sort of graph data structure
         for boid in all_boids:
             distance = norm(self.location-boid.location)
             for rule in rules:
