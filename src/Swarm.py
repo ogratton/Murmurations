@@ -255,8 +255,9 @@ class Boid(object):
         bonus_rules = [Constraint(), Attraction()]
 
         # TODO this makes the swarm O(n^2) instead of linear. Maybe find a better data structure than list
+        # TODO turns out this is the bottleneck of the whole program...
         # in actual bird flocks, it is suggested they look at the nearest (say) 7 birds regardless of metric distance
-        # this is topological distance, and to do it I guess we need some sort of graph data structure
+        # this is topological distance. USE BIN-LATTICE SPATIAL SUBDIVISION
         for boid in all_boids:
             distance = norm(self.location-boid.location)
             for rule in rules:
@@ -312,8 +313,11 @@ class Attractor(object):
         self.step = random.randrange(50, 200)/100000  # at a random speed too
 
         # make a random parametric path
+        # in this 3d example, the dimension that we leave "pi" out of varies less
+        # so if x is dynamic and x_f is simply cos(4t) then it will move slower and have
+        # less dynamic interest
         a, b, c = random.randint(1, 8), random.randint(1, 8), random.randint(1, 5)
-        self.x_f = lambda t: cos(a * pi * t)
+        self.x_f = lambda t: cos(a * t)
         self.y_f = lambda t: sin(b * pi * t)
         self.z_f = lambda t: sin(c * pi * t)
 

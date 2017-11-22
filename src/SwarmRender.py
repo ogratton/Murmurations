@@ -7,6 +7,7 @@ from pyglet.gl import gl
 from pyglet.gl import glu
 import random
 import os
+import math
 from copy import deepcopy
 from parameters import DP, SP
 
@@ -54,7 +55,7 @@ class World:
         # make the objects for the cube
         self.boxes = []
         for cube in self.cubes:
-            box_model = deepcopy(self.models[0])
+            box_model = deepcopy(self.models[1])
             box_model.x, box_model.y, box_model.z = list(cube.centre)[:3]  # TODO atm just take the first 3 dims
             box_model.color = red  # doesn't matter cos not filled in
             box_model.scale = cube.edge_length/2
@@ -77,7 +78,7 @@ class World:
             for attr in swarm.attractors:
                 attractor_model = deepcopy(self.models[2])
                 attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]  # TODO !!
-                attractor_model.color = blue
+                attractor_model.color = colour
                 attractor_model.scale = model_size
                 attr_models.append(attractor_model)
 
@@ -124,9 +125,12 @@ class World:
                 new_loc = list(swarm.boids[j].location)[:3]  # TODO hard-coded 3d!!
                 boid_m.x, boid_m.y, boid_m.z = new_loc
 
-                # # TODO boid direction based on velocity
-                # new_vel = list(normalise(swarm.boids[j].velocity[:3]) * 10)
-                # boid_m.rx, boid_m.ry, boid_m.rz = new_vel
+                # boid direction based on velocity
+                new_vel = list(normalise(swarm.boids[j].velocity[:3]))
+                # TODO completely wrong and also stupid
+                # boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
+                boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
+                boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
 
                 self.render_model(boid_m)
 
@@ -275,7 +279,7 @@ class Window(pyglet.window.Window):
 
         # Load models from files
         self.models = []
-        self.model_names = ['box.obj', 'uv_sphere.obj', 'pyramid.obj']
+        self.model_names = ['pyramid.obj', 'uv_sphere.obj', 'box.obj']
         for name in self.model_names:
             self.models.append(OBJModel((0, 0, 0), path=os.path.join('obj', name)))
 

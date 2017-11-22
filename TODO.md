@@ -4,17 +4,19 @@ Move points to logbook when done
 
 ## Swarm
 
+* Read http://natureofcode.com/book/chapter-6-autonomous-agents/
+* Additional dimension(s) (note length as opposed to event length in order to get rests)
+* Implement bin-lattice spatial subdivision (instead of O(n^2) for getting nearest n boids)
+	* calc_v is the rate-determining function that makes it O(n^2) instead of O(nk) where k=number of bins surrounding boid
 * Make separation spongier
 * Random noise on values for each boid to create actual individuals
-* Tweak values in rules/config.ini
 * Add predators
 * Think about how swarms can interact with one another (add their position as attractor)
 * Treat attractors as high gravity points and have boids orbit them and speed up as they get closer
 	* Equates to adding gravity rule(?), which then means the boids and attractors must be assigned masses
 * Likewise have it so that the boids slow down as they approach the attractor
 * Dynamic number of boids (may play havoc with existing code)
-* Multiple attractors to split the swarm? (Only desirable with ChordSeq)
-	* will probably happen anyway with swarm stigmergy
+* Clustering for Naive now we have multiple attractors
 
 
 ## Music
@@ -66,3 +68,4 @@ Move points to logbook when done
 * To find good parameters, have an approval gauge like in political debates
   but it's just me pressing a button faster or slower depending how much I like
   what is playing as the system tweaks its own parameters
+* Catch normalising zero vectors
