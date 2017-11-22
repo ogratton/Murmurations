@@ -385,7 +385,7 @@ class Swarm(object):
         self.cube = cube
         self.attractors = []
         for _ in range(num_attractors):
-            self.attractors.append(Attractor(cube.centre, cube))  # rand_point_in_cube(self.cube, 3)
+            self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3), cube))  # cube.centre
 
         for _ in range(num_boids):
             self.boids.append(Boid(cube, self.attractors))

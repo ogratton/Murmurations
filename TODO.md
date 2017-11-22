@@ -9,7 +9,6 @@ Move points to logbook when done
 * Tweak values in rules/config.ini
 * Add predators
 * Think about how swarms can interact with one another (add their position as attractor)
-* Define paths for attractors rather than randomly placing them
 * Treat attractors as high gravity points and have boids orbit them and speed up as they get closer
 	* Equates to adding gravity rule(?), which then means the boids and attractors must be assigned masses
 * Likewise have it so that the boids slow down as they approach the attractor

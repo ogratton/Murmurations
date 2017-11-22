@@ -64,7 +64,7 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 3), 1, inst.PAD_2_WARM),
+                    (Swarm.Swarm(7, cube), 1, inst.PAD_2_WARM),
                     # (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
@@ -72,8 +72,9 @@ def main():
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
-    midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    # TODO TEMP AUDIO OFF
+    # midiout = rtmidi.MidiOut().open_port(0)
+    # seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
     # seqs[0].set_tempo(120)
     # seqs[1].set_tempo(60)
@@ -91,10 +92,10 @@ def main():
     pyglet.app.run()
 
     # CLEAN UP
-    for seq in seqs:
-        seq.done = True  # And kill it.
-        seq.join()
-    del midiout
+    # for seq in seqs:
+    #     seq.done = True  # And kill it.
+    #     seq.join()
+    # del midiout
     print("Exiting")
 
 if __name__ == '__main__':

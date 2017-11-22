@@ -53,6 +53,7 @@
 ### 2017/11/24 - Week 9
 
 * Changed attractor model to pyramid
+* Defined parametrically defined paths for attractors to follow
 
 ### 2017/12/01 - Week 10
 
