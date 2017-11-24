@@ -11,12 +11,19 @@ Move points to logbook when done
 * Make separation spongier
 * Random noise on values for each boid to create actual individuals
 * Add predators
+	* Patrolling predators can reduce the probability of a swarm visiting an area of music space without making it impossible
+	* e.g. a predator patrolling the lower half of a box will make it less likely that the swarm get down there
 * Think about how swarms can interact with one another (add their position as attractor)
 * Treat attractors as high gravity points and have boids orbit them and speed up as they get closer
 	* Equates to adding gravity rule(?), which then means the boids and attractors must be assigned masses
 * Likewise have it so that the boids slow down as they approach the attractor
 * Dynamic number of boids (may play havoc with existing code)
 * Clustering for Naive now we have multiple attractors
+* More complex swarm behaviour: (see Reynolds87 and https://en.wikipedia.org/wiki/Flocking_(behavior)#Flocking_rules)
+	* Roll leads to drop in height
+	* Fear propogation
+	* Fixed topolgical distance
+	* Use bin-lattice instead of list (see above)
 
 
 ## Music

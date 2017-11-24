@@ -52,7 +52,12 @@
 
 ### 2017/11/24 - Week 9
 
-* Changed attractor model to pyramid
+* Changed models around
+	* "cube" is shown as sphere (due to how the Constraint rule is currently implemented)
+	* attractors are cubes
+	* boids are pyramids
+* Attempted showing the boid's direction, but it is slightly off
+* Allowed for multiple attractors at once
 * Defined parametrically defined paths for attractors to follow
 
 ### 2017/12/01 - Week 10
