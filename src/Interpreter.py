@@ -116,6 +116,28 @@ class Interpreter(threading.Thread):
         """
         return int((value/max_v) * IP.DYNAM_RANGE + IP.DYNAM_MIN)
 
+    @staticmethod
+    def interpret_beat(max_p, boid_p, beat):
+        """
+        Very similar to VelSequencer.interpret_velocity
+        :param max_p: length of time axis
+        :param boid_p: boid pos along the time axis
+        :param beat: length of 1 beat, seconds
+        :return: fraction of <beat>
+        """
+        boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
+        proportion = min(0.99, (boid_p / max_p))              # how far along the axis it is (1.0 -> IndexError)
+        # TODO decide on what to put in this list
+        # triplets and stuff
+        divisions = [4, 3, 2, 3/2, 1, 1/2, 1/4, 1/8]
+        # divisions = [1, 3/4, 1/2, 1/3, 1/4]
+        factor_index = int(proportion // (1/len(divisions)))  # find which note length to use
+
+        # print(beat * (divisions[factor_index]/4))
+
+        return beat * (divisions[factor_index]/4)
+        # return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
+
 
 class NaiveSequencer(Interpreter):
     """
@@ -188,37 +210,12 @@ class NaiveSequencer(Interpreter):
         # TODO hard-coded for 3D
         return [dyn, pitch, time]
 
-    @staticmethod
-    def interpret_beat(max_p, boid_p, beat):
-        """
-        Very similar to VelSequencer.interpret_velocity
-        :param max_p: length of time axis
-        :param boid_p: boid pos along the time axis
-        :param beat: length of 1 beat, seconds
-        :return: fraction of <beat>
-        """
-        boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
-        proportion = min(0.99, (boid_p / max_p))              # how far along the axis it is (1.0 -> IndexError)
-        # TODO decide on what to put in this list
-        # triplets and stuff
-        divisions = [4, 3, 2, 3/2, 1, 1/2, 1/4, 1/8]
-        # divisions = [1, 3/4, 1/2, 1/3, 1/4]
-        factor_index = int(proportion // (1/len(divisions)))  # find which note length to use
 
-        # print(beat * (divisions[factor_index]/4))
-
-        return beat * (divisions[factor_index]/4)
-        # return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
-
-
-class ChordSequencer(Interpreter):
+class ChordSequencer(NaiveSequencer):
     """
     Simple linear interpolation of position, but
     treat each boid as a sound agent
     """
-
-    def __init__(self, name, midiout, swarm_data, volume=None):
-        super().__init__(name, midiout, swarm_data, volume)
 
     def loop(self):
 
@@ -257,23 +254,13 @@ class ChordSequencer(Interpreter):
             # print(boid_heap)
             # assert len(boid_heap) == len(self.swarm.boids)
 
-    def interpret(self, max_v, data):
-        """
-        :param max_v: the maximum value each data can have (cube edge length)
-        :param data: list of positional data (x,y,z...)
-        :return: the list with the functions applied to each dimension
-        """
-        # TODO hard-coded for 3D
-        return [self.interpret_dynamic(max_v, data[dynam_axis]),
-                self.interpret_pitch(max_v, data[pitch_axis]),
-                self.interpret_time(max_v, data[time_axis])]
-
 
 class VelSequencer(NaiveSequencer):
     """
     Note length is a function of velocity of boids
     Otherwise identical to Naive
     """
+    # TODO this needs quite a bit of work...
     def loop(self):
 
         while not self.done:
@@ -285,7 +272,7 @@ class VelSequencer(NaiveSequencer):
             self.midiout.send_message([self.note_on, data[pitch_axis], 0])
 
     @staticmethod
-    def interpret_velocity(max_vel, boid_vel, time):
+    def interpret_velocity(max_vel, boid_vel, time=1):
         """
         The faster the boid goes, the more we subdivide the predetermined note length
         :param max_vel: the fastest a boid can go
@@ -293,7 +280,13 @@ class VelSequencer(NaiveSequencer):
         :param time: the interpreted time value of the boid
         :return:
         """
-        pro_v = norm(boid_vel)/max_vel                   # proportion of max speed
-        divisions = [4, 2, 1, 3/4, 1/2, 1/3, 1/4]        # note lengths (1 is "crotchet" equivalent for readability)
+        # TODO: the boids spend a lot more of their time in the extremes of their speed limit than they do
+        # in the extremes of the z axis, so the divisions list has been cut down significantly
+
+        pro_v = min(0.99, norm(boid_vel)/max_vel)                   # proportion of max speed
+        divisions = [4, 3, 2, 1]        # note lengths (1 is "crotchet" equivalent for readability)
         factor_index = int(pro_v // (1/len(divisions)))  # find which note length to use
+
+        print(time * (divisions[factor_index]/4))
+
         return time * (divisions[factor_index]/4)        # (now treat semibreve as 1)

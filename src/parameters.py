@@ -33,7 +33,8 @@ class SP:
     ATTRACTOR_MODE = 0                  # 0 = teleportation, 1 = paths
     RAND_ATTRACTOR_CHANGE = 0.035       # 0.05
     ATTRACTORS_NOTICED = 2              # How many attractors to be attracted to at once
-    MOTION_CONSTANT = 0.035
+    MOTION_CONSTANT = 0.035             # Add a bit of speed to keep them going (optional)
+    BOUNDING_SPHERE = 1                 # 0 = BOX, 1 = SPHERE to keep the boids inside
 
 
 class IP:

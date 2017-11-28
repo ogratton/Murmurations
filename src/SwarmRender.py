@@ -32,6 +32,11 @@ green     = (0.0, 1.0, 0.0, 1)
 blue      = (0.0, 0.0, 1.0, 1)
 sky       = (0.5, 0.7, 1.0, 1)
 
+# models
+PYRAMID = 0
+SPHERE = 1
+BOX = 2
+
 
 def rand_colour():
     return random.random(), random.random(), random.random(), 1
@@ -55,7 +60,10 @@ class World:
         # make the objects for the cube
         self.boxes = []
         for cube in self.cubes:
-            box_model = deepcopy(self.models[1])
+            if SP.BOUNDING_SPHERE:
+                box_model = deepcopy(self.models[SPHERE])
+            else:
+                box_model = deepcopy(self.models[BOX])
             box_model.x, box_model.y, box_model.z = list(cube.centre)[:3]  # TODO atm just take the first 3 dims
             box_model.color = red  # doesn't matter cos not filled in
             box_model.scale = cube.edge_length/2
@@ -68,7 +76,7 @@ class World:
 
             boid_models = []
             for boid in swarm.boids:
-                boid_model = deepcopy(self.models[0])
+                boid_model = deepcopy(self.models[PYRAMID])
                 boid_model.x, boid_model.y, boid_model.z = list(boid.location)[:3]  # TODO !!
                 boid_model.color = colour
                 boid_model.scale = model_size
@@ -76,7 +84,7 @@ class World:
 
             attr_models = []
             for attr in swarm.attractors:
-                attractor_model = deepcopy(self.models[2])
+                attractor_model = deepcopy(self.models[BOX])
                 attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]  # TODO !!
                 attractor_model.color = colour
                 attractor_model.scale = model_size

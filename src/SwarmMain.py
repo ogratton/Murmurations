@@ -49,6 +49,8 @@ def load_config():
     parameters.SP.ATTRACTOR_MODE = int(config['SWARM']['ATTRACTOR_MODE'])
     parameters.SP.ATTRACTORS_NOTICED = int(config['SWARM']['ATTRACTORS_NOTICED'])
     parameters.SP.MOTION_CONSTANT = float(config['SWARM']['MOTION_CONSTANT'])
+    parameters.SP.BOUNDING_SPHERE = int(config['SWARM']['BOUNDING_SPHERE'])
+
 
 def main():
 
@@ -57,29 +59,28 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7]
-    edge_length = 100
+    edge_length = 50
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(r_[40, 10, 17], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(3, cube), 1, inst.PAD_2_WARM),
-                    (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
+                    (Swarm.Swarm(3, cube), 1, inst.ACOUSTIC_GUITAR_NYLON),
+                    # (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
-    # TODO TEMP AUDIO OFF
     midiout = rtmidi.MidiOut().open_port(0)
     seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    # seqs[0].set_tempo(120)
-    # seqs[1].set_tempo(60)
-    # seqs[0].set_scale(scales.min_pen)
-    # seqs[1].set_scale(scales.min_arp)
+    seqs[0].set_tempo(60)
+    # seqs[1].set_tempo(120)
+    seqs[0].set_scale(scales.dorian)
+    # seqs[1].set_scale(scales.min_pen)
     # map(lambda x: x.set_tempo(120), seqs)
     # map(lambda x: x.set_scale(scales.min_arp), seqs)
 

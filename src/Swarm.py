@@ -297,8 +297,14 @@ class Boid(object):
         self.velocity = velocity
         self.limit_speed(SP.MAX_SPEED)
         self.location = self.location + self.velocity
-        # bool to keep the boid in the box (technically this describes a sphere)
-        self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
+        # bool to keep the boid in the box (TODO technically this describes a sphere)
+
+        if SP.BOUNDING_SPHERE:
+            self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
+        else:
+            self.turning = False
+            for dim in range(len(self.location)):
+                self.turning = self.turning or norm(self.location[dim]-self.cube.centre[dim]) >= self.cube.edge_length*SP.TURNING_RATIO/2
 
 
 class Attractor(object):
