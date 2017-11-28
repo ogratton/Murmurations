@@ -66,7 +66,7 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(3, cube), 1, inst.ACOUSTIC_GUITAR_NYLON),
+                    (Swarm.Swarm(10, cube), 1, inst.ACOUSTIC_GUITAR_NYLON),
                     # (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
@@ -77,9 +77,9 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    seqs[0].set_tempo(60)
+    # seqs[0].set_tempo(120)
     # seqs[1].set_tempo(120)
-    seqs[0].set_scale(scales.dorian)
+    seqs[0].set_scale(scales.min_pen)
     # seqs[1].set_scale(scales.min_pen)
     # map(lambda x: x.set_tempo(120), seqs)
     # map(lambda x: x.set_scale(scales.min_arp), seqs)

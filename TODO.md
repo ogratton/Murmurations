@@ -6,6 +6,8 @@ Move points to logbook when done
 
 * Read http://natureofcode.com/book/chapter-6-autonomous-agents/
 * Additional dimension(s) (note length as opposed to event length in order to get rests)
+	* The reason plucked stringed instruments sound nicer at the moment is because their notes decay
+	* If we add an additional dimension (or use velocity) to kill notes off somewhat prematurely it should be better for all
 * Implement bin-lattice spatial subdivision (instead of O(n^2) for getting nearest n boids)
 	* calc_v is the rate-determining function that makes it O(n^2) instead of O(nk) where k=number of bins surrounding boid
 * Make separation spongier
@@ -47,9 +49,9 @@ Move points to logbook when done
 
 ## Graphics
 
+* Fix rotation for boids (match velocity)
 * Add centre of gravity model?
 * Change the way the camera movement works
-* Add rotation for boids (match velocity)
 * Add MC-Edit-style GUI
     * add swarms (by dragging and dropping?)
 	* tweak settings on the fly

@@ -62,7 +62,10 @@
 
 ### 2017/12/01 - Week 10
 
-*
+* Wrote most of literature review
+* Added snapping to ChordInterpreter
+* Implements bounding box option (before was technically a sphere)
+* Added many more videos
 
 ### 2017/12/08 - Week 11
 
