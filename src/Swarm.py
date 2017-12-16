@@ -411,6 +411,7 @@ class Swarm(object):
         """
         Update every boid in the swarm and calculate the swarm's centre of mass
         """
+        # position and velocity accumulators
         p_acc = r_[0., 0., 0.]
         v_acc = r_[0., 0., 0.]
         for boid in self.boids:
@@ -420,7 +421,9 @@ class Swarm(object):
             boid.update()
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
+        # calculate the centre of mass
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
+        # update attractors
         if SP.ATTRACTOR_MODE == 0:
             for i, attr in enumerate(self.attractors):
                 if random.random() < SP.RAND_ATTRACTOR_CHANGE:
