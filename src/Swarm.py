@@ -7,11 +7,6 @@ from numpy.linalg import norm
 from parameters import SP
 from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
-"""
-TODO:
-- add attractors
-- fiddle with values in rules
-"""
 
 def random_range(lower=0.0, upper=1.0):
     """
@@ -161,10 +156,10 @@ class Separation(Rule):
 
     def accumulate(self, boid, other, distance):
         # calc vector from boid2 to boid1 (NOT other way round as we want repulsion)
-        separation = boid.location - other.location
+        repulsion = boid.location - other.location
         if distance > 0:
             # this normalises the repulsion vector and makes closer boids repel more
-            self.change += separation / distance**2  # makes it an inverse square rule
+            self.change += repulsion / distance**2  # makes it an inverse square rule
         self.num += 1
 
     def add_adjustment(self, boid):
@@ -180,20 +175,13 @@ class Attraction:
 
     @staticmethod
     def add_adjustment(boid):
-        # TODO test
-
-        # # OLD WAY only listen to the first attractor
-        # to_attractor = boid.attractors[0].location - boid.location
-        # change = to_attractor * SP.ATTRACTION_MULTIPLIER
-        # boid.adjustment += change
-
         # priority queue of (distance, change)
         dist_mat = []
 
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
             dist = norm(to_attractor)
-            # TODO 1/dist needs tweaking
+            # 1/dist makes attraction stronger for closer attractors
             change = (to_attractor - boid.velocity) * SP.ATTRACTION_MULTIPLIER * (1/dist)
             heappush(dist_mat, (dist, list(change)))  # needs to be a list as r_ is 'ambiguous'
 
@@ -204,13 +192,20 @@ class Attraction:
 
 
 class Predation:
-    """ Keep away from scary predators """
+    """ Bonus Rule: Keep away from scary predators """
 
     @staticmethod
     def add_adjustment(boid):
-        # calculate dist to every predator
-        # if
-        pass
+        change = r_[.0, .0, .0]
+        for pred in boid.predators:
+            # head in the opposite direction from the predator
+            repulsion = boid.location - pred.location
+            distance = norm(repulsion)
+            # normalise the vector and weight by inverse distance
+            # so that closer threats are taken more seriously
+            change += repulsion / distance**2
+        # finally, add the change vector
+        boid.adjustment = boid.adjustment + change
 
 
 class Constraint:
@@ -225,6 +220,17 @@ class Constraint:
         boid.adjustment = boid.adjustment + change
 
 
+# class Agent(object):
+#     """
+#     Generic agent
+#     """
+#     def __init__(self, cube):
+#         """
+#         :param cube: The space the agent can occupy
+#         """
+#         self.cube = cube
+
+
 class Boid(object):
     """
     A single swarm agent
@@ -234,19 +240,16 @@ class Boid(object):
         """
         Make a baby boid
         :param cube: Cube   bounding box for this boid
+        :param attractors: [Attractor]
         """
         self.cube = cube
         self.attractors = attractors
 
-        # doesn't seem to matter that much where you start
-        # even if it's outside the cube
-        # either start at centre or at a random location:
-        # self.location = cube.centre
+        # doesn't matter that much where you start
         self.location = rand_point_in_cube(cube, 3)
-        # self.location = Vector3()
 
         self.velocity = random_vector(3, -1.0, 1.0)  # vx vy vz
-        self.adjustment = r_[0., 0., 0.]  # to accumulate corrections
+        self.adjustment = r_[0., 0., 0.]  # to accumulate corrections from rules
         self.turning = False
 
     def __repr__(self):
@@ -308,7 +311,6 @@ class Boid(object):
         self.velocity = velocity
         self.limit_speed(SP.MAX_SPEED)
         self.location = self.location + self.velocity
-        # bool to keep the boid in the box (TODO technically this describes a sphere)
 
         if SP.BOUNDING_SPHERE:
             self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
@@ -321,9 +323,11 @@ class Boid(object):
 class Predator(object):
     """
     Agents for boids to avoid
+    Identical in code, just not in the "boids" register
     """
-    def __init__(self):
-        pass
+    # TODO add different behaviour to make it a bit more interesting
+    def __init__(self, cube, attractors):
+        super().__init__(cube, attractors)
 
 
 class Attractor(object):
@@ -399,10 +403,7 @@ class Swarm(object):
     """
     A swarm of boids
     """
-
-    # TODO should have a list of attractors, not just one
-
-    def __init__(self, num_boids, cube, num_attractors=1):
+    def __init__(self, num_boids, cube, num_attractors=1, num_predators=1):
         """
         Set up a swarm
         :param num_boids: int   number of boids in the swarm
@@ -416,10 +417,15 @@ class Swarm(object):
         for _ in range(num_attractors):
             self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3), cube))  # cube.centre
 
+        self.predators = []
+        for _ in range(num_predators):
+            self.predators.append(Predator(cube, self.attractors))
+
         for _ in range(num_boids):
             self.boids.append(Boid(cube, self.attractors))
         self.c_o_m = CentOfMass(cube.centre, r_[0., 0., 0.], cube.v_min)
 
+        # TODO this doesn't actually work here
         if SP.RANDOM_SEED != SP.TRUE_RANDOM:
             random.seed(SP.RANDOM_SEED)  # for repeatability
 

@@ -30,6 +30,7 @@ Move points to logbook when done
 
 ## Music
 
+* Extra dimensions can determine scale/key etc
 * Account for computation time for beats (like DrumSeq)
 * Add sustain & modulation and stuff
 	* 'let ring'
@@ -66,6 +67,7 @@ Move points to logbook when done
 
 ## Misc
 
+* Don't think the random seed thing is working for the swarm
 * Make code even more modular if possible (I don't like how pyglet is tied into it)
 * Look at Numba & CUDA for GPU use
 	* https://developer.nvidia.com/how-to-cuda-python

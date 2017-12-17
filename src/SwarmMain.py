@@ -4,6 +4,7 @@ import pyglet
 import rtmidi
 from Interpreter import *
 
+import random
 import scales
 import configparser
 import parameters
@@ -32,7 +33,10 @@ def load_config():
     parameters.IP.DYNAM_MIN = int(config['INTERPRETER']['DYNAM_MIN'])
     parameters.IP.CHANNEL_VOL = int(config['INTERPRETER']['CHANNEL_VOL'])
 
-    parameters.SP.RANDOM_SEED = int(config['SWARM']['RANDOM_SEED'])
+    seed = int(config['SWARM']['RANDOM_SEED'])
+    if seed == -1:
+        seed = random.randint(1, 1000000)
+    parameters.SP.RANDOM_SEED = seed
     parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])  # TODO bool
     parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
     parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
@@ -66,7 +70,7 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 1, inst.ACOUSTIC_GUITAR_NYLON),
+                    (Swarm.Swarm(7, cube, 6, 2), 1, inst.ACOUSTIC_GUITAR_NYLON),
                     # (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
@@ -79,7 +83,7 @@ def main():
 
     seqs[0].set_tempo(60)
     # seqs[1].set_tempo(120)
-    seqs[0].set_scale(scales.maj_sev)
+    seqs[0].set_scale(scales.nat_min)
     # seqs[1].set_scale(scales.min_pen)
     # map(lambda x: x.set_tempo(120), seqs)
     # map(lambda x: x.set_scale(scales.min_arp), seqs)

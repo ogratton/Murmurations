@@ -82,6 +82,14 @@ class World:
                 boid_model.scale = model_size
                 boid_models.append(boid_model)
 
+            pred_models = []
+            for pred in swarm.predators:
+                pred_model = deepcopy(self.models[SPHERE])
+                pred_model.x, pred_model.y, pred_model.z = list(pred.location)[:3]  # TODO !!
+                pred_model.color = colour
+                pred_model.scale = model_size
+                pred_models.append(pred_model)
+
             attr_models = []
             for attr in swarm.attractors:
                 attractor_model = deepcopy(self.models[BOX])
@@ -90,7 +98,7 @@ class World:
                 attractor_model.scale = model_size
                 attr_models.append(attractor_model)
 
-            self.swarm_models.append((boid_models, attr_models))
+            self.swarm_models.append((boid_models, pred_models, attr_models))
 
         # sets the background color
         gl.glClearColor(*background_color)
@@ -127,7 +135,7 @@ class World:
 
         # TODO this may be very slow
         # TODO also it won't account for changing number of boids if that is implemented
-        for i, (boids_m, atts) in enumerate(self.swarm_models):
+        for i, (boids_m, preds, atts) in enumerate(self.swarm_models):
             swarm = self.swarms[i]
             for j, boid_m in enumerate(boids_m):
                 new_loc = list(swarm.boids[j].location)[:3]  # TODO hard-coded 3d!!
@@ -137,10 +145,14 @@ class World:
                 new_vel = list(normalise(swarm.boids[j].velocity[:3]))
                 # TODO completely wrong and also stupid
                 ## boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
-                # boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
-                # boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
+                boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
+                boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
 
                 self.render_model(boid_m)
+
+            for j, pred in enumerate(preds):
+                new_loc = list(swarm.predators[j].location)[:3]  # TODO hard-coded 3d!!
+                pred.x, pred.y, pred.z = new_loc
 
             for j, att in enumerate(atts):
                 new_att = list(swarm.attractors[j].location)[:3]  # TODO !!

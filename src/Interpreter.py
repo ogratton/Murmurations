@@ -77,6 +77,7 @@ class Interpreter(threading.Thread):
         :param data: list of positional data (x,y,z...)
         :return: the list with the functions applied to each dimension
         """
+        # TODO error catching on all these
         pass
 
     @staticmethod
