@@ -194,7 +194,7 @@ class Attraction:
             to_attractor = attr.location - boid.location
             dist = norm(to_attractor)
             # TODO 1/dist needs tweaking
-            change = to_attractor * SP.ATTRACTION_MULTIPLIER * (1/dist)
+            change = (to_attractor - boid.velocity) * SP.ATTRACTION_MULTIPLIER * (1/dist)
             heappush(dist_mat, (dist, list(change)))  # needs to be a list as r_ is 'ambiguous'
 
         # only feel the pull of the nearest <x> attractors

@@ -137,8 +137,8 @@ class World:
                 new_vel = list(normalise(swarm.boids[j].velocity[:3]))
                 # TODO completely wrong and also stupid
                 ## boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
-                boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
-                boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
+                # boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
+                # boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
 
                 self.render_model(boid_m)
 
