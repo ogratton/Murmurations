@@ -22,7 +22,7 @@ Contains render methods for the displayable classes
 # TODO actually change the whole camera movement controls
 
 # constants
-DIST_BACK = 75
+DIST_BACK = 50
 
 # colours
 dark_gray = (.75, .75, .75, 1)
@@ -136,7 +136,7 @@ class World:
                 # boid direction based on velocity
                 new_vel = list(normalise(swarm.boids[j].velocity[:3]))
                 # TODO completely wrong and also stupid
-                # boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
+                ## boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
                 boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
                 boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
 

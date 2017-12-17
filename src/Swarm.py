@@ -98,7 +98,7 @@ class Rule(object):
         self.change = r_[0., 0., 0.]    # velocity correction
         self.num = 0                    # number of participants
         # TODO: this should be the NUMBER of boids it accounts for, not a distance
-        self.neighbourhood = 0.5        # field of view of boid as ratio of cube edge length (overwritten later)
+        self.neighbourhood = 0.5        # sphere of view of boid as ratio of cube edge length (overwritten later)
 
     def accumulate(self, boid, other, distance):
         """
@@ -122,7 +122,7 @@ class Cohesion(Rule):
 
     def accumulate(self, boid, other, distance):
         if other != boid:
-            self.change = self.change + other.location
+            self.change += other.location
             self.num += 1
 
     def add_adjustment(self, boid):
@@ -138,11 +138,11 @@ class Alignment(Rule):
 
     def __init__(self):
         super().__init__()
-        self.neighbourhood = SP.ALIGNMENT_NEIGHBOURHOOD  # operating area for this correction
+        self.neighbourhood = SP.ALIGNMENT_NEIGHBOURHOOD
 
     def accumulate(self, boid, other, distance):
         if other != boid:
-            self.change = self.change + other.velocity
+            self.change += other.velocity
             self.num += 1
 
     def add_adjustment(self, boid):
@@ -160,11 +160,12 @@ class Separation(Rule):
         self.neighbourhood = SP.SEPARATION_NEIGHBOURHOOD
 
     def accumulate(self, boid, other, distance):
-        if other != boid:
-            separation = boid.location - other.location
-            if norm(separation) > 0:
-                self.change = self.change + (normalise(separation) / distance)
-            self.num += 1
+        # calc vector from boid2 to boid1 (NOT other way round as we want repulsion)
+        separation = boid.location - other.location
+        if distance > 0:
+            # this normalises the repulsion vector and makes closer boids repel more
+            self.change += separation / distance**2  # makes it an inverse square rule
+        self.num += 1
 
     def add_adjustment(self, boid):
         # here norm is vector magnitude
@@ -194,12 +195,22 @@ class Attraction:
             dist = norm(to_attractor)
             # TODO 1/dist needs tweaking
             change = to_attractor * SP.ATTRACTION_MULTIPLIER * (1/dist)
-            heappush(dist_mat, (dist, list(change)))  # needs to be a list as r_ is ambiguous
+            heappush(dist_mat, (dist, list(change)))  # needs to be a list as r_ is 'ambiguous'
 
         # only feel the pull of the nearest <x> attractors
         attention_span = min(SP.ATTRACTORS_NOTICED, len(boid.attractors))
         for _ in range(attention_span):
             boid.adjustment += heappop(dist_mat)[1]
+
+
+class Predation:
+    """ Keep away from scary predators """
+
+    @staticmethod
+    def add_adjustment(boid):
+        # calculate dist to every predator
+        # if
+        pass
 
 
 class Constraint:
@@ -243,7 +254,7 @@ class Boid(object):
 
     def calc_v(self, all_boids):
         """
-        Calculate velocity for next tick by applying the three basic swarming rules
+        Calculate velocity for next tick by applying the swarming rules
         """
         # Apply the rules to each of the boids
         # flocks use alignment, swarms do not
@@ -257,7 +268,7 @@ class Boid(object):
         # TODO this makes the swarm O(n^2) instead of linear. Maybe find a better data structure than list
         # TODO turns out this is the bottleneck of the whole program...
         # in actual bird flocks, it is suggested they look at the nearest (say) 7 birds regardless of metric distance
-        # this is topological distance. USE BIN-LATTICE SPATIAL SUBDIVISION
+        # this is topological distance.
         for boid in all_boids:
             distance = norm(self.location-boid.location)
             for rule in rules:
@@ -292,7 +303,7 @@ class Boid(object):
         # they are moving so they don't ever stop.
         # Now that we have attractors, this is unnecessary
         if norm(velocity) > 0:
-            velocity = velocity + (normalise(velocity) * random_range(0.0, SP.MOTION_CONSTANT))
+            velocity += (normalise(velocity) * random_range(0.0, SP.MOTION_CONSTANT))
 
         self.velocity = velocity
         self.limit_speed(SP.MAX_SPEED)
@@ -305,6 +316,14 @@ class Boid(object):
             self.turning = False
             for dim in range(len(self.location)):
                 self.turning = self.turning or norm(self.location[dim]-self.cube.centre[dim]) >= self.cube.edge_length*SP.TURNING_RATIO/2
+
+
+class Predator(object):
+    """
+    Agents for boids to avoid
+    """
+    def __init__(self):
+        pass
 
 
 class Attractor(object):
