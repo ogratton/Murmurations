@@ -191,23 +191,6 @@ class Attraction:
             boid.adjustment += heappop(dist_mat)[1]
 
 
-class Predation:
-    """ Bonus Rule: Keep away from scary predators """
-
-    @staticmethod
-    def add_adjustment(boid):
-        change = r_[.0, .0, .0]
-        for pred in boid.predators:
-            # head in the opposite direction from the predator
-            repulsion = boid.location - pred.location
-            distance = norm(repulsion)
-            # normalise the vector and weight by inverse distance
-            # so that closer threats are taken more seriously
-            change += repulsion / distance**2
-        # finally, add the change vector
-        boid.adjustment = boid.adjustment + change
-
-
 class Constraint:
     """ Bonus Rule: Boids must stay within the bounding cube. """
 
@@ -320,16 +303,6 @@ class Boid(object):
                 self.turning = self.turning or norm(self.location[dim]-self.cube.centre[dim]) >= self.cube.edge_length*SP.TURNING_RATIO/2
 
 
-class Predator(object):
-    """
-    Agents for boids to avoid
-    Identical in code, just not in the "boids" register
-    """
-    # TODO add different behaviour to make it a bit more interesting
-    def __init__(self, cube, attractors):
-        super().__init__(cube, attractors)
-
-
 class Attractor(object):
     """
     Attracts boid towards it
@@ -403,7 +376,7 @@ class Swarm(object):
     """
     A swarm of boids
     """
-    def __init__(self, num_boids, cube, num_attractors=1, num_predators=1):
+    def __init__(self, num_boids, cube, num_attractors=1):
         """
         Set up a swarm
         :param num_boids: int   number of boids in the swarm
@@ -416,10 +389,6 @@ class Swarm(object):
         self.attractors = []
         for _ in range(num_attractors):
             self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3), cube))  # cube.centre
-
-        self.predators = []
-        for _ in range(num_predators):
-            self.predators.append(Predator(cube, self.attractors))
 
         for _ in range(num_boids):
             self.boids.append(Boid(cube, self.attractors))

@@ -70,7 +70,7 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6, 2), 1, inst.ACOUSTIC_GUITAR_NYLON),
+                    (Swarm.Swarm(7, cube, 6), 1, inst.ACOUSTIC_GUITAR_NYLON),
                     # (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
