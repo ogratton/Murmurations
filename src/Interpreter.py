@@ -77,10 +77,11 @@ class Interpreter(threading.Thread):
         if self.channel != 9:
             self.midiout.send_message([PROGRAM_CHANGE | self.channel, instrument & 127])
 
-    def backwards_interpret(self, message):
+    def backwards_interpret(self, message, time):
         """
         Convert a midi input message to boid-space
         :param message: e.g. [144,47,120] (i.e. note on, B3, loud)
+        :param time: in seconds, since last midi-in message
         """
         # proportion along the axes
         pitch_space = 0.5
@@ -89,17 +90,22 @@ class Interpreter(threading.Thread):
 
         pmin, pran = self.pitch_min, self.pitch_range
         dmin, dran = self.dynam_min, self.dynam_range
+        tmin, tran = self.time_min, self.time_range  # TODO note that these are not used when beat is on
 
         # note on messages
         if message[0] in range(144, 160):
             if message[1] in range(pmin, pmin+pran+1):
                 pitch_space = (message[1]-pmin)/pran
             else:
-                print("need something smarter for pitch")
+                print("need something smarter for pitch: {0}".format(message[1]))
             if message[2] in range(dmin, dmin+dran+1):
                 dynam_space = (message[2]-dmin)/dran
             else:
-                print("need something smarter for dynam")
+                print("need something smarter for dynam: {0}".format(message[2]))
+            if tmin <= time <= tmin+tran:
+                time_space = (time-tmin)/tran
+            else:
+                print("need something smarter for time: {0}".format(time))
 
         self.swarm.midi_to_attractor([dynam_space, pitch_space, time_space])
 

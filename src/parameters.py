@@ -45,7 +45,6 @@ class IP:
     PITCH_MIN = 21      # 21   - A0
     TIME_RANGE = 0.25   # 1    - range in time between events
     TIME_MIN = 0.05     # 0.05 - min time between events
-    DYNAM_MAX = 127     # 127  - max dynamic
     DYNAM_MIN = 25      # 0    - min dynamic
-    DYNAM_RANGE = DYNAM_MAX - DYNAM_MIN
+    DYNAM_RANGE = 102
     CHANNEL_VOL = 110

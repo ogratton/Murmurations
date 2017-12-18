@@ -402,7 +402,7 @@ class Swarm(object):
         pos = []
         for i, dim in enumerate(ratios):
             pos.append(v_min[i] + dim*edge)
-        print(pos)
+        # update the attractor that has been still longest with this new position
         self.attractors[self.att_index].location = r_[pos]
         self.att_index = (self.att_index + 1) % len(self.attractors)
         return

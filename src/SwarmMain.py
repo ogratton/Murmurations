@@ -30,7 +30,7 @@ def load_config():
     parameters.IP.PITCH_MIN = int(config['INTERPRETER']['PITCH_MIN'])
     parameters.IP.TIME_RANGE = float(config['INTERPRETER']['TIME_RANGE'])
     parameters.IP.TIME_MIN = float(config['INTERPRETER']['TIME_MIN'])
-    parameters.IP.DYNAM_MAX = int(config['INTERPRETER']['DYNAM_MAX'])
+    parameters.IP.DYNAM_RANGE = int(config['INTERPRETER']['DYNAM_RANGE'])
     parameters.IP.DYNAM_MIN = int(config['INTERPRETER']['DYNAM_MIN'])
     parameters.IP.CHANNEL_VOL = int(config['INTERPRETER']['CHANNEL_VOL'])
 
@@ -82,7 +82,7 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    interps[0].set_tempo(160)
+    # interps[0].set_tempo(160)
     # interps[1].set_tempo(120)
     interps[0].set_scale(scales.locrian)
     # interps[1].set_scale(scales.min_pen)
