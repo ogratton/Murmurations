@@ -87,7 +87,7 @@ class World:
                 attractor_model = deepcopy(self.models[BOX])
                 attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]  # TODO !!
                 attractor_model.color = colour
-                attractor_model.scale = model_size
+                attractor_model.scale = model_size * 0.5
                 attr_models.append(attractor_model)
 
             self.swarm_models.append((boid_models, attr_models))

@@ -203,17 +203,6 @@ class Constraint:
         boid.adjustment = boid.adjustment + change
 
 
-# class Agent(object):
-#     """
-#     Generic agent
-#     """
-#     def __init__(self, cube):
-#         """
-#         :param cube: The space the agent can occupy
-#         """
-#         self.cube = cube
-
-
 class Boid(object):
     """
     A single swarm agent
@@ -387,6 +376,7 @@ class Swarm(object):
         self.boids = []
         self.cube = cube
         self.attractors = []
+        self.att_index = 0  # for midi-input mode
         for _ in range(num_attractors):
             self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3), cube))  # cube.centre
 
@@ -400,6 +390,22 @@ class Swarm(object):
 
     def __repr__(self):
         return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)
+
+    def midi_to_attractor(self, ratios):
+        """
+        Convert a MIDI message to an attractor
+        :param ratios: ratio of how far along to place attractor on each axis
+        """
+        cube = self.cube
+        v_min = cube.v_min
+        edge = cube.edge_length
+        pos = []
+        for i, dim in enumerate(ratios):
+            pos.append(v_min[i] + dim*edge)
+        print(pos)
+        self.attractors[self.att_index].location = r_[pos]
+        self.att_index = (self.att_index + 1) % len(self.attractors)
+        return
 
     def update(self):
         """
@@ -426,6 +432,8 @@ class Swarm(object):
         elif SP.ATTRACTOR_MODE == 1:
             for i, attr in enumerate(self.attractors):
                 attr.step_path_equation()
+        elif SP.ATTRACTOR_MODE == 2:
+            pass  # this is handled by the callback function midi_to_attractor
         else:
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             SP.ATTRACTOR_MODE = 0

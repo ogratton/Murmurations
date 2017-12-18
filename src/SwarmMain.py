@@ -9,6 +9,7 @@ import scales
 import configparser
 import parameters
 import instruments as inst
+from midi_in_stream import InStream
 
 from numpy import r_
 
@@ -63,7 +64,7 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7]
-    edge_length = 50
+    edge_length = 25
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(r_[40, 10, 17], 30)
 
@@ -79,14 +80,19 @@ def main():
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    seqs[0].set_tempo(60)
-    # seqs[1].set_tempo(120)
-    seqs[0].set_scale(scales.nat_min)
-    # seqs[1].set_scale(scales.min_pen)
-    # map(lambda x: x.set_tempo(120), seqs)
-    # map(lambda x: x.set_scale(scales.min_arp), seqs)
+    interps[0].set_tempo(160)
+    # interps[1].set_tempo(120)
+    interps[0].set_scale(scales.locrian)
+    # interps[1].set_scale(scales.min_pen)
+    # map(lambda x: x.set_tempo(120), interps)
+    # map(lambda x: x.set_scale(scales.min_arp), interps)
+
+    # start up the midi in stream
+    in_stream = None
+    if parameters.SP.ATTRACTOR_MODE == 2:
+        in_stream = InStream(interps)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
@@ -97,10 +103,13 @@ def main():
     pyglet.app.run()
 
     # CLEAN UP
-    for seq in seqs:
-        seq.done = True  # And kill it.
-        seq.join()
+    for interp in interps:
+        interp.done = True  # kill it.
+        interp.join()
     del midiout
+    if in_stream:
+        in_stream.done = True
+        in_stream.join()
     print("Exiting")
 
 if __name__ == '__main__':

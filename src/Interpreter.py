@@ -38,7 +38,7 @@ class Interpreter(threading.Thread):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, name, midiout, swarm_data, volume=None):
+    def __init__(self, name, midiout, swarm_data):
         super(Interpreter, self).__init__()
         self.name = name  # TODO use or lose
         self.midiout = midiout
@@ -47,9 +47,16 @@ class Interpreter(threading.Thread):
         self.control_change = CONTROL_CHANGE | self.channel
         self.note_on = NOTE_ON | self.channel
         self.instrument = swarm_data[2]
-        self.volume = volume
-        if self.volume is None:
-            self.volume = IP.CHANNEL_VOL
+
+        # SET DEFAULTS
+        self.volume = IP.CHANNEL_VOL
+        self.pitch_range = IP.PITCH_RANGE
+        self.pitch_min = IP.PITCH_MIN
+        self.dynam_range = IP.DYNAM_RANGE
+        self.dynam_min = IP.DYNAM_MIN
+        self.time_range = IP.TIME_RANGE
+        self.time_min = IP.TIME_MIN
+
         self.done = False
         self.start()
 
@@ -70,6 +77,32 @@ class Interpreter(threading.Thread):
         if self.channel != 9:
             self.midiout.send_message([PROGRAM_CHANGE | self.channel, instrument & 127])
 
+    def backwards_interpret(self, message):
+        """
+        Convert a midi input message to boid-space
+        :param message: e.g. [144,47,120] (i.e. note on, B3, loud)
+        """
+        # proportion along the axes
+        pitch_space = 0.5
+        dynam_space = 0.5
+        time_space = 0.5
+
+        pmin, pran = self.pitch_min, self.pitch_range
+        dmin, dran = self.dynam_min, self.dynam_range
+
+        # note on messages
+        if message[0] in range(144, 160):
+            if message[1] in range(pmin, pmin+pran+1):
+                pitch_space = (message[1]-pmin)/pran
+            else:
+                print("need something smarter for pitch")
+            if message[2] in range(dmin, dmin+dran+1):
+                dynam_space = (message[2]-dmin)/dran
+            else:
+                print("need something smarter for dynam")
+
+        self.swarm.midi_to_attractor([dynam_space, pitch_space, time_space])
+
     @abstractmethod
     def interpret(self, max_v, data):
         """
@@ -80,8 +113,7 @@ class Interpreter(threading.Thread):
         # TODO error catching on all these
         pass
 
-    @staticmethod
-    def interpret_pitch(max_v, value):
+    def interpret_pitch(self, max_v, value):
         """
         Default (simple linear interpolation)
         To be overwritten for more complicated interpreters
@@ -90,7 +122,8 @@ class Interpreter(threading.Thread):
         :param value: float, distance along the axis associated with pitch
         :return: int from 21-108 to stay within piano range
         """
-        return int((value / max_v) * IP.PITCH_RANGE + IP.PITCH_MIN)
+        # TODO obsolete now you can just use the chromatic scale with interpret_pitch_scale
+        return int((value / max_v) * self.pitch_range + self.pitch_min)
 
     @staticmethod
     def interpret_pitch_scale(max_p, boid_p, notes):
@@ -101,21 +134,19 @@ class Interpreter(threading.Thread):
         index = int(proportion // (1 / len(notes)))
         return notes[index]
 
-    @staticmethod
-    def interpret_time(max_v, value):
+    def interpret_time(self, max_v, value):
         """
         Default (simple linear interpolation)
         To be overwritten for more complicated interpreters
         """
-        return (value/max_v) * IP.TIME_RANGE + IP.TIME_MIN
+        return (value/max_v) * self.time_range + self.time_min
 
-    @staticmethod
-    def interpret_dynamic(max_v, value):
+    def interpret_dynamic(self, max_v, value):
         """
         Default (simple linear interpolation)
         To be overwritten for more complicated interpreters
         """
-        return int((value/max_v) * IP.DYNAM_RANGE + IP.DYNAM_MIN)
+        return int((value/max_v) * self.dynam_range + self.dynam_min)
 
     @staticmethod
     def interpret_beat(max_p, boid_p, beat):
@@ -136,8 +167,7 @@ class Interpreter(threading.Thread):
 
         # print(beat * (divisions[factor_index]/4))
 
-        return beat * (divisions[factor_index]/4)
-        # return beat * (divisions[factor_index])               # (now treat semibreve as 1) TODO /4 or not?
+        return beat * (divisions[factor_index])               # TODO /4 or not?
 
 
 class NaiveSequencer(Interpreter):
@@ -145,8 +175,8 @@ class NaiveSequencer(Interpreter):
     Simple linear interpolation of position of CENTRE OF MASS of each swarm
     """
 
-    def __init__(self, name, midiout, swarm_data, volume=None):
-        super().__init__(name, midiout, swarm_data, volume)
+    def __init__(self, name, midiout, swarm_data):
+        super().__init__(name, midiout, swarm_data)
         self.snap_to_beat = False
         self.snap_to_scale = False
         self.beat = None
