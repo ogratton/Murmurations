@@ -64,7 +64,7 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7]
-    edge_length = 25
+    edge_length = 75
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(r_[40, 10, 17], 30)
 
@@ -82,7 +82,7 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    # interps[0].set_tempo(160)
+    interps[0].set_tempo(160)
     # interps[1].set_tempo(120)
     interps[0].set_scale(scales.locrian)
     # interps[1].set_scale(scales.min_pen)
