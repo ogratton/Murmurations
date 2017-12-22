@@ -1,6 +1,6 @@
 import threading
 
-# temporary imports while it's a dummy
+from rtmidi.midiutil import open_midiinput
 from time import sleep, time as timenow
 import random
 
@@ -9,10 +9,47 @@ import random
 
 class InStream(threading.Thread):
     """
-    Listen to midi-in and publish the events
+    Polls midi-in and publish the events
+    Based on the midiin_callback code from python rt-midi examples
+    """
+    def __init__(self, interpreters, port):
+        super(InStream, self).__init__()
+        self.interpreters = interpreters
+        self.port = port
+        self.wallclock = timenow()
+
+        try:
+            self.midiin, self.port_name = open_midiinput(port)
+        except (EOFError, KeyboardInterrupt):
+            print("WARNING: failed to open MIDI-in port {0}".format(port))
+
+        self.done = False
+        self.start()
+
+    def run(self):
+        while not self.done:
+            msg = self.midiin.get_message()
+            # TODO for now only listen to NOTE_ON
+            if msg:
+                message, deltatime = msg
+                if 144 <= message[0] < 160:
+                    self.wallclock += deltatime
+                    # print("[%s] @%0.6f %r" % (self.port_name, self.wallclock, message))
+
+                    # publish the message to every interpreter
+                    for interp in self.interpreters:
+                        interp.backwards_interpret(message, random.random())  # TODO time
+
+            sleep(0.01)
+
+
+# TODO remove
+class DummyInStream(threading.Thread):
+    """
+    Sends made-up midi messages to the interpreters
     """
     def __init__(self, interpreters):
-        super(InStream, self).__init__()
+        super(DummyInStream, self).__init__()
         self.interpreters = interpreters
         self.done = False
         self.start()
@@ -29,7 +66,7 @@ class InStream(threading.Thread):
                 # TODO calculate time somehow
                 # TODO note that time_since_last will scupper chords :(
                 # perhaps send the last value that wasn't tiny...?
-                if message[0] in range(144, 160):
+                if 144 <= message[0] < 160:
                     time_since_last = timenow() - last_event_time
                     last_event_time = timenow()
 

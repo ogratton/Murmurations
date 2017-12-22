@@ -9,7 +9,7 @@ import scales
 import configparser
 import parameters
 import instruments as inst
-from midi_in_stream import InStream
+from midi_in_stream import InStream, DummyInStream
 
 from numpy import r_
 
@@ -64,15 +64,15 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7]
-    edge_length = 75
+    edge_length = 40
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(r_[40, 10, 17], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel (starting from 1), instrument code
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 1, inst.ACOUSTIC_GUITAR_NYLON),
-                    # (Swarm.Swarm(7, cube, 3), 2, inst.KALIMBA),
+                    (Swarm.Swarm(7, cube, 2), 1, inst.ACOUSTIC_GUITAR_NYLON),
+                    # (Swarm.Swarm(7, cube, 3), 2, inst.ACOUSTIC_GRAND_PIANO),
                     # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
                     # (Swarm.Swarm(7, cube2), 9, 0)
     ]
@@ -82,17 +82,17 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    interps[0].set_tempo(160)
-    # interps[1].set_tempo(120)
-    interps[0].set_scale(scales.locrian)
-    # interps[1].set_scale(scales.min_pen)
+    interps[0].set_tempo(80)
+    # interps[1].set_tempo(80)
+    interps[0].set_scale(scales.major)
+    # interps[1].set_scale(scales.locrian)
     # map(lambda x: x.set_tempo(120), interps)
     # map(lambda x: x.set_scale(scales.min_arp), interps)
 
     # start up the midi in stream
     in_stream = None
     if parameters.SP.ATTRACTOR_MODE == 2:
-        in_stream = InStream(interps)
+        in_stream = InStream(interps, 0)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 

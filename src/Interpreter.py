@@ -94,14 +94,19 @@ class Interpreter(threading.Thread):
 
         # note on messages
         if message[0] in range(144, 160):
+
+            # DEBUG: PLAY THE INCOMING MESSAGE
+            # self.midiout.send_message([self.note_on, message[1], message[2]])
+
+            # TODO should account for the scale and take note of "wrong" notes
             if message[1] in range(pmin, pmin+pran+1):
                 pitch_space = (message[1]-pmin)/pran
             else:
                 print("need something smarter for pitch: {0}".format(message[1]))
-            if message[2] in range(dmin, dmin+dran+1):
-                dynam_space = (message[2]-dmin)/dran
-            else:
-                print("need something smarter for dynam: {0}".format(message[2]))
+
+            dval = max(min(dmin+dran+1, message[2]), dmin)
+            dynam_space = (dval - dmin) / dran
+
             if tmin <= time <= tmin+tran:
                 time_space = (time-tmin)/tran
             else:
@@ -189,7 +194,7 @@ class NaiveSequencer(Interpreter):
         self.set_tempo(on=False)
         self.scale = None
         self.notes = None
-        self.set_scale(scales.chrom, on=False)
+        self.set_scale(scales.chrom, on=True)
 
     def loop(self):
         while not self.done:
