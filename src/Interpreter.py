@@ -141,7 +141,7 @@ class Interpreter(threading.Thread):
         """
         Pick notes from a list, rather than interpolation
         """
-        proportion = boid_p / max_p
+        proportion = max(0.01, min(0.99, boid_p / max_p))
         index = int(proportion // (1 / len(notes)))
         return notes[index]
 
@@ -169,7 +169,7 @@ class Interpreter(threading.Thread):
         :return: fraction of <beat>
         """
         boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
-        proportion = min(0.99, (boid_p / max_p))              # how far along the axis it is (1.0 -> IndexError)
+        proportion = max(0.01, min(0.99, (boid_p / max_p)) )             # how far along the axis it is (1.0 -> IndexError)
         # TODO decide on what to put in this list
         # triplets and stuff
         divisions = [4, 3, 2, 3/2, 1, 1/2, 1/4, 1/8]
@@ -268,14 +268,17 @@ class ChordSequencer(NaiveSequencer):
         # set up the heap with an element for each boid
         for i, boid in enumerate(self.swarm.boids):
             data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
+            # play the note:
+            new_pitch = max(0, data[pitch_axis]) & 127
+            new_dynam = max(0, data[dynam_axis]) & 127
+            self.midiout.send_message([self.note_on, new_pitch, new_dynam])
             heappush(boid_heap, (time_elapsed + data[time_axis], data))
 
         while not self.done:
 
-            # print(time_elapsed)
-
             # TODO test properly... and maybe account for computation time
             # stop the notes that have ended and load the next ones
+            # TODO this condition is the cause of the start-up delay
             while boid_heap[0][0] <= time_elapsed:
                 data = heappop(boid_heap)[1]
                 pitch = data[pitch_axis] & 127
@@ -285,7 +288,8 @@ class ChordSequencer(NaiveSequencer):
                                            self.swarm.boids[boid_index].get_location()) + [boid_index]
                 # play the new note
                 new_pitch = max(0, next_data[pitch_axis]) & 127
-                self.midiout.send_message([self.note_on, new_pitch, data[dynam_axis] & 127])
+                new_dynam = max(0, next_data[dynam_axis]) & 127
+                self.midiout.send_message([self.note_on, new_pitch, new_dynam])
                 # add to the heap so it can be turned off when it's done
                 heappush(boid_heap, (time_elapsed + next_data[time_axis], next_data))
 

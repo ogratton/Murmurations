@@ -73,8 +73,8 @@ def main():
     swarm_data = [
                     (Swarm.Swarm(7, cube, 6), 1, inst.PAD_3_POLYSYNTH),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.ACOUSTIC_GUITAR_NYLON),
-                    # (Swarm.Swarm(7, cube2), 3, inst.CLAVINET),
-                    # (Swarm.Swarm(7, cube2), 9, 0)
+                    # (Swarm.Swarm(7, cube2, 6), 3, inst.CLAVINET),
+                    # (Swarm.Swarm(7, cube2, 6), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
@@ -84,7 +84,7 @@ def main():
 
     interps[0].set_tempo(80)
     # interps[1].set_tempo(80)
-    interps[0].set_scale(scales.major)
+    interps[0].set_scale(scales.locrian)
     # interps[1].set_scale(scales.locrian)
     # map(lambda x: x.set_tempo(120), interps)
     # map(lambda x: x.set_scale(scales.min_arp), interps)
