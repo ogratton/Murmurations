@@ -75,3 +75,4 @@
 
 * Implemented and then decided against bin-lattice spatial subdivision as it is not efficient for the number of boids I am using. Also, if the number of dimensions increases, BLSS will get pretty expensive, whereas norm() scales better
 * Revised swarm rules and fixed jerky attractor attraction bug
+* Added MIDI input attractor mode, which allows a user to place attractors via MIDI message
