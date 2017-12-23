@@ -4,7 +4,9 @@ Move points to logbook when done
 
 ## Swarm
 
-* Read http://natureofcode.com/book/chapter-6-autonomous-agents/
+* Stigmery between swarms: Think about how swarms can interact with one another (add their position as attractor)
+* Attractors as food sources (renewable for path-mode but non- for user input mode)
+	* Though that then makes stigmergy between swarms a bit odd...
 * Additional dimension(s) (note length as opposed to event length in order to get rests)
 	* The reason plucked stringed instruments sound nicer at the moment is because their notes decay
 	* If we add an additional dimension (or use velocity) to kill notes off somewhat prematurely it should be better for all
@@ -13,7 +15,6 @@ Move points to logbook when done
 	* Patrolling predators can reduce the probability of a swarm visiting an area of music space without making it impossible
 	* e.g. a predator patrolling the lower half of a box will make it less likely that the swarm get down there
 	* Think of a way to implement them without having to check every boid and every boid check every predator (laggy af)
-* Think about how swarms can interact with one another (add their position as attractor)
 * Treat attractors as high gravity points and have boids orbit them and speed up as they get closer
 	* Equates to adding gravity rule(?), which then means the boids and attractors must be assigned masses
 * Likewise have it so that the boids slow down as they approach the attractor
@@ -22,19 +23,19 @@ Move points to logbook when done
 * More complex swarm behaviour: (see Reynolds87 and https://en.wikipedia.org/wiki/Flocking_(behavior)#Flocking_rules)
 	* Roll leads to drop in height
 	* Fear propogation
-	* Fixed topolgical distance
-	* Use bin-lattice instead of list (see above)
+	* Fixed topolgical distance (i.e. look for k nearest neighbours instead of in a radius)
 
 
 ## Music
 
 * Extra dimensions can determine scale/key etc
+* Only play when near (i.e. eating) an attractor
 * Account for computation time for beats (like DrumSeq)
 * Add sustain & modulation and stuff
 	* 'let ring'
 	* if using the Sonuus G2M, this could potentially be done via a breakout cable
 * Custom interpretation types for different instruments (restrict pitch to its range)
-* Dynamics need to change less regularly (but still have the ability for subitos)
+* Dynamics need to change less regularly (but still have the ability for _subito_s)
 * Allow for silence/rests (this _should_ come with the note duration dimension)
 * Attractor input from live input
     * Musician
@@ -54,6 +55,7 @@ Move points to logbook when done
 * Add MC-Edit-style GUI
     * add swarms (by dragging and dropping?)
 	* tweak settings on the fly
+* OR do visuals in unity3d and send data over server
 
 
 ## Admin

@@ -4,8 +4,12 @@ import rtmidi
 from numpy import r_
 from Interpreter import *
 import scales
+import instruments as inst
+from time import sleep
 
-# launch the program without the display
+"""
+launch the program without the display
+"""
 
 
 class Manager:
@@ -24,7 +28,7 @@ class Manager:
             self.cubes.add(swarm.cube)
 
     def __repr__(self):
-        return "TODO - Renderer"
+        return "TODO - Managerr"
 
     def add_swarm(self, swarm):
         """
@@ -60,15 +64,15 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 5, 7]  # cube min vertex
-    edge_length = 20.0
+    edge_length = 50.0
     cube = Swarm.Cube(cube_min, edge_length)
 
     # MAKE SWARM OBJECTS
-    # swarm, channel (starting from 1), instrument code
+    # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube), 1, 56),
-                    (Swarm.Swarm(7, cube), 2, 88),
-                    (Swarm.Swarm(7, cube), 3, 26),
+                    (Swarm.Swarm(7, cube, 6), 1, inst.TRUMPET),
+                    (Swarm.Swarm(7, cube, 2), 2, inst.AGOGO),
+                    (Swarm.Swarm(7, cube, 1), 3, inst.BLOWN_BOTTLE),
                     # (Swarm.Swarm(7, cube), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
@@ -76,16 +80,19 @@ def main():
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [NaiveSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    seqs = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    map(lambda x: x.set_tempo(tempo=2.0), seqs)
+    map(lambda x: x.set_tempo(tempo=120), seqs)
     map(lambda x: x.set_scale(scales.min_pen), seqs)
 
     print("Press Control-C to quit.")
 
+    update = 1/60
+
     try:
         while True:
             manager.update()
+            sleep(update)
     except KeyboardInterrupt:
         print('')
     finally:

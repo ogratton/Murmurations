@@ -1,7 +1,9 @@
 """
 Simply a list of the MIDI instrument numbers
-from https://en.wikipedia.org/wiki/General_MIDI
+Note that where bank!=0, these are specific to the FluidR3_GM.sf2 soundfont I'm using
 """
+
+# name = (bank_no, pc_no)
 
 YAMAHA_GRAND_PIANO = (0, 0)
 BRIGHT_YAMAHA_GRAND = (0, 1)
@@ -131,6 +133,8 @@ TELEPHONE = (0, 124)
 HELICOPTER = (0, 125)
 APPLAUSE = (0, 126)
 GUN_SHOT = (0, 127)
+
+# all below this point are non-standard
 DETUNED_EP_1 = (8, 4)
 DETUNED_EP_2 = (8, 5)
 COUPLED_HARPSICHORD = (8, 6)

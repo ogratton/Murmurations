@@ -232,13 +232,6 @@ class ChordSequencer(Interpreter):
                 new_dynam = max(0, next_data[dynam_axis]) & 127
                 new_time = time_elapsed + next_data[time_axis]
 
-                # if boid_index == 0:
-                #     print("ELAPSED: {0}".format(time_elapsed))
-                #     print(data)
-                #     print(boid_heap)
-                #     print("till next: {0}".format(next_data[time_axis]))
-                #     print("***********************")
-
                 self.midiout.send_message([self.note_on, new_pitch, new_dynam])
                 # add to the heap so it can be turned off when it's done
                 heappush(boid_heap, (new_time, next_data))
@@ -289,7 +282,6 @@ class ChordSequencer(Interpreter):
         else:
             pitch = self.interpret_pitch(max_v, data[pitch_axis])
         if self.snap_to_beat:
-
             time = self.interpret_beat(max_v, data[time_axis], self.beat)
         else:
             time = self.interpret_time(max_v, data[time_axis])
@@ -301,18 +293,10 @@ class ChordSequencer(Interpreter):
 class VelSequencer(ChordSequencer):
     """
     Note length is a function of velocity of boids
-    Otherwise identical to Naive
     """
-    # TODO this needs quite a bit of work...
     def loop(self):
-
-        while not self.done:
-            com = self.swarm.get_COM()
-            data = self.interpret(self.swarm.cube.edge_length, com.get_location())
-            note_length = self.interpret_velocity(SP.MAX_SPEED, com.velocity, data[time_axis])
-            self.midiout.send_message([self.note_on, data[pitch_axis], data[dynam_axis] & 127])
-            sleep(max(IP.TIME_MIN, note_length))
-            self.midiout.send_message([self.note_on, data[pitch_axis], 0])
+        # TODO
+        pass
 
     @staticmethod
     def interpret_velocity(max_vel, boid_vel, time=1):
