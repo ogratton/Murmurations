@@ -5,7 +5,7 @@ from time import sleep, time as timenow
 from parameters import IP, SP
 from numpy.linalg import norm
 import scales
-from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME,
+from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME, BANK_SELECT_MSB,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
 
 
@@ -61,7 +61,7 @@ class Interpreter(threading.Thread):
         self.start()
 
     def run(self):
-        self.activate_instrument(self.instrument)
+        self.activate_instrument()
         self.midiout.send_message([self.control_change, CHANNEL_VOLUME, self.volume & 127])
         # give MIDI instrument some time to activate instrument
         sleep(0.1)
@@ -72,10 +72,13 @@ class Interpreter(threading.Thread):
     def loop(self):
         pass
 
-    def activate_instrument(self, instrument):
+    def activate_instrument(self):
         # (drums are on channel 9)
         if self.channel != 9:
-            self.midiout.send_message([PROGRAM_CHANGE | self.channel, instrument & 127])
+            # bank and program change
+            bank, program = self.instrument
+            self.midiout.send_message([self.control_change, BANK_SELECT_MSB, bank & 0x7F])
+            self.midiout.send_message([PROGRAM_CHANGE | self.channel, program & 127])
 
     def backwards_interpret(self, message, time):
         """
@@ -83,7 +86,7 @@ class Interpreter(threading.Thread):
         :param message: e.g. [144,47,120] (i.e. note on, B3, loud)
         :param time: in seconds, since last midi-in message
         """
-        # proportion along the axes
+        # proportion along the axes (default middle)
         pitch_space = 0.5
         dynam_space = 0.5
         time_space = 0.5
@@ -169,7 +172,7 @@ class Interpreter(threading.Thread):
         :return: fraction of <beat>
         """
         boid_p = min(boid_p, max_p)                           # it is possible for the boids to stray past max_p
-        proportion = max(0.01, min(0.99, (boid_p / max_p)) )             # how far along the axis it is (1.0 -> IndexError)
+        proportion = max(0.01, min(0.99, (boid_p / max_p)))   # how far along the axis it is (1.0 -> IndexError)
         # TODO decide on what to put in this list
         # triplets and stuff
         divisions = [4, 3, 2, 3/2, 1, 1/2, 1/4, 1/8]
@@ -181,9 +184,9 @@ class Interpreter(threading.Thread):
         return beat * (divisions[factor_index])               # TODO /4 or not?
 
 
-class NaiveSequencer(Interpreter):
+class ChordSequencer(Interpreter):
     """
-    Simple linear interpolation of position of CENTRE OF MASS of each swarm
+    Simple linear interpolation of position of each boid
     """
 
     def __init__(self, name, midiout, swarm_data):
@@ -197,13 +200,55 @@ class NaiveSequencer(Interpreter):
         self.set_scale(scales.chrom, on=True)
 
     def loop(self):
+
+        time_elapsed = 0.0
+        time_step = 0.1
+        boid_heap = []
+
+        # set up the heap with an element for each boid
+        for i, boid in enumerate(self.swarm.boids):
+            data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
+            # play the note:
+            new_pitch = max(0, data[pitch_axis]) & 127
+            new_dynam = max(0, data[dynam_axis]) & 127
+            self.midiout.send_message([self.note_on, new_pitch, new_dynam])
+            # add to the priority queue
+            heappush(boid_heap, (time_elapsed + data[time_axis], data))
+
         while not self.done:
-            started = timenow()
-            data = self.interpret(self.swarm.cube.edge_length, self.swarm.get_COM().get_location())
-            self.midiout.send_message([self.note_on, data[pitch_axis], data[dynam_axis] & 127])
-            time_taken = timenow() - started
-            sleep(max(0, data[time_axis] - time_taken))
-            self.midiout.send_message([self.note_on, data[pitch_axis], 0])
+
+            # TODO test properly... and maybe account for computation time
+            # stop the notes that have ended and load the next ones
+            while boid_heap[0][0] <= time_elapsed:
+
+                data = heappop(boid_heap)[1]
+                pitch = data[pitch_axis] & 127
+                self.midiout.send_message([self.note_on, pitch, 0])
+                boid_index = data[-1]
+                next_data = self.interpret(self.swarm.cube.edge_length,
+                                           self.swarm.boids[boid_index].get_location()) + [boid_index]
+                # play the new note
+                new_pitch = max(0, next_data[pitch_axis]) & 127
+                new_dynam = max(0, next_data[dynam_axis]) & 127
+                new_time = time_elapsed + next_data[time_axis]
+
+                # if boid_index == 0:
+                #     print("ELAPSED: {0}".format(time_elapsed))
+                #     print(data)
+                #     print(boid_heap)
+                #     print("till next: {0}".format(next_data[time_axis]))
+                #     print("***********************")
+
+                self.midiout.send_message([self.note_on, new_pitch, new_dynam])
+                # add to the heap so it can be turned off when it's done
+                heappush(boid_heap, (new_time, next_data))
+
+            # finally, enforce time step
+            sleep(time_step)
+            time_elapsed += time_step
+
+            # print(boid_heap)
+            # assert len(boid_heap) == len(self.swarm.boids)
 
     def set_scale(self, scale, on=True):
         """
@@ -253,55 +298,7 @@ class NaiveSequencer(Interpreter):
         return [dyn, pitch, time]
 
 
-class ChordSequencer(NaiveSequencer):
-    """
-    Simple linear interpolation of position, but
-    treat each boid as a sound agent
-    """
-
-    def loop(self):
-
-        time_elapsed = 0.0
-        time_step = 0.1
-        boid_heap = []
-
-        # set up the heap with an element for each boid
-        for i, boid in enumerate(self.swarm.boids):
-            data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
-            # play the note:
-            new_pitch = max(0, data[pitch_axis]) & 127
-            new_dynam = max(0, data[dynam_axis]) & 127
-            self.midiout.send_message([self.note_on, new_pitch, new_dynam])
-            heappush(boid_heap, (time_elapsed + data[time_axis], data))
-
-        while not self.done:
-
-            # TODO test properly... and maybe account for computation time
-            # stop the notes that have ended and load the next ones
-            # TODO this condition is the cause of the start-up delay
-            while boid_heap[0][0] <= time_elapsed:
-                data = heappop(boid_heap)[1]
-                pitch = data[pitch_axis] & 127
-                self.midiout.send_message([self.note_on, pitch, 0])
-                boid_index = data[-1]
-                next_data = self.interpret(self.swarm.cube.edge_length,
-                                           self.swarm.boids[boid_index].get_location()) + [boid_index]
-                # play the new note
-                new_pitch = max(0, next_data[pitch_axis]) & 127
-                new_dynam = max(0, next_data[dynam_axis]) & 127
-                self.midiout.send_message([self.note_on, new_pitch, new_dynam])
-                # add to the heap so it can be turned off when it's done
-                heappush(boid_heap, (time_elapsed + next_data[time_axis], next_data))
-
-            # finally, enforce time step
-            sleep(time_step)
-            time_elapsed += time_step
-
-            # print(boid_heap)
-            # assert len(boid_heap) == len(self.swarm.boids)
-
-
-class VelSequencer(NaiveSequencer):
+class VelSequencer(ChordSequencer):
     """
     Note length is a function of velocity of boids
     Otherwise identical to Naive
