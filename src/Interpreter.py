@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import threading
 from heapq import (heappush, heappop)
+from random import random
 from time import sleep, time as timenow
 from parameters import IP, SP
 from numpy.linalg import norm
@@ -207,13 +208,15 @@ class ChordSequencer(Interpreter):
 
         # set up the heap with an element for each boid
         for i, boid in enumerate(self.swarm.boids):
-            data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
-            # play the note:
-            new_pitch = max(0, data[pitch_axis]) & 127
-            new_dynam = max(0, data[dynam_axis]) & 127
-            self.midiout.send_message([self.note_on, new_pitch, new_dynam])
-            # add to the priority queue
-            heappush(boid_heap, (time_elapsed + data[time_axis], data))
+            # TODO playing on probability
+            if random() < 0.25:
+                data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
+                # play the note:
+                new_pitch = max(0, data[pitch_axis]) & 127
+                new_dynam = max(0, data[dynam_axis]) & 127
+                self.midiout.send_message([self.note_on, new_pitch, new_dynam])
+                # add to the priority queue
+                heappush(boid_heap, (time_elapsed + data[time_axis], data))
 
         while not self.done:
 

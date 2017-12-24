@@ -71,20 +71,20 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(5, cube, 1), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(5, cube, 1), 1, inst.NYLON_STRING_GUITAR),
-                    (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
-                    (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
+                    # (Swarm.Swarm(10, cube, 1), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(10, cube, 5), 1, inst.NYLON_STRING_GUITAR),
+                    # (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
+                    # (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    interps = []  # [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    # interps[0].set_tempo(320)
+    interps[0].set_tempo(120)
     # interps[1].set_tempo(80)
-    # interps[0].set_scale(scales.mixolydian)
+    interps[0].set_scale(scales.mixolydian)
     # interps[1].set_scale(scales.locrian)
     # map(lambda x: x.set_tempo(120), interps)
     # map(lambda x: x.set_scale(scales.min_pen), interps)
