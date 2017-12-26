@@ -294,7 +294,7 @@ class Boid(object):
 
 class Attractor(object):
     """
-    Attracts boid towards it
+    Attracts boid towards it (by the Attraction rule)
     """
     def __init__(self, location, cube):
         self.location = location
@@ -391,9 +391,9 @@ class Swarm(object):
     def __repr__(self):
         return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)
 
-    def midi_to_attractor(self, ratios):
+    def place_attractor(self, ratios):
         """
-        Convert a MIDI message to an attractor
+        Place an attractor given "ratios"
         :param ratios: ratio of how far along to place attractor on each axis
         """
         cube = self.cube
@@ -437,7 +437,6 @@ class Swarm(object):
         else:
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             SP.ATTRACTOR_MODE = 0
-
 
     def get_COM(self):
         """

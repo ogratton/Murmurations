@@ -116,7 +116,7 @@ class Interpreter(threading.Thread):
             else:
                 print("need something smarter for time: {0}".format(time))
 
-        self.swarm.midi_to_attractor([dynam_space, pitch_space, time_space])
+        self.swarm.place_attractor([dynam_space, pitch_space, time_space])
 
     @abstractmethod
     def interpret(self, max_v, data):
@@ -209,7 +209,7 @@ class ChordSequencer(Interpreter):
         # set up the heap with an element for each boid
         for i, boid in enumerate(self.swarm.boids):
             # TODO playing on probability
-            if random() < 0.25:
+            if random() < 0.75:
                 data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
                 # play the note:
                 new_pitch = max(0, data[pitch_axis]) & 127
