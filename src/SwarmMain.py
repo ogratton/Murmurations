@@ -71,7 +71,7 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 1), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(50, cube, 1), 0, inst.YAMAHA_GRAND_PIANO),
                     # (Swarm.Swarm(7, cube, 6), 1, inst.NYLON_STRING_GUITAR),
                     # (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
                     # (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
@@ -79,20 +79,20 @@ def main():
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
-    midiout = rtmidi.MidiOut().open_port(0)
-    interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    # midiout = rtmidi.MidiOut().open_port(0)
+    # interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
     # interps[0].set_tempo(120)
     # interps[1].set_tempo(80)
-    interps[0].set_scale(scales.locrian)
+    # interps[0].set_scale(scales.locrian)
     # interps[1].set_scale(scales.locrian)
     # map(lambda x: x.set_tempo(120), interps)
     # map(lambda x: x.set_scale(scales.min_pen), interps)
 
     # start up the midi in stream
-    in_stream = None
-    if parameters.SP.ATTRACTOR_MODE == 2:
-        in_stream = InStream(interps, 0)
+    # in_stream = None
+    # if parameters.SP.ATTRACTOR_MODE == 2:
+    #     in_stream = InStream(interps, 0)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
@@ -103,13 +103,13 @@ def main():
     pyglet.app.run()
 
     # CLEAN UP
-    for interp in interps:
-        interp.done = True  # kill it.
-        interp.join()
-    del midiout
-    if in_stream:
-        in_stream.done = True
-        in_stream.join()
+    # for interp in interps:
+    #     interp.done = True  # kill it.
+    #     interp.join()
+    # del midiout
+    # if in_stream:
+    #     in_stream.done = True
+    #     in_stream.join()
     print("Exiting")
 
 if __name__ == '__main__':

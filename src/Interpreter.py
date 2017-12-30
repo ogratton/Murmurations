@@ -207,6 +207,7 @@ class ChordSequencer(Interpreter):
         boid_heap = []
 
         # set up the heap with an element for each boid
+        # TODO use boid.id (though that is probably slower)
         for i, boid in enumerate(self.swarm.boids):
             # TODO playing on probability
             if random() < 0.75:

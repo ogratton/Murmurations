@@ -208,7 +208,7 @@ class Boid(object):
     A single swarm agent
     """
 
-    def __init__(self, cube, attractors):
+    def __init__(self, cube, attractors, id):
         """
         Make a baby boid
         :param cube: Cube   bounding box for this boid
@@ -216,6 +216,7 @@ class Boid(object):
         """
         self.cube = cube
         self.attractors = attractors
+        self.id = id
 
         # doesn't matter that much where you start
         self.location = rand_point_in_cube(cube, 3)
@@ -227,9 +228,11 @@ class Boid(object):
     def __repr__(self):
         return "Boid - pos:{0}, vel:{1}".format(self.location, self.velocity)
 
-    def calc_v(self, all_boids):
+    def calc_v(self, all_boids, dist_mat):
         """
         Calculate velocity for next tick by applying the swarming rules
+        :param all_boids: List of all boids in the swarm
+        :param dist_mat: most likely incomplete distance matrix between boids
         """
         # Apply the rules to each of the boids
         # flocks use alignment, swarms do not
@@ -240,12 +243,16 @@ class Boid(object):
         # bonus rules don't need the accumulate stage
         bonus_rules = [Constraint(), Attraction()]
 
-        # TODO this makes the swarm O(n^2) instead of linear. Maybe find a better data structure than list
-        # TODO turns out this is the bottleneck of the whole program...
-        # in actual bird flocks, it is suggested they look at the nearest (say) 7 birds regardless of metric distance
-        # this is topological distance.
+        # TODO this makes the swarm closer to O(n^2) than linear. Maybe find a better data structure than list
+        # turns out this is the bottleneck of the whole program...
         for boid in all_boids:
-            distance = norm(self.location-boid.location)
+            # TODO test if it's faster with dist_mat
+            key = (min(self.id, boid.id), max(self.id, boid.id))
+            try:
+                distance = dist_mat[key]
+            except KeyError:
+                distance = norm(self.location-boid.location)
+                dist_mat[key] = distance
             for rule in rules:
                 if distance < rule.neighbourhood*self.cube.edge_length:
                     rule.accumulate(self, boid, distance)
@@ -380,8 +387,8 @@ class Swarm(object):
         for _ in range(num_attractors):
             self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3), cube))  # cube.centre
 
-        for _ in range(num_boids):
-            self.boids.append(Boid(cube, self.attractors))
+        for i in range(num_boids):
+            self.boids.append(Boid(cube, self.attractors, i))
         self.c_o_m = CentOfMass(cube.centre, r_[0., 0., 0.], cube.v_min)
 
         # TODO this doesn't actually work here
@@ -414,8 +421,10 @@ class Swarm(object):
         # position and velocity accumulators
         p_acc = r_[0., 0., 0.]
         v_acc = r_[0., 0., 0.]
+        # TODO dict dist matrix to halve distance calcs necessary
+        dist_mat = {}
         for boid in self.boids:
-            boid.calc_v(self.boids)
+            boid.calc_v(self.boids, dist_mat)
             boid.attractors = self.attractors
         for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
