@@ -208,10 +208,10 @@ class ChordSequencer(Interpreter):
 
         # set up the heap with an element for each boid
         # TODO use boid.id (though that is probably slower)
-        for i, boid in enumerate(self.swarm.boids):
+        for boid in self.swarm.boids:
             # TODO playing on probability
             if random() < 0.75:
-                data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [i]
+                data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [boid.id]
                 # play the note:
                 new_pitch = max(0, data[pitch_axis]) & 127
                 new_dynam = max(0, data[dynam_axis]) & 127
