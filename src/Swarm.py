@@ -419,25 +419,6 @@ class Swarm(object):
         self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
         return
 
-    def stigmergy(self, coms):
-        """
-        Receive and place the centre of masses of the other swarms
-        :param coms: list of all the other swarms' centres of mass relative to origin
-        """
-        edge = self.cube.edge_length
-        poss = []
-        for com in coms:
-            poss.append(normalise(com) * edge)
-        start = self.num_attractors
-        end = start + len(coms)
-        for j in range(start, end):
-            try:
-                a = self.attractors[j]
-                a.set_pos(poss[j-start])
-            except IndexError:
-                a = Attractor(poss[j-start], self.cube)
-            self.attractors.insert(j, a)
-
     def update(self):
         """
         Update every boid in the swarm and calculate the swarm's centre of mass
@@ -470,9 +451,6 @@ class Swarm(object):
         else:
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             SP.ATTRACTOR_MODE = 0
-
-        # return the origin-centred centre of mass
-        return self.c_o_m.get_location()
 
     def get_COM(self):
         """
