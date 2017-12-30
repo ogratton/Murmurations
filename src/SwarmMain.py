@@ -71,10 +71,10 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(10, cube, 1), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(7, cube, 6), 1, inst.NYLON_STRING_GUITAR),
-                    (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
-                    (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
+                    (Swarm.Swarm(10, cube,1), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(7, cube, 0), 1, inst.NYLON_STRING_GUITAR),
+                    # (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
+                    # (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
@@ -84,10 +84,10 @@ def main():
 
     # interps[0].set_tempo(120)
     # interps[1].set_tempo(80)
-    interps[0].set_scale(scales.locrian)
+    # interps[0].set_scale(scales.locrian)
     # interps[1].set_scale(scales.locrian)
     # map(lambda x: x.set_tempo(120), interps)
-    # map(lambda x: x.set_scale(scales.min_pen), interps)
+    map(lambda x: x.set_scale(scales.locrian), interps)
 
     # start up the midi in stream
     in_stream = None

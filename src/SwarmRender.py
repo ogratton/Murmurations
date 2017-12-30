@@ -58,6 +58,13 @@ class World:
         for swarm in swarms:
             self.cubes.add(swarm.cube)
 
+        # centre of mass info for stigmergy
+        self.com_i = 0
+        self.com_m = len(swarms) - 2
+        self.coms = []
+        for i in range(self.com_m+1):
+            self.coms.append(swarms[i].c_o_m.get_location())
+
         # make the objects for the cube
         self.boxes = []
         for cube in self.cubes:
@@ -210,11 +217,23 @@ class World:
 
         gl.glPopMatrix()
 
-    def update(self, dt):
-        # print(dt)
+    def update(self):
 
-        for swarm in self.swarms:
-            swarm.update()
+        # for swarm in self.swarms:
+        #     swarm.update()
+
+        m = self.com_m
+        if m > -1:
+            for swarm in self.swarms:
+                # publish the old coms
+                c = self.com_i
+                swarm.stigmergy(self.coms)
+                # calc the new one
+                self.coms[c] = swarm.update()
+                if m > 0:
+                    self.com_i = (c + 1) % self.com_m
+        else:
+            self.swarms[0].update()
 
 
 class OBJModel:
@@ -356,7 +375,7 @@ class Window(pyglet.window.Window):
 
         @self.event
         def update(dt):
-            self.world.update(dt)
+            self.world.update()
             self.world.cx = self.world.boxes[self.cube_index].x
             self.world.cy = self.world.boxes[self.cube_index].y
             self.world.cz = self.world.boxes[self.cube_index].z

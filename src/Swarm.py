@@ -8,6 +8,10 @@ from parameters import SP
 from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
 
+# TODO TEMP
+random.seed(SP.RANDOM_SEED)
+
+
 def random_range(lower=0.0, upper=1.0):
     """
     :return: a random number between lower and upper
@@ -380,6 +384,7 @@ class Swarm(object):
         """
         super().__init__()
         self.num_boids = num_boids
+        self.num_attractors = num_attractors
         self.boids = []
         self.cube = cube
         self.attractors = []
@@ -411,8 +416,27 @@ class Swarm(object):
             pos.append(v_min[i] + dim*edge)
         # update the attractor that has been still longest with this new position
         self.attractors[self.att_index].location = r_[pos]
-        self.att_index = (self.att_index + 1) % len(self.attractors)
+        self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
         return
+
+    def stigmergy(self, coms):
+        """
+        Receive and place the centre of masses of the other swarms
+        :param coms: list of all the other swarms' centres of mass relative to origin
+        """
+        edge = self.cube.edge_length
+        poss = []
+        for com in coms:
+            poss.append(normalise(com) * edge)
+        start = self.num_attractors
+        end = start + len(coms)
+        for j in range(start, end):
+            try:
+                a = self.attractors[j]
+                a.set_pos(poss[j-start])
+            except IndexError:
+                a = Attractor(poss[j-start], self.cube)
+            self.attractors.insert(j, a)
 
     def update(self):
         """
@@ -421,7 +445,6 @@ class Swarm(object):
         # position and velocity accumulators
         p_acc = r_[0., 0., 0.]
         v_acc = r_[0., 0., 0.]
-        # TODO dict dist matrix to halve distance calcs necessary
         dist_mat = {}
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
@@ -432,6 +455,7 @@ class Swarm(object):
             v_acc = v_acc + boid.velocity
         # calculate the centre of mass
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
+
         # update attractors
         if SP.ATTRACTOR_MODE == 0:
             for i, attr in enumerate(self.attractors):
@@ -446,6 +470,9 @@ class Swarm(object):
         else:
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             SP.ATTRACTOR_MODE = 0
+
+        # return the origin-centred centre of mass
+        return self.c_o_m.get_location()
 
     def get_COM(self):
         """
