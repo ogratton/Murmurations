@@ -196,7 +196,7 @@ cdef class Separation(Rule):
         boid.adjustment += self.change
 
 
-class Attraction:
+cdef class Attraction:
     """ Bonus Rule: Fly towards the attractor(s) """
 
     @staticmethod
@@ -204,6 +204,7 @@ class Attraction:
         # priority queue of (distance, change)
         dist_mat = []
 
+        cdef Attractor attr
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
             dist = norm(to_attractor)
@@ -217,7 +218,7 @@ class Attraction:
             boid.adjustment += heappop(dist_mat)[1]
 
 
-class Constraint:
+cdef class Constraint:
     """ Bonus Rule: Boids must stay within the bounding cube. """
 
     @staticmethod
@@ -263,7 +264,7 @@ cdef class Boid(object):
     def __repr__(Boid self):
         return "Boid - pos:{0}, vel:{1}".format(self.location, self.velocity)
 
-    def calc_v(Boid self, all_boids, dist_mat):
+    cpdef void calc_v(Boid self, all_boids, dist_mat):
         """
         Calculate velocity for next tick by applying the swarming rules
         :param all_boids: List of all boids in the swarm
@@ -280,6 +281,8 @@ cdef class Boid(object):
 
         # TODO this makes the swarm closer to O(n^2) than linear. Maybe find a better data structure than list
         # turns out this is the bottleneck of the whole program...
+        cdef Boid boid
+        cdef float distance
         for boid in all_boids:
             # TODO test if it's faster with dist_mat
             key = (int_min(self.id, boid.id), int_max(self.id, boid.id))
@@ -357,22 +360,15 @@ cdef class Attractor(object):
         # in this 3d example, the dimension that we leave "pi" out of varies less
         # so if x is dynamic and x_f is simply cos(4t) then it will move slower and have
         # less dynamic interest
-        # a, b, c = random.randint(1, 8), random.randint(1, 8), random.randint(1, 5)
-        # self.x_f = lambda t: cos(a * t)
-        # self.y_f = lambda t: sin(b * pi * t)
-        # self.z_f = lambda t: sin(c * pi * t)
         self.a = random.randint(1, 8)
         self.b = random.randint(1, 8)
         self.c = random.randint(1, 8)
 
-    def x_f(Attractor self, float t):
-        return cos(self.a*t)
+    cdef inline float x_f(Attractor self, float t): return cos(self.a*t)
 
-    def y_f(Attractor self, float t):
-        return sin(self.b*pi*t)
+    cdef inline float y_f(Attractor self, float t): return sin(self.b*pi*t)
 
-    def z_f(Attractor self, float t):
-        return sin(self.c*pi*t)
+    cdef inline float z_f(Attractor self, float t): return sin(self.c*pi*t)
 
     def set_pos(Attractor self, np.ndarray new_l):
         self.location = new_l
@@ -429,10 +425,18 @@ cdef class CentOfMass(object):
         return self.location - self.v_min
 
 
-class Swarm(object):
+cdef class Swarm(object):
     """
     A swarm of boids
     """
+
+    cdef:
+        public int num_boids, num_attractors
+        public np.ndarray boids, attractors
+        public Cube cube
+        int att_index
+        public CentOfMass c_o_m
+
     def __init__(self, num_boids, cube, num_attractors=1):
         """
         Set up a swarm
@@ -442,16 +446,16 @@ class Swarm(object):
         super().__init__()
         self.num_boids = num_boids
         self.num_attractors = num_attractors
-        self.boids = []
-        self.cube = cube
+        self.boids = array([None]*num_boids, dtype=Boid)
         self.attractors = array([None]*num_attractors, dtype=Attractor)
         self.att_index = 0  # for midi-input mode
+        self.cube = cube
         cdef int j
         for j in range(num_attractors):
             self.attractors[j] = Attractor(rand_point_in_cube(self.cube, 3), cube)  # or cube.centre
-
+        cdef int i
         for i in range(num_boids):
-            self.boids.append(Boid(cube, self.attractors, i))
+            self.boids[i] = Boid(cube, self.attractors, i)
         self.c_o_m = CentOfMass(cube.centre, zeros(3), cube.v_min)
 
         # TODO this doesn't actually work here
