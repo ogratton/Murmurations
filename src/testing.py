@@ -1,0 +1,3 @@
+import SwarmMain
+
+SwarmMain.main()
