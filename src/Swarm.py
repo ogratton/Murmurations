@@ -76,9 +76,8 @@ class Cube(object):
 
         self.v_min = v_min
         self.edge_length = edge_length
-        self.centre = r_[v_min[0] + 0.5 * edge_length,
-                         v_min[1] + 0.5 * edge_length,
-                         v_min[2] + 0.5 * edge_length]
+        pos = [j + 0.5 * edge_length for j in v_min]
+        self.centre = r_[pos]
 
     def __repr__(self):
         return "Cube from {0} with edge length {1}".format(self.v_min, self.edge_length)
@@ -96,7 +95,6 @@ class Rule(object):
         """
         self.change = r_[0., 0., 0.]    # velocity correction
         self.num = 0                    # number of participants
-        # TODO: this should be the NUMBER of boids it accounts for, not a distance
         self.neighbourhood = 0.5        # sphere of view of boid as ratio of cube edge length (overwritten later)
 
     def accumulate(self, boid, other, distance):
