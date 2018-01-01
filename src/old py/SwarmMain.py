@@ -11,7 +11,7 @@ import parameters
 import instruments as inst
 from midi_in_stream import InStream, DummyInStream
 
-from numpy import array
+from numpy import array, float64
 
 """
 Main method for running the swarm simulation
@@ -62,16 +62,16 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = array([10, 50, 7])
+    cube_min = array([10, 50, 7], dtype=float64)
     edge_length = 40
     cube = Swarm.Cube(cube_min, edge_length)
-    cube2 = Swarm.Cube(array([40, 10, 17]), 30)
+    cube2 = Swarm.Cube(array([40, 10, 17], dtype=float64), 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(10, cube, 1), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(7, cube, 0), 1, inst.NYLON_STRING_GUITAR),
+                    (Swarm.Swarm(70, cube, 6), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(7, cube, 3), 1, inst.NYLON_STRING_GUITAR),
                     # (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
                     # (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
     ]

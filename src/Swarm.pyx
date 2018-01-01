@@ -1,14 +1,17 @@
+# cython: profile=True
+
 # Adapted from code by Tom Marble
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
 import numpy as np
 cimport numpy as np
+cimport cython
 from numpy import array, zeros
 from numpy.linalg import norm
 from parameters import SP
-from heapq import (heappush, heappop)
-from math import (cos, sin, pi)
+from heapq import (heappush, heappop)  # TODO inefficient
+from libc.math cimport sin, cos, M_PI as pi
 
 DTYPE = np.float64
 ctypedef np.float64_t DTYPE_t
@@ -31,18 +34,18 @@ cpdef float random_range(float lower=0.0, float upper=1.0):
     return result
 
 
-cpdef np.ndarray random_vector(int dims, float lower=0.0, float upper=1.0):
+cpdef np.ndarray[DTYPE_t, ndim=1] random_vector(int dims, float lower=0.0, float upper=1.0):
     """
     :param dims: number of dimensions of resultant vector
     :param lower: float lower bound for random_range
     :param upper: float upper bound for random_range
     :return: a vector with <dims> random elements between lower and upper
     """
-    cdef np.ndarray result = array([random_range(lower, upper) for _ in range(dims)])
+    cdef np.ndarray[DTYPE_t, ndim=1] result = array([random_range(lower, upper) for _ in range(dims)], dtype=DTYPE)
     return result
 
 
-cpdef np.ndarray rand_point_in_cube(Cube cube, int dims):
+cpdef np.ndarray[DTYPE_t, ndim=1] rand_point_in_cube(Cube cube, int dims):
     """
     done with gauss for n dims
     :param cube: Cube object
@@ -52,7 +55,7 @@ cpdef np.ndarray rand_point_in_cube(Cube cube, int dims):
     cdef float edge = cube.edge_length
     cdef float sd = edge/SP.RAND_POINT_SD
 
-    cdef np.ndarray points
+    cdef np.ndarray[DTYPE_t, ndim=1] points
     points = zeros(3, dtype=DTYPE)
 
     cdef int i
@@ -67,13 +70,13 @@ cpdef np.ndarray rand_point_in_cube(Cube cube, int dims):
     return points
 
 
-cpdef np.ndarray normalise(np.ndarray vector):
+cpdef np.ndarray[DTYPE_t, ndim=1] normalise(np.ndarray[DTYPE_t, ndim=1] vector):
     """
     Normalise a numpy array vector
     :param vector: array
     :return: array normalised
     """
-    cdef np.ndarray result = vector/norm(vector)
+    cdef np.ndarray[DTYPE_t, ndim=1] result = vector/norm(vector)
     return result
 
 
@@ -86,7 +89,7 @@ cdef class Cube(object):
         public float edge_length
         public np.ndarray centre
 
-    def __init__(Cube self, np.ndarray v_min, float edge_length):
+    def __init__(Cube self, np.ndarray[DTYPE_t, ndim=1] v_min, float edge_length):
         """
         Set up a bounding box that constrains the swarm(s)
         :param v_min:       array      the minimum vertex of the cube (closest to origin)
@@ -96,7 +99,7 @@ cdef class Cube(object):
         self.v_min = v_min
         self.edge_length = edge_length
         pos = [j + 0.5 * edge_length for j in v_min]
-        self.centre = array(pos)
+        self.centre = array(pos, dtype=DTYPE)
 
     def __repr__(Cube self):
         return "Cube from {0} with edge length {1}".format(self.v_min, self.edge_length)
@@ -117,9 +120,9 @@ cdef class Rule(object):
         Initialise aggregators change and num
         Set potency of rule ('neighbourhood')
         """
-        self.change = zeros(3)    # velocity correction
-        self.num = 0                    # number of participants
-        self.neighbourhood = 0.5        # sphere of view of boid as ratio of cube edge length (overwritten later)
+        self.change = zeros(3, dtype=DTYPE)   # velocity correction
+        self.num = 0                          # number of participants
+        self.neighbourhood = 0.5              # sphere of view of boid as ratio of cube edge length (overwritten later)
 
     cpdef void accumulate(Rule self, Boid boid, Boid other, float distance):
         """
@@ -147,6 +150,7 @@ cdef class Cohesion(Rule):
             self.num += 1
 
     cpdef void add_adjustment(Cohesion self, Boid boid):
+        cdef np.ndarray[DTYPE_t, ndim=1] centroid, desired
         if self.num > 0:
             centroid = self.change / self.num
             desired = centroid - boid.location
@@ -199,6 +203,8 @@ cdef class Separation(Rule):
 cdef class Attraction:
     """ Bonus Rule: Fly towards the attractor(s) """
 
+    # TODO optimise
+
     @staticmethod
     def add_adjustment(Boid boid):
         # priority queue of (distance, change)
@@ -223,13 +229,14 @@ cdef class Constraint:
 
     @staticmethod
     def add_adjustment(Boid boid):
-        change = zeros(3)
+        change = zeros(3, dtype=DTYPE)
         if boid.turning:
             direction = boid.cube.centre - boid.location
             change = direction * SP.CONSTRAINT_MULTIPLIER
         boid.adjustment = boid.adjustment + change
 
 
+@cython.freelist(50) # typical max number
 cdef class Boid(object):
     """
     A single swarm agent
@@ -258,13 +265,13 @@ cdef class Boid(object):
         self.location = rand_point_in_cube(cube, 3)
 
         self.velocity = random_vector(3, -1.0, 1.0)  # vx vy vz
-        self.adjustment = zeros(3)  # to accumulate corrections from rules
+        self.adjustment = zeros(3, dtype=DTYPE)  # to accumulate corrections from rules
         self.turning = 0
 
     def __repr__(Boid self):
         return "Boid - pos:{0}, vel:{1}".format(self.location, self.velocity)
 
-    cpdef void calc_v(Boid self, all_boids, dist_mat):
+    cpdef void calc_v(Boid self, np.ndarray[object, ndim=1] all_boids, dist_mat):
         """
         Calculate velocity for next tick by applying the swarming rules
         :param all_boids: List of all boids in the swarm
@@ -295,7 +302,7 @@ cdef class Boid(object):
             for rule in rules:
                 if distance < rule.neighbourhood*self.cube.edge_length:
                     rule.accumulate(self, boid, distance)
-        self.adjustment = zeros(3)  # reset adjustment vector
+        self.adjustment = zeros(3, dtype=DTYPE)  # reset adjustment vector
         for rule in rules:  # save corrections to the adjustment
             rule.add_adjustment(self)
         for rule in bonus_rules:
@@ -329,6 +336,8 @@ cdef class Boid(object):
         self.velocity = velocity
         self.limit_speed(SP.MAX_SPEED)
         self.location = self.location + self.velocity
+
+        # TODO optimise
 
         if SP.BOUNDING_SPHERE:
             self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
@@ -370,7 +379,7 @@ cdef class Attractor(object):
 
     cdef inline float z_f(Attractor self, float t): return sin(self.c*pi*t)
 
-    def set_pos(Attractor self, np.ndarray new_l):
+    def set_pos(Attractor self, np.ndarray[DTYPE_t, ndim=1] new_l):
         self.location = new_l
 
     def step_path_equation(Attractor self):
@@ -380,7 +389,7 @@ cdef class Attractor(object):
         y = self.y_f(self.t)
         z = self.z_f(self.t)
         self.t += self.step
-        new_point = array([x, y, z])*0.4*self.cube.edge_length + self.cube.centre
+        new_point = array([x, y, z], dtype=DTYPE)*0.4*self.cube.edge_length + self.cube.centre
         self.set_pos(new_point)
 
 
@@ -425,6 +434,7 @@ cdef class CentOfMass(object):
         return self.location - self.v_min
 
 
+@cython.freelist(4) # supports more but rarely needed
 cdef class Swarm(object):
     """
     A swarm of boids
@@ -456,7 +466,7 @@ cdef class Swarm(object):
         cdef int i
         for i in range(num_boids):
             self.boids[i] = Boid(cube, self.attractors, i)
-        self.c_o_m = CentOfMass(cube.centre, zeros(3), cube.v_min)
+        self.c_o_m = CentOfMass(cube.centre, zeros(3, dtype=DTYPE), cube.v_min)
 
         # TODO this doesn't actually work here
         if SP.RANDOM_SEED != SP.TRUE_RANDOM:
@@ -477,17 +487,21 @@ cdef class Swarm(object):
         for i, dim in enumerate(ratios):
             pos.append(v_min[i] + dim*edge)
         # update the attractor that has been still longest with this new position
-        self.attractors[self.att_index].location = array(pos)
+        self.attractors[self.att_index].location = array(pos, dtype=DTYPE)
         self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
         return
 
-    def update(self):
+    cpdef void update(Swarm self):
         """
         Update every boid in the swarm and calculate the swarm's centre of mass
         """
+        # TODO optimise
+
         # position and velocity accumulators
-        p_acc = zeros(3)
-        v_acc = zeros(3)
+        cdef:
+            np.ndarray[DTYPE_t, ndim=1] p_acc = zeros(3, dtype=DTYPE)
+            np.ndarray[DTYPE_t, ndim=1] v_acc = zeros(3, dtype=DTYPE)
+            Boid boid
         dist_mat = {}
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
@@ -497,24 +511,41 @@ cdef class Swarm(object):
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
         # calculate the centre of mass
-        self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
+        cdef int nb = self.num_boids
+        p_acc = p_acc / nb
+        v_acc = v_acc / nb
+        self.c_o_m.set(p_acc, v_acc)
 
         # update attractors
         if SP.ATTRACTOR_MODE == 0:
-            for i, attr in enumerate(self.attractors):
-                if random.random() < SP.RAND_ATTRACTOR_CHANGE:
-                    att = Attractor(rand_point_in_cube(self.cube, 3), self.cube)
-                    self.attractors[i] = att
+            self.randAttractorMode_update()
         elif SP.ATTRACTOR_MODE == 1:
-            for i, attr in enumerate(self.attractors):
-                attr.step_path_equation()
+            self.parametricAttractorMode_update()
         elif SP.ATTRACTOR_MODE == 2:
-            pass  # this is handled by the callback function midi_to_attractor
+            self.midiAttractorMode_update()
         else:
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             SP.ATTRACTOR_MODE = 0
 
-    def get_COM(self):
+    cpdef void randAttractorMode_update(Swarm self):
+        cdef int i
+        cdef Attractor attr
+        for i, attr in enumerate(self.attractors):
+            if random.random() < SP.RAND_ATTRACTOR_CHANGE:
+                att = Attractor(rand_point_in_cube(self.cube, 3), self.cube)
+                self.attractors[i] = att
+
+    cpdef void parametricAttractorMode_update(Swarm self):
+        cdef Attractor attr
+        for attr in self.attractors:
+            attr.step_path_equation()
+
+    def midiAttractorMode_update(self):
+        """ this is handled by the callback function midi_to_attractor """
+        pass
+
+
+    cpdef CentOfMass get_COM(Swarm self):
         """
         WARNING: MUST USE com.get_location()
         :return: the centre of mass of the swarm
