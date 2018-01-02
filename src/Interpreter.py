@@ -218,6 +218,7 @@ class ChordSequencer(Interpreter):
                 new_dynam = max(0, data[dynam_axis]) & 127
                 self.midiout.send_message([self.note_on, new_pitch, new_dynam])
                 # add to the priority queue
+                # heapq: (abs time, note data)
                 heappush(boid_heap, (time_elapsed + data[time_axis], data))
 
         while not self.done:
@@ -225,26 +226,27 @@ class ChordSequencer(Interpreter):
             # TODO test properly... and maybe account for computation time
             # stop the notes that have ended and load the next ones
             while boid_heap[0][0] <= time_elapsed:
+
+                data = heappop(boid_heap)[1]
+                pitch = data[pitch_axis] & 127
+                self.midiout.send_message([self.note_on, pitch, 0])
+                boid_index = data[-1]
+                next_data = self.interpret(self.swarm.cube.edge_length,
+                                           self.swarm.boids[boid_index].get_location()) + [boid_index]
+                # play the new note
+                new_pitch = max(0, next_data[pitch_axis]) & 127
+                new_dynam = max(0, next_data[dynam_axis]) & 127
+                new_time = time_elapsed + next_data[time_axis]
+
+                # TODO use 4th dimension properly
+                pan_val = data[pan_axis]
+                self.midiout.send_message([self.control_change, PAN, pan_val & 0x7F])
+
                 # TODO playing on probability
                 if random() < 0.75:
-                    data = heappop(boid_heap)[1]
-                    pitch = data[pitch_axis] & 127
-                    self.midiout.send_message([self.note_on, pitch, 0])
-                    boid_index = data[-1]
-                    next_data = self.interpret(self.swarm.cube.edge_length,
-                                               self.swarm.boids[boid_index].get_location()) + [boid_index]
-                    # play the new note
-                    new_pitch = max(0, next_data[pitch_axis]) & 127
-                    new_dynam = max(0, next_data[dynam_axis]) & 127
-                    new_time = time_elapsed + next_data[time_axis]
-
-                    # TODO use 4th dimension properly
-                    pan_val = data[pan_axis]
-                    self.midiout.send_message([self.control_change, PAN, pan_val & 0x7F])
-
                     self.midiout.send_message([self.note_on, new_pitch, new_dynam])
-                    # add to the heap so it can be turned off when it's done
-                    heappush(boid_heap, (new_time, next_data))
+                # add to the heap so it can be turned off when it's done
+                heappush(boid_heap, (new_time, next_data))
 
             # finally, enforce time step
             sleep(time_step)

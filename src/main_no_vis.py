@@ -63,7 +63,7 @@ def main():
     SwarmMain.load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[10, 5, 7]  # cube min vertex
+    cube_min = r_[10, 5, 7, 0]  # cube min vertex
     edge_length = 50.0
     cube = Swarm.Cube(cube_min, edge_length)
 
