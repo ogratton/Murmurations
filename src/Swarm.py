@@ -2,11 +2,13 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
-from numpy import r_
+from numpy import array, zeros, float64
 from numpy.linalg import norm
 from parameters import SP
 from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
+
+from time import time as timenow
 
 # TODO TEMP
 random.seed(SP.RANDOM_SEED)
@@ -27,7 +29,7 @@ def random_vector(dims, lower=0.0, upper=1.0):
     :return: a vector with <dims> random elements between lower and upper
     """
     data = [random_range(lower, upper) for _ in range(dims)]
-    return r_[data]
+    return array(data)
 
 
 def rand_point_in_cube(cube, dims):
@@ -50,14 +52,14 @@ def rand_point_in_cube(cube, dims):
                 break
         points.append(p + cube.v_min[i])
 
-    return r_[points]
+    return array(points, dtype=float64)
 
 
 def normalise(vector):
     """
-    Normalise a numpy r_ vector
-    :param vector: r_
-    :return: r_ normalised
+    Normalise a numpy array vector
+    :param vector: array
+    :return: array normalised
     """
     return vector/norm(vector)
 
@@ -70,14 +72,14 @@ class Cube(object):
     def __init__(self, v_min, edge_length):
         """
         Set up a bounding box that constrains the swarm(s)
-        :param v_min:       r_      the minimum vertex of the cube (closest to origin)
+        :param v_min:       array   the minimum vertex of the cube (closest to origin)
         :param edge_length: float   the length of each edge (currently always a perfect cube)
         """
 
         self.v_min = v_min
         self.edge_length = edge_length
         pos = [j + 0.5 * edge_length for j in v_min]
-        self.centre = r_[pos]
+        self.centre = array(pos, dtype=float64)
 
     def __repr__(self):
         return "Cube from {0} with edge length {1}".format(self.v_min, self.edge_length)
@@ -93,7 +95,7 @@ class Rule(object):
         Initialise aggregators change and num
         Set potency of rule ('neighbourhood')
         """
-        self.change = r_[0., 0., 0.]    # velocity correction
+        self.change = zeros(3, dtype=float64)    # velocity correction
         self.num = 0                    # number of participants
         self.neighbourhood = 0.5        # sphere of view of boid as ratio of cube edge length (overwritten later)
 
@@ -185,7 +187,7 @@ class Attraction:
             dist = norm(to_attractor)
             # 1/dist makes attraction stronger for closer attractors
             change = (to_attractor - boid.velocity) * SP.ATTRACTION_MULTIPLIER * (1/dist)
-            heappush(dist_mat, (dist, list(change)))  # needs to be a list as r_ is 'ambiguous'
+            heappush(dist_mat, (dist, list(change)))  # needs to be a list as ndarray is 'ambiguous'
 
         # only feel the pull of the nearest <x> attractors
         attention_span = min(SP.ATTRACTORS_NOTICED, len(boid.attractors))
@@ -198,7 +200,7 @@ class Constraint:
 
     @staticmethod
     def add_adjustment(boid):
-        change = r_[0., 0., 0.]
+        change = zeros(3, dtype=float64)
         if boid.turning:
             direction = boid.cube.centre - boid.location
             change = direction * SP.CONSTRAINT_MULTIPLIER
@@ -224,7 +226,7 @@ class Boid(object):
         self.location = rand_point_in_cube(cube, 3)
 
         self.velocity = random_vector(3, -1.0, 1.0)  # vx vy vz
-        self.adjustment = r_[0., 0., 0.]  # to accumulate corrections from rules
+        self.adjustment = zeros(3, dtype=float64)  # to accumulate corrections from rules
         self.turning = False
 
     def __repr__(self):
@@ -258,7 +260,7 @@ class Boid(object):
             for rule in rules:
                 if distance < rule.neighbourhood*self.cube.edge_length:
                     rule.accumulate(self, boid, distance)
-        self.adjustment = r_[0., 0., 0.]  # reset adjustment vector
+        self.adjustment = zeros(3, dtype=float64)  # reset adjustment vector
         for rule in rules:  # save corrections to the adjustment
             rule.add_adjustment(self)
         for rule in bonus_rules:
@@ -331,7 +333,7 @@ class Attractor(object):
         y = self.y_f(self.t)
         z = self.z_f(self.t)
         self.t += self.step
-        new_point = r_[x, y, z]*0.4*self.cube.edge_length + self.cube.centre
+        new_point = array([x, y, z], dtype=float64)*0.4*self.cube.edge_length + self.cube.centre
         self.set_pos(new_point)
 
 
@@ -342,8 +344,8 @@ class CentOfMass(object):
     def __init__(self, location, velocity, v_min):
         """
         Set up an initial (probably wrong) centre of mass object
-        :param location: r_
-        :param velocity: r_
+        :param location: array
+        :param velocity: array
         :param v_min:    min vertex of bounding box
         """
         self.location = location
@@ -356,8 +358,8 @@ class CentOfMass(object):
     def set(self, location, velocity):
         """
         Set the location and velocity of the c.o.m
-        :param location: r_
-        :param velocity: r_
+        :param location: array
+        :param velocity: array
         """
         self.location = location
         self.velocity = velocity
@@ -392,7 +394,7 @@ class Swarm(object):
 
         for i in range(num_boids):
             self.boids.append(Boid(cube, self.attractors, i))
-        self.c_o_m = CentOfMass(cube.centre, r_[0., 0., 0.], cube.v_min)
+        self.c_o_m = CentOfMass(cube.centre, zeros(3, dtype=float64), cube.v_min)
 
         # TODO this doesn't actually work here
         if SP.RANDOM_SEED != SP.TRUE_RANDOM:
@@ -413,7 +415,7 @@ class Swarm(object):
         for i, dim in enumerate(ratios):
             pos.append(v_min[i] + dim*edge)
         # update the attractor that has been still longest with this new position
-        self.attractors[self.att_index].location = r_[pos]
+        self.attractors[self.att_index].location = array(pos, dtype=float64)
         self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
         return
 
@@ -421,9 +423,10 @@ class Swarm(object):
         """
         Update every boid in the swarm and calculate the swarm's centre of mass
         """
+        # time = timenow()
         # position and velocity accumulators
-        p_acc = r_[0., 0., 0.]
-        v_acc = r_[0., 0., 0.]
+        p_acc = zeros(3, dtype=float64)
+        v_acc = zeros(3, dtype=float64)
         dist_mat = {}
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
@@ -449,6 +452,8 @@ class Swarm(object):
         else:
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             SP.ATTRACTOR_MODE = 0
+
+        # print(timenow() - time)
 
     def get_COM(self):
         """
