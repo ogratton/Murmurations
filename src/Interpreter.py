@@ -7,7 +7,7 @@ from parameters import IP, SP
 from numpy.linalg import norm
 import scales
 from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME, BANK_SELECT_MSB,
-                                  CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
+                                  CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE, PAN)
 
 
 # TODO refactor to make more modular so custom interpreters can be made
@@ -30,6 +30,7 @@ Ideas for more interpreters:
 dynam_axis = 0
 pitch_axis = 1
 time_axis = 2
+pan_axis = 3
 
 
 class Interpreter(threading.Thread):
@@ -224,21 +225,26 @@ class ChordSequencer(Interpreter):
             # TODO test properly... and maybe account for computation time
             # stop the notes that have ended and load the next ones
             while boid_heap[0][0] <= time_elapsed:
+                # TODO playing on probability
+                if random() < 0.75:
+                    data = heappop(boid_heap)[1]
+                    pitch = data[pitch_axis] & 127
+                    self.midiout.send_message([self.note_on, pitch, 0])
+                    boid_index = data[-1]
+                    next_data = self.interpret(self.swarm.cube.edge_length,
+                                               self.swarm.boids[boid_index].get_location()) + [boid_index]
+                    # play the new note
+                    new_pitch = max(0, next_data[pitch_axis]) & 127
+                    new_dynam = max(0, next_data[dynam_axis]) & 127
+                    new_time = time_elapsed + next_data[time_axis]
 
-                data = heappop(boid_heap)[1]
-                pitch = data[pitch_axis] & 127
-                self.midiout.send_message([self.note_on, pitch, 0])
-                boid_index = data[-1]
-                next_data = self.interpret(self.swarm.cube.edge_length,
-                                           self.swarm.boids[boid_index].get_location()) + [boid_index]
-                # play the new note
-                new_pitch = max(0, next_data[pitch_axis]) & 127
-                new_dynam = max(0, next_data[dynam_axis]) & 127
-                new_time = time_elapsed + next_data[time_axis]
+                    # TODO use 4th dimension properly
+                    pan_val = data[pan_axis]
+                    self.midiout.send_message([self.control_change, PAN, pan_val & 0x7F])
 
-                self.midiout.send_message([self.note_on, new_pitch, new_dynam])
-                # add to the heap so it can be turned off when it's done
-                heappush(boid_heap, (new_time, next_data))
+                    self.midiout.send_message([self.note_on, new_pitch, new_dynam])
+                    # add to the heap so it can be turned off when it's done
+                    heappush(boid_heap, (new_time, next_data))
 
             # finally, enforce time step
             sleep(time_step)
@@ -290,8 +296,13 @@ class ChordSequencer(Interpreter):
         else:
             time = self.interpret_time(max_v, data[time_axis])
 
+        # TODO knock-off pan interpolater
+        pan_min = 30
+        pan_range = 67
+        pan = int(pan_range * data[pan_axis] / max_v) + pan_min
+
         # TODO hard-coded for 3D
-        return [dyn, pitch, time]
+        return [dyn, pitch, time, pan]
 
 
 class VelSequencer(ChordSequencer):

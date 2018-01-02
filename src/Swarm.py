@@ -13,6 +13,7 @@ from time import time as timenow
 # TODO TEMP
 random.seed(SP.RANDOM_SEED)
 
+DIMS = 4  # for when dimensions must be hardcoded
 
 def random_range(lower=0.0, upper=1.0):
     """
@@ -95,7 +96,7 @@ class Rule(object):
         Initialise aggregators change and num
         Set potency of rule ('neighbourhood')
         """
-        self.change = zeros(3, dtype=float64)    # velocity correction
+        self.change = zeros(DIMS, dtype=float64)    # velocity correction
         self.num = 0                    # number of participants
         self.neighbourhood = 0.5        # sphere of view of boid as ratio of cube edge length (overwritten later)
 
@@ -200,7 +201,7 @@ class Constraint:
 
     @staticmethod
     def add_adjustment(boid):
-        change = zeros(3, dtype=float64)
+        change = zeros(DIMS, dtype=float64)
         if boid.turning:
             direction = boid.cube.centre - boid.location
             change = direction * SP.CONSTRAINT_MULTIPLIER
@@ -223,10 +224,10 @@ class Boid(object):
         self.id = id
 
         # doesn't matter that much where you start
-        self.location = rand_point_in_cube(cube, 3)
+        self.location = rand_point_in_cube(cube, DIMS)
 
-        self.velocity = random_vector(3, -1.0, 1.0)  # vx vy vz
-        self.adjustment = zeros(3, dtype=float64)  # to accumulate corrections from rules
+        self.velocity = random_vector(DIMS, -1.0, 1.0)  # vx vy vz
+        self.adjustment = zeros(DIMS, dtype=float64)  # to accumulate corrections from rules
         self.turning = False
 
     def __repr__(self):
@@ -260,7 +261,7 @@ class Boid(object):
             for rule in rules:
                 if distance < rule.neighbourhood*self.cube.edge_length:
                     rule.accumulate(self, boid, distance)
-        self.adjustment = zeros(3, dtype=float64)  # reset adjustment vector
+        self.adjustment = zeros(DIMS, dtype=float64)  # reset adjustment vector
         for rule in rules:  # save corrections to the adjustment
             rule.add_adjustment(self)
         for rule in bonus_rules:
@@ -318,10 +319,11 @@ class Attractor(object):
         # in this 3d example, the dimension that we leave "pi" out of varies less
         # so if x is dynamic and x_f is simply cos(4t) then it will move slower and have
         # less dynamic interest
-        a, b, c = random.randint(1, 8), random.randint(1, 8), random.randint(1, 5)
+        a, b, c, d = random.randint(1, 8), random.randint(1, 8), random.randint(1, 5), random.randint(1, 8)
         self.x_f = lambda t: cos(a * t)
         self.y_f = lambda t: sin(b * pi * t)
         self.z_f = lambda t: sin(c * pi * t)
+        self.i_f = lambda t: cos(c * pi * t)
 
     def set_pos(self, new_l):
         self.location = new_l
@@ -332,8 +334,9 @@ class Attractor(object):
         x = self.x_f(self.t)
         y = self.y_f(self.t)
         z = self.z_f(self.t)
+        i = self.i_f(self.t)
         self.t += self.step
-        new_point = array([x, y, z], dtype=float64)*0.4*self.cube.edge_length + self.cube.centre
+        new_point = array([x, y, z, i], dtype=float64)*0.4*self.cube.edge_length + self.cube.centre
         self.set_pos(new_point)
 
 
@@ -390,11 +393,11 @@ class Swarm(object):
         self.attractors = []
         self.att_index = 0  # for midi-input mode
         for _ in range(num_attractors):
-            self.attractors.append(Attractor(rand_point_in_cube(self.cube, 3), cube))  # cube.centre
+            self.attractors.append(Attractor(rand_point_in_cube(self.cube, DIMS), cube))  # cube.centre
 
         for i in range(num_boids):
             self.boids.append(Boid(cube, self.attractors, i))
-        self.c_o_m = CentOfMass(cube.centre, zeros(3, dtype=float64), cube.v_min)
+        self.c_o_m = CentOfMass(cube.centre, zeros(DIMS, dtype=float64), cube.v_min)
 
         # which attractor update to use
         if SP.ATTRACTOR_MODE == 0:
@@ -434,10 +437,10 @@ class Swarm(object):
         """
         Update every boid in the swarm and calculate the swarm's centre of mass
         """
-        time = timenow()
+        # time = timenow()
         # position and velocity accumulators
-        p_acc = zeros(3, dtype=float64)
-        v_acc = zeros(3, dtype=float64)
+        p_acc = zeros(DIMS, dtype=float64)
+        v_acc = zeros(DIMS, dtype=float64)
         atts = self.attractors
         dist_mat = {}
         for boid in self.boids:
@@ -452,13 +455,13 @@ class Swarm(object):
 
         self.update_attractors()
 
-        print(timenow() - time)
+        # print(timenow() - time)
 
     def ua_random(self):
         """ a chance to update each attractor to a random place """
         for i, attr in enumerate(self.attractors):
             if random.random() < SP.RAND_ATTRACTOR_CHANGE:
-                att = Attractor(rand_point_in_cube(self.cube, 3), self.cube)
+                att = Attractor(rand_point_in_cube(self.cube, DIMS), self.cube)
                 self.attractors[i] = att
 
     def ua_path(self):

@@ -63,16 +63,16 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[10, 50, 7]
+    cube_min = r_[10, 50, 7, 0]
     edge_length = 40
     cube = Swarm.Cube(cube_min, edge_length)
-    cube2 = Swarm.Cube(r_[40, 10, 17], 30)
+    cube2 = Swarm.Cube(r_[40, 10, 17, 0], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(30, cube, 1), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(7, cube, 0), 1, inst.NYLON_STRING_GUITAR),
+                    (Swarm.Swarm(10, cube, 6), 0, inst.PIZZICATO_SECTION),
+                    # (Swarm.Swarm(7, cube, 0), 1, inst.NYLON_STRING_GUITAR),
                     # (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
                     # (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
     ]
@@ -82,9 +82,9 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    # interps[0].set_tempo(120)
+    # interps[0].set_tempo(80)
     # interps[1].set_tempo(80)
-    # interps[0].set_scale(scales.locrian)
+    interps[0].set_scale(scales.major)
     # interps[1].set_scale(scales.locrian)
     # map(lambda x: x.set_tempo(120), interps)
     map(lambda x: x.set_scale(scales.locrian), interps)
