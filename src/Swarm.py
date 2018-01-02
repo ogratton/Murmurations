@@ -396,6 +396,17 @@ class Swarm(object):
             self.boids.append(Boid(cube, self.attractors, i))
         self.c_o_m = CentOfMass(cube.centre, zeros(3, dtype=float64), cube.v_min)
 
+        # which attractor update to use
+        if SP.ATTRACTOR_MODE == 0:
+            self.update_attractors = self.ua_random
+        elif SP.ATTRACTOR_MODE == 1:
+            self.update_attractors = self.ua_path
+        elif SP.ATTRACTOR_MODE == 2:
+            self.update_attractors = self.ua_midi
+        else:
+            print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
+            self.update_attractors = self.ua_random
+
         # TODO this doesn't actually work here
         if SP.RANDOM_SEED != SP.TRUE_RANDOM:
             random.seed(SP.RANDOM_SEED)  # for repeatability
@@ -423,14 +434,15 @@ class Swarm(object):
         """
         Update every boid in the swarm and calculate the swarm's centre of mass
         """
-        # time = timenow()
+        time = timenow()
         # position and velocity accumulators
         p_acc = zeros(3, dtype=float64)
         v_acc = zeros(3, dtype=float64)
+        atts = self.attractors
         dist_mat = {}
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
-            boid.attractors = self.attractors
+            boid.attractors = atts
         for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
             p_acc = p_acc + boid.location
@@ -438,22 +450,25 @@ class Swarm(object):
         # calculate the centre of mass
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
 
-        # update attractors
-        if SP.ATTRACTOR_MODE == 0:
-            for i, attr in enumerate(self.attractors):
-                if random.random() < SP.RAND_ATTRACTOR_CHANGE:
-                    att = Attractor(rand_point_in_cube(self.cube, 3), self.cube)
-                    self.attractors[i] = att
-        elif SP.ATTRACTOR_MODE == 1:
-            for i, attr in enumerate(self.attractors):
-                attr.step_path_equation()
-        elif SP.ATTRACTOR_MODE == 2:
-            pass  # this is handled by the callback function midi_to_attractor
-        else:
-            print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
-            SP.ATTRACTOR_MODE = 0
+        self.update_attractors()
 
-        # print(timenow() - time)
+        print(timenow() - time)
+
+    def ua_random(self):
+        """ a chance to update each attractor to a random place """
+        for i, attr in enumerate(self.attractors):
+            if random.random() < SP.RAND_ATTRACTOR_CHANGE:
+                att = Attractor(rand_point_in_cube(self.cube, 3), self.cube)
+                self.attractors[i] = att
+
+    def ua_path(self):
+        """ step through equation function for each attractor """
+        for attr in self.attractors:
+            attr.step_path_equation()
+
+    def ua_midi(self):
+        """ "this is handled by the callback function midi_to_attractor """
+        pass
 
     def get_COM(self):
         """
