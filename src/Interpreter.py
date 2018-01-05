@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import threading
+import json
 from heapq import (heappush, heappop)
 from random import random
 from time import sleep, time as timenow
@@ -61,6 +62,38 @@ class Interpreter(threading.Thread):
 
         self.done = False
         self.start()
+
+    def setup_interp(self, json_file):
+        """
+        Allows parameters to be set from JSON format
+        :param json_file:
+        :return:
+        """
+        data = json.load(open(json_file))
+
+        for d in data.items():
+            if d[0] == 'pitch_min':
+                self.pitch_min = d[1]
+            elif d[0] == 'pitch_range':
+                self.pitch_range = d[1]
+            elif d[0] == 'dynam_min':
+                self.dynam_min = d[1]
+            elif d[0] == 'dynam_range':
+                self.dynam_range = d[1]
+            elif d[0] == 'time_min':
+                self.time_min = d[1]
+            elif d[0] == 'time_range':
+                self.time_range = d[1]
+            elif d[0] == 'channel_vol':
+                self.volume = d[1]
+            else:
+                print("Unexpected parameter: {}".format(d[0]))
+
+        self.refresh()
+
+    def refresh(self):
+        """ Reset parameters that depend on others, and the like """
+        pass
 
     def run(self):
         self.activate_instrument()
@@ -255,6 +288,10 @@ class ChordSequencer(Interpreter):
             # print(boid_heap)
             # assert len(boid_heap) == len(self.swarm.boids)
 
+    def refresh(self):
+        self.set_scale(self.scale)
+        self.set_tempo()
+
     def set_scale(self, scale, on=True):
         """
         Set the musical scale for the interpreter
@@ -262,7 +299,7 @@ class ChordSequencer(Interpreter):
         :param on: whether or not to set snap_to_scale to true
         """
         self.scale = scale
-        self.notes = scales.gen_range(self.scale, lowest=IP.PITCH_MIN, note_range=IP.PITCH_RANGE)
+        self.notes = scales.gen_range(self.scale, lowest=self.pitch_min, note_range=self.pitch_range)
         self.snap_to_scale = on
 
     def set_tempo(self, tempo=None, on=True):
@@ -276,7 +313,7 @@ class ChordSequencer(Interpreter):
         # default value must be set in the body, otherwise it will take the value as it is on run-time
 
         if tempo is None:
-            self.beat = IP.TIME_MIN + IP.TIME_RANGE
+            self.beat = self.time_min + self.time_range
         else:
             self.beat = (60 / tempo) * 4  # crotchet = 120, so semibreve is 2 seconds
 

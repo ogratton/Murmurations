@@ -1,0 +1,9 @@
+{
+	"pitch_min":60,
+	"pitch_range":24,
+	"time_min":0.05,
+	"time_range":0.25,
+	"dynam_min":25,
+	"dynam_range":102,
+	"channel_vol":110
+}
