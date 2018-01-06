@@ -3,6 +3,7 @@ from SwarmRender import Window
 import pyglet
 import rtmidi
 from Interpreter import *
+from Interpreters import NewInterpreter
 
 import random
 import scales
@@ -25,14 +26,6 @@ def load_config():
     config.read('config.ini')
 
     parameters.DP.UPDATE_RATE = int(config['DEFAULT']['UPDATE_RATE'])
-
-    parameters.IP.PITCH_RANGE = int(config['INTERPRETER']['PITCH_RANGE'])
-    parameters.IP.PITCH_MIN = int(config['INTERPRETER']['PITCH_MIN'])
-    parameters.IP.TIME_RANGE = float(config['INTERPRETER']['TIME_RANGE'])
-    parameters.IP.TIME_MIN = float(config['INTERPRETER']['TIME_MIN'])
-    parameters.IP.DYNAM_RANGE = int(config['INTERPRETER']['DYNAM_RANGE'])
-    parameters.IP.DYNAM_MIN = int(config['INTERPRETER']['DYNAM_MIN'])
-    parameters.IP.CHANNEL_VOL = int(config['INTERPRETER']['CHANNEL_VOL'])
 
     seed = int(config['SWARM']['RANDOM_SEED'])
     if seed == -1:
@@ -63,34 +56,32 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[10, 50, 7, 0]
+    cube_min = r_[10, 50, 7, 0, 0]
     edge_length = 40
     cube = Swarm.Cube(cube_min, edge_length)
-    cube2 = Swarm.Cube(r_[40, 10, 17, 0], 30)
+    cube2 = Swarm.Cube(r_[40, 10, 17, 0, 0], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(5, cube, 3), 0, inst.POLYSYNTH),
+                    (Swarm.Swarm(3, cube, 3), 0, inst.BRIGHT_YAMAHA_GRAND),
                     # (Swarm.Swarm(5, cube, 3), 1, inst.SOPRANO_SAX),
-                    (Swarm.Swarm(3, cube, 1), 2, inst.BLOWN_BOTTLE),
+                    # (Swarm.Swarm(3, cube, 1), 2, inst.POLYSYNTH),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
+    # interps = [ChordSequencer(midiout, swarm_d) for swarm_d in swarm_data]
+    interps = [NewInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps[0].setup_interp("_soprano.json")
-    interps[1].setup_interp("_bass.json")
-
-    # TODO define pitch_min etc per interpreter maybe via JSON file or something
-
-    interps[0].set_tempo(140)
-    interps[1].set_tempo(140)
-    interps[0].set_scale(scales.min_pen)
-    interps[1].set_scale(scales.min_pen)
+    interps[0].set_tempo(120)
+    interps[0].set_scale(scales.satie)
+    # interps[1].setup_interp("_soprano.json")
+    # interps[1].set_tempo(140)
+    # interps[1].set_scale(scales.min_pen)
 
     # start up the midi in stream
     in_stream = None

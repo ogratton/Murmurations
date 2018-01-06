@@ -11,9 +11,9 @@ from math import (cos, sin, pi)
 from time import time as timenow
 
 # TODO TEMP
-# random.seed(SP.RANDOM_SEED)
+random.seed(SP.RANDOM_SEED)
 
-DIMS = 4  # for when dimensions must be hardcoded
+DIMS = 5  # for when dimensions must be hardcoded
 
 def random_range(lower=0.0, upper=1.0):
     """
@@ -330,11 +330,13 @@ class Attractor(object):
         # in this 3d example, the dimension that we leave "pi" out of varies less
         # so if x is dynamic and x_f is simply cos(4t) then it will move slower and have
         # less dynamic interest
-        a, b, c, d = random.randint(1, 8), random.randint(1, 8), random.randint(1, 5), random.randint(1, 8)
+        a, b, c, d, e = random.randint(1, 8), random.randint(1, 7), random.randint(1, 5), \
+            random.randint(1, 4), random.randint(1, 6)
         self.x_f = lambda t: cos(a * t)
         self.y_f = lambda t: sin(b * pi * t)
         self.z_f = lambda t: sin(c * pi * t)
-        self.i_f = lambda t: cos(c * pi * t)
+        self.i_f = lambda t: cos(d * pi * t)
+        self.j_f = lambda t: cos(e * pi * t)
 
     def set_pos(self, new_l):
         self.location = new_l
@@ -346,8 +348,9 @@ class Attractor(object):
         y = self.y_f(self.t)
         z = self.z_f(self.t)
         i = self.i_f(self.t)
+        j = self.j_f(self.t)
         self.t += self.step
-        new_point = array([x, y, z, i], dtype=float64)*0.4*self.cube.edge_length + self.cube.centre
+        new_point = array([x, y, z, i, j], dtype=float64)*0.4*self.cube.edge_length + self.cube.centre
         self.set_pos(new_point)
 
 
@@ -397,6 +400,7 @@ class Swarm(object):
         :param cube:      Cube  bounding box of swarm (and its boids)
         """
         super().__init__()
+        self.dims = DIMS  # used by interpreter
         self.num_boids = num_boids
         self.num_attractors = num_attractors
         self.boids = []
@@ -457,7 +461,7 @@ class Swarm(object):
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
             boid.attractors = atts
-        for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
+        # for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity

@@ -1,11 +1,19 @@
 # TODO second go at interpreters cos the old one got very messy
 import threading
+import json
+from time import sleep, time as timenow
 from parameters import IP
 import scales
 import random
 from heapq import (heappush, heappop)
 from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
+
+dynam_axis = 0
+pitch_axis = 1
+time_axis = 2
+length_axis = 3
+pan_axis = 4
 
 
 class NewInterpreter(threading.Thread):
@@ -24,12 +32,15 @@ class NewInterpreter(threading.Thread):
         self.program_change = PROGRAM_CHANGE | self.channel
 
         # SET DEFAULTS
+        self.dims = self.swarm.dims
         self.pitch_range = IP.PITCH_RANGE
         self.pitch_min = IP.PITCH_MIN
         self.dynam_range = IP.DYNAM_RANGE
         self.dynam_min = IP.DYNAM_MIN
         self.time_range = IP.TIME_RANGE
         self.time_min = IP.TIME_MIN
+        self.pan_range = IP.PAN_RANGE
+        self.pan_min = IP.PAN_MIN
         self.probability = IP.PROBABILITY
         self.scale = None
         self.notes = None
@@ -44,13 +55,48 @@ class NewInterpreter(threading.Thread):
         self.done = False
         self.start()
 
-    def play_note(self, info):
+    def setup_interp(self, json_file):
+        """
+        Allows parameters to be set from JSON format
+        :param json_file:
+        :return:
+        """
+        data = json.load(open(json_file))
+
+        for d in data.items():
+            if d[0] == 'pitch_min':
+                self.pitch_min = d[1]
+            elif d[0] == 'pitch_range':
+                self.pitch_range = d[1]
+            elif d[0] == 'dynam_min':
+                self.dynam_min = d[1]
+            elif d[0] == 'dynam_range':
+                self.dynam_range = d[1]
+            elif d[0] == 'time_min':
+                self.time_min = d[1]
+            elif d[0] == 'time_range':
+                self.time_range = d[1]
+            elif d[0] == 'probability':
+                self.probability = d[1]
+            else:
+                print("Unexpected parameter: {}".format(d[0]))
+
+    def refresh(self):
+        """ refresh for when params have been changed outside """
+        self.set_scale(self.scale)
+
+    def play_note(self, pitch, vol):
         """
         Play a note
-        :param info: a list of midi parameters to be sent to midiout
+        :param pitch: midi pitch number
+        :param vol: 0-127 volume
         """
         if random.random() < self.probability:
-            self.midiout.send_message(info)
+            self.midiout.send_message([self.note_on, pitch, vol])
+
+    def stop_note(self, pitch):
+        """ stop a note playing """
+        self.midiout.send_message([self.note_on, pitch, 0])
 
     def activate_instrument(self):
         # (drums are on channel 9)
@@ -107,16 +153,19 @@ class NewInterpreter(threading.Thread):
     # DIMENSION-SPECIFIC INTERPRETATION FUNCTIONS
 
     def interpret_dynam(self, prop):
-        return NewInterpreter.lin_interp(prop, self.dynam_min, self.dynam_range)
+        return int(NewInterpreter.lin_interp(prop, self.dynam_min, self.dynam_range))
 
     def interpret_pitch(self, prop):
-        return NewInterpreter.proportion_along_list(prop, self.notes)
+        return int(NewInterpreter.proportion_along_list(prop, self.notes))
 
     def interpret_time_beat(self, prop):
-        return NewInterpreter.proportion_along_list(prop, self.rhythms)
+        return self.beat * NewInterpreter.proportion_along_list(prop, self.rhythms)
 
     def interpret_time_free(self, prop):
         return NewInterpreter.lin_interp(prop, self.time_min, self.time_range)
+
+    def interpret_pan(self, prop):
+        return int(NewInterpreter.lin_interp(prop, self.pan_min, self.pan_range))
 
     def interpret(self, pos):
         """
@@ -124,12 +173,13 @@ class NewInterpreter(threading.Thread):
         :param pos: ratios of how far along the axis the boid is in each dimension
         :return:
         """
-        # TODO
-        loudness = NewInterpreter.lin_interp(pos[0], self.dynam_min, self.dynam_range)
-        pitch = NewInterpreter.proportion_along_list(pos[1], self.notes)
-        event_length = 0
-        pan = 0
-        return []
+        data = [-1] * self.dims
+        data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
+        data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
+        data[time_axis] = self.interpret_time(pos[time_axis])
+        data[length_axis] = pos[length_axis] * data[time_axis]
+        data[pan_axis] = self.interpret_pan(pos[pan_axis])
+        return data
 
     def loop(self):
         """
@@ -138,16 +188,49 @@ class NewInterpreter(threading.Thread):
         """
         # set up priority queue of all the boids to be interpreted
         time_elapsed = 0.0
-        time_step = 0.1
+        time_step = 0.05
         boid_heap = []
-        # TODO
+        EVENT_START, EVENT_OFF = 0, 1
+
         for boid in self.swarm.boids:
             data = self.interpret(boid.get_loc_ratios())
-            heappush(boid_heap, (time_elapsed, data))
+            if boid.id == 0:
+                print(data)
+            self.play_note(data[pitch_axis], data[dynam_axis])
+            heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
+            heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
 
+        # TODO I am 90% sure I've ballsed this up somewhere
         while not self.done:
-            # TODO
-            pass
+
+            time_this_loop = timenow()
+
+            while boid_heap[0][0] <= time_elapsed:
+                tag, data, boid = heappop(boid_heap)[1]
+
+                if tag == EVENT_OFF:
+                    # stop note
+                    self.stop_note(data[pitch_axis])
+                elif tag == EVENT_START:
+                    # interpret next data
+                    next_data = self.interpret(boid.get_loc_ratios())
+                    # play the note
+                    if boid.id == 0:
+                        self.play_note(next_data[pitch_axis], next_data[dynam_axis])
+                    # schedule next events
+                    heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
+                    heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
+                    pass
+                else:
+                    print("Unexpected event type:", str(tag))
+                    pass
+
+            time_this_loop = timenow() - time_this_loop
+            to_sleep = max(0, time_step - time_this_loop)
+            if to_sleep == 0:
+                print("oh dear")
+            sleep(to_sleep)
+            time_elapsed += time_step
 
     def run(self):
         # TODO any necessary setup

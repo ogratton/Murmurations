@@ -3,11 +3,11 @@ import threading
 import json
 from heapq import (heappush, heappop)
 from random import random
-from time import sleep, time as timenow
-from parameters import IP, SP
+from time import sleep
+from parameters import IP
 from numpy.linalg import norm
 import scales
-from rtmidi.midiconstants import (ALL_SOUND_OFF, CHANNEL_VOLUME, BANK_SELECT_MSB,
+from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE, PAN)
 
 
@@ -41,9 +41,8 @@ class Interpreter(threading.Thread):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, name, midiout, swarm_data):
+    def __init__(self, midiout, swarm_data):
         super(Interpreter, self).__init__()
-        self.name = name  # TODO use or lose
         self.midiout = midiout
         self.swarm = swarm_data[0]
         self.channel = swarm_data[1]
@@ -52,7 +51,6 @@ class Interpreter(threading.Thread):
         self.instrument = swarm_data[2]
 
         # SET DEFAULTS
-        self.volume = IP.CHANNEL_VOL
         self.pitch_range = IP.PITCH_RANGE
         self.pitch_min = IP.PITCH_MIN
         self.dynam_range = IP.DYNAM_RANGE
@@ -85,8 +83,6 @@ class Interpreter(threading.Thread):
                 self.time_min = d[1]
             elif d[0] == 'time_range':
                 self.time_range = d[1]
-            elif d[0] == 'channel_vol':
-                self.volume = d[1]
             elif d[0] == 'probability':
                 self.probability = d[1]
             else:
@@ -101,7 +97,6 @@ class Interpreter(threading.Thread):
     def run(self):
         self.activate_instrument()
         # TODO this must be done before every message out if it is to have effect
-        self.midiout.send_message([self.control_change, CHANNEL_VOLUME, self.volume & 127])
         # give MIDI instrument some time to activate instrument
         sleep(0.1)
         self.loop()
@@ -228,8 +223,8 @@ class ChordSequencer(Interpreter):
     Simple linear interpolation of position of each boid
     """
 
-    def __init__(self, name, midiout, swarm_data):
-        super().__init__(name, midiout, swarm_data)
+    def __init__(self, midiout, swarm_data):
+        super().__init__(midiout, swarm_data)
         self.snap_to_beat = False
         self.snap_to_scale = False
         self.beat = None

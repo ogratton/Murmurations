@@ -1,6 +1,7 @@
 """
 User-tweakable parameters
 Changed in config.ini
+Except for IP, which is changed in JSON files for individual interpreters
 """
 
 
@@ -41,11 +42,12 @@ class IP:
     """
     Interpreter parameters
     """
-    PITCH_RANGE = 88    # 88   - 88 keys on a piano, so seems suitable
     PITCH_MIN = 21      # 21   - A0
-    TIME_RANGE = 0.25   # 1    - range in time between events
+    PITCH_RANGE = 88    # 88   - 88 keys on a piano, so seems suitable
     TIME_MIN = 0.05     # 0.05 - min time between events
+    TIME_RANGE = 0.25   # 1    - range in time between events
     DYNAM_MIN = 25      # 0    - min dynamic
     DYNAM_RANGE = 102
-    CHANNEL_VOL = 110
+    PAN_MIN = 30
+    PAN_RANGE = 67
     PROBABILITY = 0.75  # 0.75 - prob of playing a note

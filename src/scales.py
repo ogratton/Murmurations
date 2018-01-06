@@ -25,6 +25,7 @@ min_arp = [3, 4, 5]
 whole   = [t, t, t, t, t]
 persian = [s, p, s, s, t, p, s]
 satie   = [t, s, p, s, t, p]      # from gnossienne no. 3 (min arp interlaced with the maj arp of one tone above root)
+sev_alt = [s, t, s, t, t, t, t]
 
 
 def gen_range(mode=aeolian, lowest=60, note_range=48):
