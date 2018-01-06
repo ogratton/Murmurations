@@ -71,10 +71,10 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(5, cube, 3), 0, inst.NYLON_STRING_GUITAR),
-                    (Swarm.Swarm(5, cube, 3), 1, inst.NYLON_STRING_GUITAR),
-                    # (Swarm.Swarm(3, cube, 1), 2, inst.PIZZICATO_SECTION),
-                    # (Swarm.Swarm(3, cube, 6), 9, inst.AGOGO)
+                    (Swarm.Swarm(5, cube, 3), 0, inst.POLYSYNTH),
+                    # (Swarm.Swarm(5, cube, 3), 1, inst.SOPRANO_SAX),
+                    (Swarm.Swarm(3, cube, 1), 2, inst.BLOWN_BOTTLE),
+                    # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
@@ -82,17 +82,15 @@ def main():
     midiout = rtmidi.MidiOut().open_port(0)
     interps = [ChordSequencer(str(i + 1), midiout, swarm_data[i]) for i in range(len(swarm_data))]
 
-    interps[0].setup_interp("_bass.json")
-    interps[1].setup_interp("_soprano.json")
+    interps[0].setup_interp("_soprano.json")
+    interps[1].setup_interp("_bass.json")
 
     # TODO define pitch_min etc per interpreter maybe via JSON file or something
 
-    # interps[0].set_tempo(80)
-    # interps[1].set_tempo(80)
-    # interps[0].set_scale(scales.locrian)
-    # interps[1].set_scale(scales.locrian)
-    # map(lambda x: x.set_tempo(120), interps)
-    map(lambda x: x.set_scale(scales.locrian), interps)
+    interps[0].set_tempo(140)
+    interps[1].set_tempo(140)
+    interps[0].set_scale(scales.min_pen)
+    interps[1].set_scale(scales.min_pen)
 
     # start up the midi in stream
     in_stream = None

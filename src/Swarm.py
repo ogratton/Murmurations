@@ -2,7 +2,7 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
-from numpy import array, zeros, float64
+from numpy import array, zeros, float64, nditer
 from numpy.linalg import norm
 from parameters import SP
 from heapq import (heappush, heappop)
@@ -11,7 +11,7 @@ from math import (cos, sin, pi)
 from time import time as timenow
 
 # TODO TEMP
-random.seed(SP.RANDOM_SEED)
+# random.seed(SP.RANDOM_SEED)
 
 DIMS = 4  # for when dimensions must be hardcoded
 
@@ -281,11 +281,22 @@ class Boid(object):
         """
         return self.location - self.cube.v_min
 
+    def get_loc_ratios(self):
+        """
+        :return: a list of 0-1 proportions of how far the boid is along each axis
+        """
+        loc = self.get_location()
+        for dim in nditer(loc, op_flags=['readwrite']):
+            dim[...] = min(0.99, max(0.0, dim/self.cube.edge_length))
+
+        return loc
+
     def update(self):
         """
         Move to new position using calculated velocity
         """
         velocity = self.velocity + self.adjustment
+
         # Add a constant velocity in whatever direction
         # they are moving so they don't ever stop.
         # Now that we have attractors, this is unnecessary

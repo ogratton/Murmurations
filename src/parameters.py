@@ -48,3 +48,4 @@ class IP:
     DYNAM_MIN = 25      # 0    - min dynamic
     DYNAM_RANGE = 102
     CHANNEL_VOL = 110
+    PROBABILITY = 0.75  # 0.75 - prob of playing a note

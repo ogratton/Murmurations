@@ -59,6 +59,7 @@ class Interpreter(threading.Thread):
         self.dynam_min = IP.DYNAM_MIN
         self.time_range = IP.TIME_RANGE
         self.time_min = IP.TIME_MIN
+        self.probability = IP.PROBABILITY
 
         self.done = False
         self.start()
@@ -86,6 +87,8 @@ class Interpreter(threading.Thread):
                 self.time_range = d[1]
             elif d[0] == 'channel_vol':
                 self.volume = d[1]
+            elif d[0] == 'probability':
+                self.probability = d[1]
             else:
                 print("Unexpected parameter: {}".format(d[0]))
 
@@ -97,6 +100,7 @@ class Interpreter(threading.Thread):
 
     def run(self):
         self.activate_instrument()
+        # TODO this must be done before every message out if it is to have effect
         self.midiout.send_message([self.control_change, CHANNEL_VOLUME, self.volume & 127])
         # give MIDI instrument some time to activate instrument
         sleep(0.1)
@@ -180,7 +184,7 @@ class Interpreter(threading.Thread):
         Pick notes from a list, rather than interpolation
         """
         proportion = max(0.01, min(0.99, boid_p / max_p))
-        index = int(proportion // (1 / len(notes)))
+        index = int(proportion * len(notes))
         return notes[index]
 
     def interpret_time(self, max_v, value):
@@ -241,18 +245,17 @@ class ChordSequencer(Interpreter):
         boid_heap = []
 
         # set up the heap with an element for each boid
-        # TODO use boid.id (though that is probably slower)
+        # TODO could use boid.id (though that is probably slower)
         for boid in self.swarm.boids:
-            # TODO playing on probability
-            if random() < 0.75:
-                data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [boid.id]
-                # play the note:
-                new_pitch = max(0, data[pitch_axis]) & 127
-                new_dynam = max(0, data[dynam_axis]) & 127
+            data = self.interpret(self.swarm.cube.edge_length, boid.get_location()) + [boid.id]
+            # play the note:
+            new_pitch = max(0, data[pitch_axis]) & 127
+            new_dynam = max(0, data[dynam_axis]) & 127
+            if random() < self.probability:
                 self.midiout.send_message([self.note_on, new_pitch, new_dynam])
-                # add to the priority queue
-                # heapq: (abs time, note data)
-                heappush(boid_heap, (time_elapsed + data[time_axis], data))
+            # add to the priority queue
+            # heapq: (abs time, note data)
+            heappush(boid_heap, (time_elapsed + data[time_axis], data))
 
         while not self.done:
 
@@ -276,7 +279,7 @@ class ChordSequencer(Interpreter):
                 self.midiout.send_message([self.control_change, PAN, pan_val & 0x7F])
 
                 # TODO playing on probability
-                if random() < 0.75:
+                if random() < self.probability:
                     self.midiout.send_message([self.note_on, new_pitch, new_dynam])
                 # add to the heap so it can be turned off when it's done
                 heappush(boid_heap, (new_time, next_data))
