@@ -79,3 +79,5 @@
 * Implemented predators, then removed them as they were very laggy
 * Implemented stigmergy between swarms and then removed it (as above)
 * Made swarms customisable by JSON files. Next: GUI sliders etc.
+* Rewritten main interpreter module
+* Added more dimensions in the swarm simulation (for pan, note length etc.)

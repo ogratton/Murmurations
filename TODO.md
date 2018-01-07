@@ -7,9 +7,6 @@ Move points to logbook when done
 * Stigmery between swarms: Think about how swarms can interact with one another (add their position as attractor)
 * Attractors as food sources (renewable for path-mode but non- for user input mode)
 	* Though that then makes stigmergy between swarms a bit odd...
-* Additional dimension(s) (note length as opposed to event length in order to get rests)
-	* The reason plucked stringed instruments sound nicer at the moment is because their notes decay
-	* If we add an additional dimension (or use velocity) to kill notes off somewhat prematurely it should be better for all
 * Make separation spongier
 * Add predators
 	* Patrolling predators can reduce the probability of a swarm visiting an area of music space without making it impossible
@@ -19,7 +16,6 @@ Move points to logbook when done
 	* Equates to adding gravity rule(?), which then means the boids and attractors must be assigned masses
 * Likewise have it so that the boids slow down as they approach the attractor
 * Dynamic number of boids (may play havoc with existing code)
-* Clustering for Naive now we have multiple attractors (or just get rid of naive)
 * More complex swarm behaviour: (see Reynolds87 and https://en.wikipedia.org/wiki/Flocking_(behavior)#Flocking_rules)
 	* Roll leads to drop in height
 	* Fear propogation
@@ -30,11 +26,10 @@ Move points to logbook when done
 
 * Extra dimensions can determine scale/key etc
 * Only play when near (i.e. eating) an attractor
-* Account for computation time for beats (like DrumSeq)
 * Add sustain & modulation and stuff
 	* 'let ring'
 	* if using the Sonuus G2M, this could potentially be done via a breakout cable
-* Custom interpretation types for different instruments (restrict pitch to its range)
+* Make instrument-specific presets (e.g. piano, double bass)
 * Dynamics need to change less regularly (but still have the ability for _subito_s)
 * Allow for silence/rests (this _should_ come with the note duration dimension)
 * Attractor input from live input

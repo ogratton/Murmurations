@@ -332,10 +332,10 @@ class Attractor(object):
         # less dynamic interest
         a, b, c, d, e = random.randint(1, 8), random.randint(1, 7), random.randint(1, 5), \
             random.randint(1, 4), random.randint(1, 6)
-        self.x_f = lambda t: cos(a * t)
+        self.x_f = lambda t: cos(a * pi * t)
         self.y_f = lambda t: sin(b * pi * t)
         self.z_f = lambda t: sin(c * pi * t)
-        self.i_f = lambda t: cos(d * pi * t)
+        self.i_f = lambda t: sin(d * pi * t)
         self.j_f = lambda t: cos(e * pi * t)
 
     def set_pos(self, new_l):

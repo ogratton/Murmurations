@@ -6,8 +6,7 @@ from parameters import IP
 import scales
 import random
 from heapq import (heappush, heappop)
-from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB,
-                                  CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
+from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
 
 dynam_axis = 0
 pitch_axis = 1
@@ -127,7 +126,7 @@ class NewInterpreter(threading.Thread):
         :return:
         """
         self.beat = 60 / beats_per_min
-        self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4, 1/8]  # TODO tinker with
+        self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]  # TODO tinker with
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat  # TODO need way to switch back if live GUI made
 
@@ -138,7 +137,7 @@ class NewInterpreter(threading.Thread):
         :param _prop: proprtion along the range
         :param _min: value when _prop = 0.0
         :param _range: range from _min
-        :return: value somewhere between _min and (_min+_range)
+        :return: value somewhere between _min and (_min + _range)
         """
         return _prop * _range + _min
 

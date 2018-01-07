@@ -57,16 +57,16 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7, 0, 0]
-    edge_length = 75
+    edge_length = 40
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(r_[40, 10, 17, 0, 0], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(10, cube, 10), 0, inst.BRIGHT_YAMAHA_GRAND),
-                    # (Swarm.Swarm(5, cube, 3), 1, inst.SOPRANO_SAX),
-                    # (Swarm.Swarm(3, cube, 1), 2, inst.POLYSYNTH),
+                    (Swarm.Swarm(7, cube, 6), 0, inst.BRIGHT_YAMAHA_GRAND),
+                    # (Swarm.Swarm(5, cube, 3), 1, inst.POLYSYNTH),
+                    # (Swarm.Swarm(7, cube, 6), 2, inst.POLYSYNTH),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
@@ -77,11 +77,11 @@ def main():
     interps = [NewInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps[0].setup_interp("_piano.json")
-    interps[0].set_tempo(120)
-    interps[0].set_scale(scales.satie)
-    # interps[1].setup_interp("_soprano.json")
-    # interps[1].set_tempo(140)
-    # interps[1].set_scale(scales.min_pen)
+    # interps[0].set_tempo(120)
+    interps[0].set_scale(scales.lydian)
+    # interps[1].setup_interp("_bass.json")
+    # interps[1].set_tempo(60)
+    # interps[1].set_scale(scales.satie)
 
     # start up the midi in stream
     in_stream = None
