@@ -5,5 +5,6 @@
 	"time_range":0.25,
 	"dynam_min":25,
 	"dynam_range":102,
-	"probability":0.5
+	"probability":0.25,
+	"note_offs":0
 }

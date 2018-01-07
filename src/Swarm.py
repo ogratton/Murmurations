@@ -437,6 +437,7 @@ class Swarm(object):
         Place an attractor given "ratios"
         :param ratios: ratio of how far along to place attractor on each axis
         """
+        # TODO an interpolated path would be better
         cube = self.cube
         v_min = cube.v_min
         edge = cube.edge_length
@@ -485,7 +486,7 @@ class Swarm(object):
             attr.step_path_equation()
 
     def ua_midi(self):
-        """ "this is handled by the callback function midi_to_attractor """
+        """ "this is handled by the callback function place_attractor """
         pass
 
     def get_COM(self):

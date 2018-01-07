@@ -42,6 +42,7 @@ class NewInterpreter(threading.Thread):
         self.pan_range = IP.PAN_RANGE
         self.pan_min = IP.PAN_MIN
         self.probability = IP.PROBABILITY
+        self.do_note_offs = 1
         self.scale = None
         self.notes = None
         self.range = 0
@@ -78,6 +79,8 @@ class NewInterpreter(threading.Thread):
                 self.time_range = d[1]
             elif d[0] == 'probability':
                 self.probability = d[1]
+            elif d[0] == 'note_offs':
+                self.do_note_offs = d[1]
             else:
                 print("Unexpected parameter: {}".format(d[0]))
 
@@ -96,7 +99,8 @@ class NewInterpreter(threading.Thread):
 
     def stop_note(self, pitch):
         """ stop a note playing """
-        self.midiout.send_message([self.note_on, pitch, 0])
+        if self.do_note_offs:
+            self.midiout.send_message([self.note_on, pitch, 0])
 
     def activate_instrument(self):
         # (drums are on channel 9)
@@ -104,7 +108,7 @@ class NewInterpreter(threading.Thread):
             # bank and program change
             bank, program = self.instrument
             self.midiout.send_message([self.control_change, BANK_SELECT_MSB, bank & 0x7F])
-            self.midiout.send_message([self.program_change, program & 127])
+            self.midiout.send_message([self.program_change, program & 0x7F])
 
     def set_scale(self, scale):
         """
@@ -194,8 +198,6 @@ class NewInterpreter(threading.Thread):
 
         for boid in self.swarm.boids:
             data = self.interpret(boid.get_loc_ratios())
-            if boid.id == 0:
-                print(data)
             self.play_note(data[pitch_axis], data[dynam_axis])
             heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
             heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
@@ -211,15 +213,14 @@ class NewInterpreter(threading.Thread):
                 if tag == EVENT_OFF:
                     # stop note
                     self.stop_note(data[pitch_axis])
+                    pass
                 elif tag == EVENT_START:
                     # interpret next data
                     next_data = self.interpret(boid.get_loc_ratios())
-                    # play the note
-                    if boid.id == 0:
-                        self.play_note(next_data[pitch_axis], next_data[dynam_axis])
+                    self.play_note(next_data[pitch_axis], next_data[dynam_axis])
                     # schedule next events
-                    heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
-                    heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
+                    heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, boid)))
+                    heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, boid)))
                     pass
                 else:
                     print("Unexpected event type:", str(tag))
