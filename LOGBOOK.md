@@ -81,3 +81,4 @@
 * Made swarms customisable by JSON files. Next: GUI sliders etc.
 * Rewritten main interpreter module
 * Added more dimensions in the swarm simulation (for pan, note length etc.)
+* Discovered how to link to proper VST synths etc. on windows (requires no code change except midiout port)

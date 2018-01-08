@@ -64,21 +64,24 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0, inst.BRIGHT_YAMAHA_GRAND),
-                    # (Swarm.Swarm(5, cube, 3), 1, inst.POLYSYNTH),
+                    (Swarm.Swarm(7, cube, 6), 0, inst.HARP),
+                    # (Swarm.Swarm(10, cube, 6), 1, inst.POLYSYNTH),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.POLYSYNTH),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
     # SET UP MIDI
-    midiout = rtmidi.MidiOut().open_port(0)
+    midiout = rtmidi.MidiOut()
+    # for port_name in midiout.get_ports():
+    #     print(port_name)
+    midiout.open_port(0)
     # interps = [ChordSequencer(midiout, swarm_d) for swarm_d in swarm_data]
     interps = [NewInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps[0].setup_interp("_piano.json")
-    # interps[0].set_tempo(120)
-    interps[0].set_scale(scales.lydian)
+    interps[0].set_tempo(120)
+    interps[0].set_scale(scales.mixolydian)
     # interps[1].setup_interp("_bass.json")
     # interps[1].set_tempo(60)
     # interps[1].set_scale(scales.satie)

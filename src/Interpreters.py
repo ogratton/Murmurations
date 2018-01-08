@@ -126,7 +126,8 @@ class NewInterpreter(threading.Thread):
         :return:
         """
         self.beat = 60 / beats_per_min
-        self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]  # TODO tinker with
+        self.rhythms = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1/2, 1/2, 1/3, 1/4]  # TODO tinker with
+        # self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat  # TODO need way to switch back if live GUI made
 
@@ -201,7 +202,7 @@ class NewInterpreter(threading.Thread):
             heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
             heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
 
-        # TODO I am 90% sure I've ballsed this up somewhere
+        # TODO check this definitely does what I want it to do
         while not self.done:
 
             time_this_loop = timenow()
@@ -216,6 +217,7 @@ class NewInterpreter(threading.Thread):
                 elif tag == EVENT_START:
                     # interpret next data
                     next_data = self.interpret(boid.get_loc_ratios())
+                    # TODO selective boid playing by options
                     self.play_note(next_data[pitch_axis], next_data[dynam_axis])
                     # schedule next events
                     heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, boid)))
