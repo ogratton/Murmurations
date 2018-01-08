@@ -126,10 +126,16 @@ class NewInterpreter(threading.Thread):
         :return:
         """
         self.beat = 60 / beats_per_min
-        self.rhythms = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1/2, 1/2, 1/3, 1/4]  # TODO tinker with
+        self.rhythms = [4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]  # TODO tinker with
+        # self.rhythms = [2, 1, 1/2]
         # self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat  # TODO need way to switch back if live GUI made
+
+    def set_time_free(self):
+        """ Very dramatic name for a very boring function """
+        self.snap_to_beat = False
+        self.interpret_time = self.interpret_time_free
 
     @staticmethod
     def lin_interp(_prop, _min, _range):
@@ -181,7 +187,7 @@ class NewInterpreter(threading.Thread):
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
         data[time_axis] = self.interpret_time(pos[time_axis])
-        data[length_axis] = pos[length_axis] * data[time_axis]
+        data[length_axis] = data[time_axis] * pos[length_axis]
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
 
@@ -193,8 +199,9 @@ class NewInterpreter(threading.Thread):
         # set up priority queue of all the boids to be interpreted
         time_elapsed = 0.0
         time_step = 0.05
+        counter = 0  # need this because of floating point inaccuracies
         boid_heap = []
-        EVENT_START, EVENT_OFF = 0, 1
+        EVENT_START, EVENT_OFF = 1, 0
 
         for boid in self.swarm.boids:
             data = self.interpret(boid.get_loc_ratios())
@@ -230,9 +237,14 @@ class NewInterpreter(threading.Thread):
             time_this_loop = timenow() - time_this_loop
             to_sleep = max(0, time_step - time_this_loop)
             if to_sleep == 0:
-                print("oh dear")
+                print("OOPS: missed a beat (must be really lagging")
+            # metronome:
+            if self.snap_to_beat and counter*time_step % (self.beat/2) == 0:
+                woodblock = 76 if counter*time_step % self.beat == 0 else 77
+                self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
             sleep(to_sleep)
             time_elapsed += time_step
+            counter += 1
 
     def run(self):
         # TODO any necessary setup

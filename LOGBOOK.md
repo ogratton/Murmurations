@@ -58,7 +58,10 @@
 	* boids are pyramids
 * Attempted showing the boid's direction, but it is slightly off
 * Allowed for multiple attractors at once
+	* This allows for more melodic interest, as boids now follow less predictable rising and falling paths
 * Defined parametrically defined paths for attractors to follow
+	* The paths are defined somewhat randomly, but not randomly enough for my liking
+	* They currently all take a circuit of the entire space, but it may be good to restrict some to tighter loops
 
 ### 2017/12/01 - Week 10
 
