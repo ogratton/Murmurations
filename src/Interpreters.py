@@ -148,11 +148,11 @@ class PolyInterpreter(threading.Thread):
         :return:
         """
         self.beat = 60 / beats_per_min
-        self.rhythms = [4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]  # TODO tinker with
+        # self.rhythms = [4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]  # TODO tinker with
         # self.rhythms = [2, 1, 1/2]
-        # self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]
+        self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]
         self.snap_to_beat = True
-        self.interpret_time = self.interpret_time_beat  # TODO need way to switch back if live GUI made
+        self.interpret_time = self.interpret_time_beat
 
     def set_time_free(self):
         """ Very dramatic name for a very boring function """
@@ -209,9 +209,38 @@ class PolyInterpreter(threading.Thread):
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
         data[time_axis] = self.interpret_time(pos[time_axis])
-        data[length_axis] = data[time_axis] * pos[length_axis]
+        data[length_axis] = data[time_axis] # * pos[length_axis]
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
+
+    def setup_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+        """ Initialise a queue with the sound agents we will use """
+        for boid in self.swarm.boids:
+            data = self.interpret(boid.get_loc_ratios())
+            self.play_note(data[pitch_axis], data[dynam_axis])
+            heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
+            heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
+
+    def parse_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+        """ Parse the data from the head of the queue """
+        tag, data, boid = heappop(boid_heap)[1]
+
+        if tag == EVENT_OFF:
+            # stop note
+            self.stop_note(data[pitch_axis])
+            pass
+        elif tag == EVENT_START:
+            # interpret next data
+            next_data = self.interpret(boid.get_loc_ratios())
+            # TODO selective boid playing by options
+            self.play_note(next_data[pitch_axis], next_data[dynam_axis])
+            # schedule next events
+            heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, boid)))
+            heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, boid)))
+            pass
+        else:
+            print("Unexpected event type:", str(tag))
+            pass
 
     def loop(self):
         """
@@ -229,11 +258,7 @@ class PolyInterpreter(threading.Thread):
         bars = 0
         timesig = 4  # forced relative to crotchet because this is temp
 
-        for boid in self.swarm.boids:
-            data = self.interpret(boid.get_loc_ratios())
-            self.play_note(data[pitch_axis], data[dynam_axis])
-            heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
-            heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
+        self.setup_priority_queue(boid_heap, time_elapsed, EVENT_OFF, EVENT_START)
 
         # TODO check this definitely does what I want it to do
         while not self.done:
@@ -241,53 +266,36 @@ class PolyInterpreter(threading.Thread):
             time_this_loop = timenow()
 
             while boid_heap[0][0] <= time_elapsed:
-                tag, data, boid = heappop(boid_heap)[1]
-
-                if tag == EVENT_OFF:
-                    # stop note
-                    self.stop_note(data[pitch_axis])
-                    pass
-                elif tag == EVENT_START:
-                    # interpret next data
-                    next_data = self.interpret(boid.get_loc_ratios())
-                    # TODO selective boid playing by options
-                    self.play_note(next_data[pitch_axis], next_data[dynam_axis])
-                    # schedule next events
-                    heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, boid)))
-                    heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, boid)))
-                    pass
-                else:
-                    print("Unexpected event type:", str(tag))
-                    pass
+                self.parse_priority_queue(boid_heap, time_elapsed, EVENT_OFF, EVENT_START)
 
             time_this_loop = timenow() - time_this_loop
             to_sleep = max(0, time_step - time_this_loop)
             if to_sleep == 0:
                 print("OOPS: missed a beat (must be really lagging")
 
-            # TODO TEMP metronome:
-            if self.snap_to_beat and counter*time_step % self.beat < time_step:
-                woodblock = 77
-                beat = (beat+1) % timesig
-                if beat == 0:
-                    woodblock = 76
-                    bars += 1
-                    bar = bars % len(self.chord_prog.keys())
-                    notes = self.chord_prog[bar]
-                    print("BAR {}".format(bar+1))
-                    # play the chord
-                    # for note in notes:
-                    #     self.midiout.send_message([self.note_on, note, 100])
-                    # TODO change the scale too (assuming chord is base tonic)
-                    degree = (notes[0] % 12) - (self.pitch_min % 12)
-                    new_pitch_min = self.pitch_min + degree
-                    if new_pitch_min < 0:
-                        new_pitch_min += 12
-                    self.pitch_min = new_pitch_min
-                    self.set_scale(self.scale)
-                print(beat+1)
-
-                # self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
+            # # TODO TEMP metronome:
+            # if self.snap_to_beat and counter*time_step % self.beat < time_step:
+            #     woodblock = 77
+            #     beat = (beat+1) % timesig
+            #     if beat == 0:
+            #         woodblock = 76
+            #         bars += 1
+            #         bar = bars % len(self.chord_prog.keys())
+            #         notes = self.chord_prog[bar]
+            #         if self.channel == 0: print("BAR {}".format(bar+1))
+            #         # play the chord
+            #         # for note in notes:
+            #         #     self.midiout.send_message([self.note_on, note, 100])
+            #         # TODO change the scale too (assuming chord is base tonic)
+            #         degree = (notes[0] % 12) - (self.pitch_min % 12)
+            #         new_pitch_min = self.pitch_min + degree
+            #         if new_pitch_min < 0:
+            #             new_pitch_min += 12
+            #         self.pitch_min = new_pitch_min
+            #         self.set_scale(self.scale)
+            #     if self.channel == 0: print(beat+1)
+            #
+            #     # self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
 
             sleep(to_sleep)
             time_elapsed += time_step
@@ -300,8 +308,37 @@ class PolyInterpreter(threading.Thread):
         self.midiout.send_message([self.control_change, ALL_SOUND_OFF, 0])
 
 
-def MonoInterpreter(PolyInterpreter):
+class MonoInterpreter(PolyInterpreter):
     """ Uses the centre of gravity of the swarm, thus only playing one note at a time """
 
-    def __init__(midiout, swarmdata):
-        super().__init__(midiout, swarmdata)
+    def __init__(self, midiout, swarm_data):
+        super().__init__(midiout, swarm_data)
+
+    # TODO need to rewrite all the bits that use all the boids and replace them with COM
+    def setup_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+        """ Initialise a queue with the sound agents we will use """
+        com = self.swarm.get_COM()
+        data = self.interpret(com.get_loc_ratios())
+        self.play_note(data[pitch_axis], data[dynam_axis])
+        heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, com)))
+        heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, com)))
+
+    def parse_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+        """ Parse the data from the head of the queue """
+        tag, data, com = heappop(boid_heap)[1]
+
+        if tag == EVENT_OFF:
+            # stop note
+            self.stop_note(data[pitch_axis])
+            pass
+        elif tag == EVENT_START:
+            # interpret next data
+            next_data = self.interpret(com.get_loc_ratios())
+            self.play_note(next_data[pitch_axis], next_data[dynam_axis])
+            # schedule next events
+            heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, com)))
+            heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, com)))
+            pass
+        else:
+            print("Unexpected event type:", str(tag))
+            pass

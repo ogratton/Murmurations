@@ -358,16 +358,18 @@ class CentOfMass(object):
     """
     The centre of mass of a swarm
     """
-    def __init__(self, location, velocity, v_min):
+    def __init__(self, location, velocity, v_min, edge_length):
         """
         Set up an initial (probably wrong) centre of mass object
         :param location: array
         :param velocity: array
         :param v_min:    min vertex of bounding box
+        :param edge_length: length of each dimension
         """
         self.location = location
         self.velocity = velocity
         self.v_min = v_min
+        self.edge_length = edge_length
 
     def __repr__(self):
         return "Centre of Mass - pos:{0}, vel:{1}".format(self.location, self.velocity)
@@ -388,6 +390,15 @@ class CentOfMass(object):
         """
         return self.location - self.v_min
 
+    def get_loc_ratios(self):
+        """
+        :return: a list of 0-1 proportions of how far the COM is along each axis
+        """
+        loc = self.get_location()
+        for dim in nditer(loc, op_flags=['readwrite']):
+            dim[...] = min(0.99, max(0.0, dim/self.edge_length))
+
+        return loc
 
 class Swarm(object):
     """
@@ -412,7 +423,7 @@ class Swarm(object):
 
         for i in range(num_boids):
             self.boids.append(Boid(cube, self.attractors, i))
-        self.c_o_m = CentOfMass(cube.centre, zeros(DIMS, dtype=float64), cube.v_min)
+        self.c_o_m = CentOfMass(cube.centre, zeros(DIMS, dtype=float64), cube.v_min, cube.edge_length)
 
         # which attractor update to use
         if SP.ATTRACTOR_MODE == 0:
@@ -491,7 +502,6 @@ class Swarm(object):
 
     def get_COM(self):
         """
-        WARNING: MUST USE com.get_location()
         :return: the centre of mass of the swarm
         """
         # TODO make this foolproof

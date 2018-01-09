@@ -3,7 +3,7 @@ from SwarmRender import Window
 import pyglet
 import rtmidi
 from Interpreter import *
-from Interpreters import PolyInterpreter
+from Interpreters import *
 
 import random
 import scales
@@ -64,9 +64,9 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0, inst.TRUMPET),
-                    # (Swarm.Swarm(7, cube, 6), 1, inst.HARP),
-                    # (Swarm.Swarm(7, cube, 6), 2, inst.POLYSYNTH),
+                    (Swarm.Swarm(7, cube, 6), 0, inst.PICKED_BASS),
+                    (Swarm.Swarm(7, cube, 6), 1, inst.SOPRANO_SAX),
+                    # (Swarm.Swarm(7, cube, 6), 2, inst.YAMAHA_GRAND_PIANO),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
@@ -77,14 +77,21 @@ def main():
     #     print(port_name)
     midiout.open_port(2)
     # interps = [ChordSequencer(midiout, swarm_d) for swarm_d in swarm_data]
-    interps = [PolyInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
+    # interps = [MonoInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
-    interps[0].setup_interp("_piano.json")
-    interps[0].set_tempo(140)
-    interps[0].set_scale(scales.locrian)
-    # interps[1].setup_interp("_bass.json")
-    # interps[1].set_tempo(60)
-    # interps[1].set_scale(scales.satie)
+    interps = list()
+    interps.append(MonoInterpreter(midiout, swarm_data[0]))
+    interps[0].setup_interp("_bass.json")
+    interps[0].set_tempo(120)
+    interps[0].set_scale(scales.min_pen)
+    interps.append(MonoInterpreter(midiout, swarm_data[1]))
+    interps[1].setup_interp("_soprano.json")
+    interps[1].set_tempo(120)
+    interps[1].set_scale(scales.min_pen)
+    # interps.append(PolyInterpreter(midiout, swarm_data[2]))
+    # interps[2].setup_interp("_piano.json")
+    # interps[2].set_tempo(120)
+    # interps[2].set_scale(scales.min_pen)
 
     # start up the midi in stream
     in_stream = None
