@@ -88,3 +88,5 @@
 * Added more dimensions in the swarm simulation (for pan, note length etc.)
 * Discovered how to link to proper VST synths etc. on windows (requires no code change except midiout port)
 * Experimented with Cython on Linux and it sped up quite a lot, but can't get it to work on Windows
+* Added Monophonic interpreter (second coming of NaiveSequencer)
+	* produces monophonic melodies as opposed to a vomit of notes

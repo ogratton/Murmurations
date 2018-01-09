@@ -148,9 +148,10 @@ class PolyInterpreter(threading.Thread):
         :return:
         """
         self.beat = 60 / beats_per_min
-        # self.rhythms = [4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]  # TODO tinker with
+        self.rhythms = list(reversed([4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]))  # TODO tinker with
         # self.rhythms = [2, 1, 1/2]
-        self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]
+        # self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]
+        # self.rhythms = [3/4, 1/4, 3/4, 1/4, 3/4, 1/4, 3/4, 1/4]  # random swing
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat
 
