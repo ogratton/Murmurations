@@ -81,7 +81,10 @@
 * Added MIDI input attractor mode, which allows a user to place attractors via MIDI message
 * Implemented predators, then removed them as they were very laggy
 * Implemented stigmergy between swarms and then removed it (as above)
-* Made swarms customisable by JSON files. Next: GUI sliders etc.
+	* led to feeback loop, technique needs rethinking
+* Made interpreters customisable by JSON files
+	* Next: GUI sliders etc.
 * Rewritten main interpreter module
 * Added more dimensions in the swarm simulation (for pan, note length etc.)
 * Discovered how to link to proper VST synths etc. on windows (requires no code change except midiout port)
+* Experimented with Cython on Linux and it sped up quite a lot, but can't get it to work on Windows

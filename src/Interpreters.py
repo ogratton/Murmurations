@@ -15,13 +15,14 @@ length_axis = 3
 pan_axis = 4
 
 
-class NewInterpreter(threading.Thread):
+class PolyInterpreter(threading.Thread):
+    """ Uses every boid as a sound source """
 
     def __init__(self, midiout, swarm_data):
         """
         Make a new interpreter
         """
-        super(NewInterpreter, self).__init__()
+        super(PolyInterpreter, self).__init__()
         self.midiout = midiout
         self.swarm, self.channel, self.instrument = swarm_data
 
@@ -51,6 +52,26 @@ class NewInterpreter(threading.Thread):
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
         self.activate_instrument()
+
+        # TODO temporary chord progression
+        seventh_chord = [0, 4, 7, 10, 12]
+        e7 = list(map(lambda x: x+52, seventh_chord))
+        a7 = list(map(lambda x: x+57, seventh_chord))
+        b7 = list(map(lambda x: x+59, seventh_chord))
+        self.chord_prog = {
+            0: e7,
+            1: e7,
+            2: e7,
+            3: e7,
+            4: a7,
+            5: a7,
+            6: e7,
+            7: e7,
+            8: b7,
+            9: a7,
+            10: e7,
+            11: e7
+        }
 
         self.done = False
         self.start()
@@ -112,6 +133,7 @@ class NewInterpreter(threading.Thread):
     def set_scale(self, scale):
         """
         Set the musical scale for the interpreter
+        Assumes lowest pitch is the tonic
         :param scale: a scale from 'scales.py' (in the form of a list of intervals)
         """
         self.scale = scale
@@ -163,19 +185,19 @@ class NewInterpreter(threading.Thread):
     # DIMENSION-SPECIFIC INTERPRETATION FUNCTIONS
 
     def interpret_dynam(self, prop):
-        return int(NewInterpreter.lin_interp(prop, self.dynam_min, self.dynam_range))
+        return int(PolyInterpreter.lin_interp(prop, self.dynam_min, self.dynam_range))
 
     def interpret_pitch(self, prop):
-        return int(NewInterpreter.proportion_along_list(prop, self.notes))
+        return int(PolyInterpreter.proportion_along_list(prop, self.notes))
 
     def interpret_time_beat(self, prop):
-        return self.beat * NewInterpreter.proportion_along_list(prop, self.rhythms)
+        return self.beat * PolyInterpreter.proportion_along_list(prop, self.rhythms)
 
     def interpret_time_free(self, prop):
-        return NewInterpreter.lin_interp(prop, self.time_min, self.time_range)
+        return PolyInterpreter.lin_interp(prop, self.time_min, self.time_range)
 
     def interpret_pan(self, prop):
-        return int(NewInterpreter.lin_interp(prop, self.pan_min, self.pan_range))
+        return int(PolyInterpreter.lin_interp(prop, self.pan_min, self.pan_range))
 
     def interpret(self, pos):
         """
@@ -199,9 +221,13 @@ class NewInterpreter(threading.Thread):
         # set up priority queue of all the boids to be interpreted
         time_elapsed = 0.0
         time_step = 0.05
-        counter = 0  # need this because of floating point inaccuracies
         boid_heap = []
         EVENT_START, EVENT_OFF = 1, 0
+        # TODO temp stuff for counting bars, assuming 4/4 time
+        counter = 0  # need this because of floating point inaccuracies
+        beat = 0
+        bars = 0
+        timesig = 4  # forced relative to crotchet because this is temp
 
         for boid in self.swarm.boids:
             data = self.interpret(boid.get_loc_ratios())
@@ -238,10 +264,31 @@ class NewInterpreter(threading.Thread):
             to_sleep = max(0, time_step - time_this_loop)
             if to_sleep == 0:
                 print("OOPS: missed a beat (must be really lagging")
-            # metronome:
-            if self.snap_to_beat and counter*time_step % (self.beat/2) == 0:
-                woodblock = 76 if counter*time_step % self.beat == 0 else 77
-                self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
+
+            # TODO TEMP metronome:
+            if self.snap_to_beat and counter*time_step % self.beat < time_step:
+                woodblock = 77
+                beat = (beat+1) % timesig
+                if beat == 0:
+                    woodblock = 76
+                    bars += 1
+                    bar = bars % len(self.chord_prog.keys())
+                    notes = self.chord_prog[bar]
+                    print("BAR {}".format(bar+1))
+                    # play the chord
+                    # for note in notes:
+                    #     self.midiout.send_message([self.note_on, note, 100])
+                    # TODO change the scale too (assuming chord is base tonic)
+                    degree = (notes[0] % 12) - (self.pitch_min % 12)
+                    new_pitch_min = self.pitch_min + degree
+                    if new_pitch_min < 0:
+                        new_pitch_min += 12
+                    self.pitch_min = new_pitch_min
+                    self.set_scale(self.scale)
+                print(beat+1)
+
+                # self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
+
             sleep(to_sleep)
             time_elapsed += time_step
             counter += 1
@@ -251,3 +298,10 @@ class NewInterpreter(threading.Thread):
         self.loop()
         # finish by stopping all the notes that may still be on
         self.midiout.send_message([self.control_change, ALL_SOUND_OFF, 0])
+
+
+def MonoInterpreter(PolyInterpreter):
+    """ Uses the centre of gravity of the swarm, thus only playing one note at a time """
+
+    def __init__(midiout, swarmdata):
+        super().__init__(midiout, swarmdata)
