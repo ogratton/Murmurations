@@ -64,8 +64,8 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(20, cube, 5), 0, inst.PICKED_BASS),
-                    # (Swarm.Swarm(7, cube, 6), 1, inst.SOPRANO_SAX),
+                    # (Swarm.Swarm(7, cube, 5), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(7, cube, 6), 1, inst.SOPRANO_SAX),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.YAMAHA_GRAND_PIANO),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
@@ -83,7 +83,7 @@ def main():
     interps.append(MonoInterpreter(midiout, swarm_data[0]))
     interps[0].setup_interp("_soprano.json")
     interps[0].set_tempo(120)
-    interps[0].set_scale(scales.min_pen)
+    interps[0].set_scale(scales.locrian)
     # interps.append(MonoInterpreter(midiout, swarm_data[1]))
     # interps[1].setup_interp("_soprano.json")
     # interps[1].set_tempo(120)

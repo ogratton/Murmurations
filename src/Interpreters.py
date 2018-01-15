@@ -261,6 +261,8 @@ class PolyInterpreter(threading.Thread):
 
         self.setup_priority_queue(boid_heap, time_elapsed, EVENT_OFF, EVENT_START)
 
+        # TODO add all notes to a list to ensure concurrency (as much as poss)
+
         # TODO check this definitely does what I want it to do
         while not self.done:
 
@@ -296,11 +298,11 @@ class PolyInterpreter(threading.Thread):
             #         self.set_scale(self.scale)
             #     if self.channel == 0: print(beat+1)
             #
-            #     # self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
-
-            sleep(to_sleep)
-            time_elapsed += time_step
-            counter += 1
+            #     self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
+            #
+            # sleep(to_sleep)
+            # time_elapsed += time_step
+            # counter += 1
 
     def run(self):
         # TODO any necessary setup

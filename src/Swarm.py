@@ -233,6 +233,9 @@ class Boid(object):
     def __repr__(self):
         return "Boid - pos:{0}, vel:{1}".format(self.location, self.velocity)
 
+    def __lt__(self, other):
+        return self.location < other.location
+
     def calc_v(self, all_boids, dist_mat):
         """
         Calculate velocity for next tick by applying the swarming rules
