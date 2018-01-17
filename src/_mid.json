@@ -1,0 +1,10 @@
+{
+	"pitch_min":36,
+	"pitch_range":48,
+	"time_min":0.1,
+	"time_range":0.50,
+	"dynam_min":0,
+	"dynam_range":127,
+	"probability":1.0,
+	"note_offs":1
+}

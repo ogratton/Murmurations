@@ -225,6 +225,7 @@ class PolyInterpreter(threading.Thread):
     def parse_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
         """ Parse the data from the head of the queue """
         tag, data, boid = heappop(boid_heap)[1]
+        notes_to_play = []
 
         if tag == EVENT_OFF:
             # stop note
@@ -242,6 +243,8 @@ class PolyInterpreter(threading.Thread):
         else:
             print("Unexpected event type:", str(tag))
             pass
+
+        return notes_to_play
 
     def loop(self):
         """
@@ -267,6 +270,7 @@ class PolyInterpreter(threading.Thread):
         while not self.done:
 
             time_this_loop = timenow()
+            notes_to_play = []
 
             while boid_heap[0][0] <= time_elapsed:
                 self.parse_priority_queue(boid_heap, time_elapsed, EVENT_OFF, EVENT_START)
