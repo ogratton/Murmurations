@@ -8,8 +8,6 @@ from parameters import SP
 from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
 
-from time import time as timenow
-
 # TODO TEMP
 random.seed(SP.RANDOM_SEED)
 

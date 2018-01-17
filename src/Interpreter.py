@@ -1,3 +1,5 @@
+""" DEPRECATED """
+
 from abc import ABCMeta, abstractmethod
 import threading
 import json

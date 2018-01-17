@@ -2,7 +2,7 @@ import Swarm
 from SwarmRender import Window
 import pyglet
 import rtmidi
-from Interpreter import *
+# from Interpreter import *
 from Interpreters import *
 
 import random
