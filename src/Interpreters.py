@@ -299,10 +299,10 @@ class PolyInterpreter(threading.Thread):
             #     if self.channel == 0: print(beat+1)
             #
             #     self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
-            #
-            # sleep(to_sleep)
-            # time_elapsed += time_step
-            # counter += 1
+
+            sleep(to_sleep)
+            time_elapsed += time_step
+            counter += 1
 
     def run(self):
         # TODO any necessary setup
