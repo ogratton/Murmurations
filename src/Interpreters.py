@@ -53,25 +53,25 @@ class PolyInterpreter(threading.Thread):
         self.interpret_time = self.interpret_time_free
         self.activate_instrument()
 
-        # TODO temporary chord progression
-        seventh_chord = [0, 4, 7, 10, 12]
-        e7 = list(map(lambda x: x+52, seventh_chord))
-        a7 = list(map(lambda x: x+57, seventh_chord))
-        b7 = list(map(lambda x: x+59, seventh_chord))
-        self.chord_prog = {
-            0: e7,
-            1: e7,
-            2: e7,
-            3: e7,
-            4: a7,
-            5: a7,
-            6: e7,
-            7: e7,
-            8: b7,
-            9: a7,
-            10: e7,
-            11: e7
-        }
+        # # TODO temporary chord progression
+        # seventh_chord = [0, 4, 7, 10, 12]
+        # e7 = list(map(lambda x: x+52, seventh_chord))
+        # a7 = list(map(lambda x: x+57, seventh_chord))
+        # b7 = list(map(lambda x: x+59, seventh_chord))
+        # self.chord_prog = {
+        #     0: e7,
+        #     1: e7,
+        #     2: e7,
+        #     3: e7,
+        #     4: a7,
+        #     5: a7,
+        #     6: e7,
+        #     7: e7,
+        #     8: b7,
+        #     9: a7,
+        #     10: e7,
+        #     11: e7
+        # }
 
         self.done = False
         self.start()
@@ -104,9 +104,16 @@ class PolyInterpreter(threading.Thread):
             else:
                 print("Unexpected parameter: {}".format(d[0]))
 
+        self.refresh()
+
     def refresh(self):
         """ refresh for when params have been changed outside """
         self.set_scale(self.scale)
+
+    def midi_message(self, message):
+        """ All MIDI messages sent go through here so they can be logged if needed """
+        self.midiout.send_message(message)
+        # TODO log if recording
 
     def play_note(self, pitch, vol):
         """
@@ -115,20 +122,20 @@ class PolyInterpreter(threading.Thread):
         :param vol: 0-127 volume
         """
         if random.random() < self.probability:
-            self.midiout.send_message([self.note_on, pitch, vol])
+            self.midi_message([self.note_on, pitch, vol])
 
     def stop_note(self, pitch):
         """ stop a note playing """
         if self.do_note_offs:
-            self.midiout.send_message([self.note_on, pitch, 0])
+            self.midi_message([self.note_on, pitch, 0])
 
     def activate_instrument(self):
         # (drums are on channel 9)
         if self.channel != 9:
             # bank and program change
             bank, program = self.instrument
-            self.midiout.send_message([self.control_change, BANK_SELECT_MSB, bank & 0x7F])
-            self.midiout.send_message([self.program_change, program & 0x7F])
+            self.midi_message([self.control_change, BANK_SELECT_MSB, bank & 0x7F])
+            self.midi_message([self.program_change, program & 0x7F])
 
     def set_scale(self, scale):
         """
@@ -312,7 +319,7 @@ class PolyInterpreter(threading.Thread):
         # TODO any necessary setup
         self.loop()
         # finish by stopping all the notes that may still be on
-        self.midiout.send_message([self.control_change, ALL_SOUND_OFF, 0])
+        self.midi_message([self.control_change, ALL_SOUND_OFF, 0])
 
 
 class MonoInterpreter(PolyInterpreter):

@@ -57,15 +57,15 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = r_[10, 50, 7, 0, 0]
-    edge_length = 60
+    edge_length = 100
     cube = Swarm.Cube(cube_min, edge_length)
     # cube2 = Swarm.Cube(r_[40, 10, 17, 0, 0], 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    # (Swarm.Swarm(7, cube, 6), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(7, cube, 5), 1, (0, 38)),
+                    (Swarm.Swarm(7, cube, 6), 0, inst.YAMAHA_GRAND_PIANO),
+                    # (Swarm.Swarm(20, cube, 10), 1, inst.ALTO_SAX),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.YAMAHA_GRAND_PIANO),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
@@ -81,9 +81,9 @@ def main():
 
     interps = list()
     interps.append(PolyInterpreter(midiout, swarm_data[0]))
-    interps[0].setup_interp("_bass.json")
+    interps[0].setup_interp("_piano.json")
     # interps[0].set_tempo(120)
-    interps[0].set_scale(scales.blues)
+    # interps[0].set_scale(scales.locrian)
     # interps.append(MonoInterpreter(midiout, swarm_data[1]))
     # interps[1].setup_interp("_soprano.json")
     # interps[1].set_tempo(120)

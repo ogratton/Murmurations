@@ -7,6 +7,8 @@ import scales
 import instruments as inst
 from time import sleep
 
+# TODO this is broken-ish now
+
 """
 launch the program without the display
 """
@@ -45,19 +47,6 @@ class Manager:
         for swarm in self.swarms:
             swarm.update()
 
-
-# class Runner(threading.Thread):
-#
-#     def __init__(self, manager):
-#         super(Runner, self).__init__()
-#         self.manager = manager
-#         self.done = False
-#
-#     def run(self):
-#         while not self.done:
-#             self.manager.update()
-
-
 def main():
 
     SwarmMain.load_config()
@@ -80,10 +69,10 @@ def main():
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut().open_port(0)
-    seqs = [PolyInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
+    interps = [PolyInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
-    map(lambda x: x.set_tempo(tempo=120), seqs)
-    map(lambda x: x.set_scale(scales.min_pen), seqs)
+    map(lambda x: x.set_tempo(tempo=120), interps)
+    map(lambda x: x.set_scale(scales.min_pen), interps)
 
     print("Press Control-C to quit.")
 
@@ -96,9 +85,9 @@ def main():
     except KeyboardInterrupt:
         print('')
     finally:
-        for seq in seqs:
-            seq.done = True  # And kill it.
-            seq.join()
+        for interp in interps:
+            interp.done = True  # And kill it.
+            interp.join()
         del midiout
         print("Done")
 

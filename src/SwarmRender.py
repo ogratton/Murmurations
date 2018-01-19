@@ -73,7 +73,9 @@ class World:
         self.swarm_models = []
         for swarm in self.swarms:
             colour = rand_colour()
-            model_size = (swarm.cube.edge_length/2) * 0.02
+            # model_size = (swarm.cube.edge_length/2) * 0.02
+            # TODO experimenting with fixed sizes
+            model_size = 0.4
 
             boid_models = []
             for boid in swarm.boids:
