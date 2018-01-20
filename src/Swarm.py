@@ -9,7 +9,7 @@ from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
 
 # TODO TEMP
-# random.seed(SP.RANDOM_SEED)
+random.seed(SP.RANDOM_SEED)
 
 DIMS = 5  # for when dimensions must be hardcoded
 

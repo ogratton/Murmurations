@@ -31,6 +31,8 @@ class PolyInterpreter(threading.Thread):
         self.note_on = NOTE_ON | self.channel
         self.program_change = PROGRAM_CHANGE | self.channel
 
+        self.time_elapsed = 0.0
+
         # SET DEFAULTS
         self.dims = self.swarm.dims
         self.pitch_range = IP.PITCH_RANGE
@@ -114,6 +116,8 @@ class PolyInterpreter(threading.Thread):
         """ All MIDI messages sent go through here so they can be logged if needed """
         self.midiout.send_message(message)
         # TODO log if recording
+        message.append(self.time_elapsed)
+        print(message)
 
     def play_note(self, pitch, vol):
         """
@@ -259,7 +263,7 @@ class PolyInterpreter(threading.Thread):
         :return:
         """
         # set up priority queue of all the boids to be interpreted
-        time_elapsed = 0.0
+        # time_elapsed = 0.0
         time_step = 0.05
         boid_heap = []
         EVENT_START, EVENT_OFF = 1, 0
@@ -269,7 +273,7 @@ class PolyInterpreter(threading.Thread):
         bars = 0
         timesig = 4  # forced relative to crotchet because this is temp
 
-        self.setup_priority_queue(boid_heap, time_elapsed, EVENT_OFF, EVENT_START)
+        self.setup_priority_queue(boid_heap, self.time_elapsed, EVENT_OFF, EVENT_START)
 
         # TODO add all notes to a list to ensure concurrency (as much as poss)
 
@@ -279,8 +283,8 @@ class PolyInterpreter(threading.Thread):
             time_this_loop = timenow()
             notes_to_play = []
 
-            while boid_heap[0][0] <= time_elapsed:
-                self.parse_priority_queue(boid_heap, time_elapsed, EVENT_OFF, EVENT_START)
+            while boid_heap[0][0] <= self.time_elapsed:
+                self.parse_priority_queue(boid_heap, self.time_elapsed, EVENT_OFF, EVENT_START)
 
             time_this_loop = timenow() - time_this_loop
             to_sleep = max(0, time_step - time_this_loop)
@@ -312,7 +316,7 @@ class PolyInterpreter(threading.Thread):
             #     self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
 
             sleep(to_sleep)
-            time_elapsed += time_step
+            self.time_elapsed += time_step
             counter += 1
 
     def run(self):
