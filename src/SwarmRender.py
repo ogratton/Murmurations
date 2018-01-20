@@ -334,6 +334,9 @@ class Window(pyglet.window.Window):
                 # previous model
                 self.cube_index = (self.cube_index - 1) % len(self.world.boxes)
 
+            elif symbol == pyglet.window.key.R:
+                print("TODO: actually record")
+
             elif symbol == pyglet.window.key.ESCAPE:
                 # exit
                 self.close()
