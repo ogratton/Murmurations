@@ -7,3 +7,7 @@ Pyglet code adapted from:
 https://github.com/jjstrydom/pyglet_examples
 which was in turn based off:
 http://www.poketcode.com/pyglet_demos.html
+
+MidiFile.py is from the MIDIUtil library by Mark Conway Wirt:
+https://github.com/MarkCWirt/MIDIUtil
+https://www.emergentmusics.org/

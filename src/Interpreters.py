@@ -6,7 +6,8 @@ from parameters import IP
 import scales
 import random
 from heapq import (heappush, heappop)
-from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE)
+from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE,
+                                  NOTE_ON, NOTE_OFF, PROGRAM_CHANGE, PAN)
 
 dynam_axis = 0
 pitch_axis = 1
@@ -29,6 +30,7 @@ class PolyInterpreter(threading.Thread):
         # make sure we're targeting the right channel with our MIDI messages
         self.control_change = CONTROL_CHANGE | self.channel
         self.note_on = NOTE_ON | self.channel
+        self.note_off = NOTE_OFF | self.channel
         self.program_change = PROGRAM_CHANGE | self.channel
 
         self.time_elapsed = 0.0
@@ -112,26 +114,33 @@ class PolyInterpreter(threading.Thread):
         """ refresh for when params have been changed outside """
         self.set_scale(self.scale)
 
-    def midi_message(self, message):
+    def midi_message(self, message, duration=None):
         """ All MIDI messages sent go through here so they can be logged if needed """
         self.midiout.send_message(message)
         # TODO log if recording
         message.append(self.time_elapsed)
-        print(message)
+        if duration:
+            message.append(duration)
+        print(*message, sep=',')
 
-    def play_note(self, pitch, vol):
+    def play_note(self, pitch, vol, duration=None):
         """
         Play a note
         :param pitch: midi pitch number
         :param vol: 0-127 volume
+        :param duration: time until midi event ends (optional)
         """
         if random.random() < self.probability:
-            self.midi_message([self.note_on, pitch, vol])
+            self.midi_message([self.note_on, pitch, vol], duration=duration)
 
     def stop_note(self, pitch):
         """ stop a note playing """
         if self.do_note_offs:
-            self.midi_message([self.note_on, pitch, 0])
+            self.midi_message([self.note_off, pitch])
+
+    def pan_note(self, val):
+        """ Send a pan control message """
+        self.midi_message([self.control_change, PAN, val & 127])
 
     def activate_instrument(self):
         # (drums are on channel 9)
@@ -229,7 +238,8 @@ class PolyInterpreter(threading.Thread):
         """ Initialise a queue with the sound agents we will use """
         for boid in self.swarm.boids:
             data = self.interpret(boid.get_loc_ratios())
-            self.play_note(data[pitch_axis], data[dynam_axis])
+            self.pan_note(data[pan_axis])
+            self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
             heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
             heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
 
@@ -246,7 +256,8 @@ class PolyInterpreter(threading.Thread):
             # interpret next data
             next_data = self.interpret(boid.get_loc_ratios())
             # TODO selective boid playing by options
-            self.play_note(next_data[pitch_axis], next_data[dynam_axis])
+            self.pan_note(data[pan_axis])
+            self.play_note(next_data[pitch_axis], next_data[dynam_axis], data[length_axis])
             # schedule next events
             heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, boid)))
             heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, boid)))
@@ -337,7 +348,8 @@ class MonoInterpreter(PolyInterpreter):
         """ Initialise a queue with the sound agents we will use """
         com = self.swarm.get_COM()
         data = self.interpret(com.get_loc_ratios())
-        self.play_note(data[pitch_axis], data[dynam_axis])
+        self.pan_note(data[pan_axis])
+        self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
         heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, com)))
         heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, com)))
 
@@ -352,7 +364,8 @@ class MonoInterpreter(PolyInterpreter):
         elif tag == EVENT_START:
             # interpret next data
             next_data = self.interpret(com.get_loc_ratios())
-            self.play_note(next_data[pitch_axis], next_data[dynam_axis])
+            self.pan_note(data[pan_axis])
+            self.play_note(next_data[pitch_axis], next_data[dynam_axis], duration=data[length_axis])
             # schedule next events
             heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, com)))
             heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, com)))

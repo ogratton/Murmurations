@@ -12,7 +12,7 @@ import parameters
 import instruments as inst
 from midi_in_stream import InStream, DummyInStream
 
-from numpy import r_
+from numpy import array
 
 """
 Main method for running the swarm simulation
@@ -56,16 +56,16 @@ def main():
     load_config()
 
     # DEFINE BOUNDING BOX(ES)
-    cube_min = r_[10, 50, 7, 0, 0]
-    edge_length = 10
+    cube_min = array([10, 50, 7, 0, 0])
+    edge_length = 40
     cube = Swarm.Cube(cube_min, edge_length)
-    # cube2 = Swarm.Cube(r_[40, 10, 17, 0, 0], 30)
+    # cube2 = Swarm.Cube(array([40, 10, 17, 0, 0]), 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    # (Swarm.Swarm(7, cube, 6), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(20, cube, 10), 1, inst.ALTO_SAX),
+                    (Swarm.Swarm(7, cube, 6), 0, inst.POLYSYNTH),
+                    # (Swarm.Swarm(20, cube, 10), 1, inst.ALTO_SAX),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.YAMAHA_GRAND_PIANO),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
@@ -80,10 +80,10 @@ def main():
     # interps = [MonoInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps = list()
-    interps.append(MonoInterpreter(midiout, swarm_data[0]))
-    interps[0].setup_interp("_mid.json")
+    interps.append(PolyInterpreter(midiout, swarm_data[0]))
+    interps[0].setup_interp("_synth.json")
     interps[0].set_tempo(120)
-    interps[0].set_scale(scales.min_pen)
+    interps[0].set_scale(scales.locrian)
     # interps.append(MonoInterpreter(midiout, swarm_data[1]))
     # interps[1].setup_interp("_soprano.json")
     # interps[1].set_tempo(120)
