@@ -9,7 +9,8 @@ import random
 import os
 import math
 from copy import deepcopy
-from parameters import DP, SP
+from Parameters import DP, SP
+import GUI
 
 from Swarm import normalise
 """

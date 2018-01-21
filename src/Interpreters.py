@@ -7,8 +7,8 @@ from time import sleep, time as timenow
 from datetime import datetime
 import csv
 
-from parameters import IP
-import scales
+from Parameters import IP
+import Scales
 import random
 from heapq import (heappush, heappop)
 from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE,
@@ -61,7 +61,7 @@ class PolyInterpreter(threading.Thread):
         self.scale = None
         self.notes = None
         self.range = 0
-        self.set_scale(scales.chrom)
+        self.set_scale(Scales.chrom)
         self.beat = None
         self.rhythms = None
         self.snap_to_beat = False
@@ -106,8 +106,6 @@ class PolyInterpreter(threading.Thread):
         self.set_scale(self.scale)
         self.activate_instrument()
 
-########################################################################################################################
-
     def toggle_recording(self):
         """ start or stop recording outgoing midi messages """
         if self.recording:
@@ -128,7 +126,6 @@ class PolyInterpreter(threading.Thread):
         """ Write self.log to a pretty CSV """
         # should be a distinguishing-enough filename
         # any recording shorter than a second isn't worth keeping anyway
-        # FIXME putting in folder breaks MIDI code later
         filename = datetime.now().strftime("./recordings/%Y-%m-%d %H-%M-%S {}.csv".format(self.id))
         # Convert the log from [[Number]] to [[String]]
         s_log = [list(map(lambda x: str(x), xs)) for xs in self.log]
@@ -143,8 +140,6 @@ class PolyInterpreter(threading.Thread):
                 writer.writerow(row)
 
         print("I{}: Written log to {}".format(self.id, filename))
-
-########################################################################################################################
 
     def midi_message(self, message, duration=None):
         """ All MIDI messages go through here to be executed """
@@ -171,7 +166,7 @@ class PolyInterpreter(threading.Thread):
     def stop_note(self, pitch):
         """ stop a note playing """
         if self.do_note_offs:
-            self.send_midi([self.note_on, pitch, 0], duration=0.001)  # FIXME spoofing note_off with note_on
+            self.send_midi([self.note_on, pitch, 0], duration=0.0001)  # FIXME spoofing note_off with note_on
 
     def pan_note(self, val):
         """ Send a pan control message """
@@ -189,10 +184,10 @@ class PolyInterpreter(threading.Thread):
         """
         Set the musical scale for the interpreter
         Assumes lowest pitch is the tonic
-        :param scale: a scale from 'scales.py' (in the form of a list of intervals)
+        :param scale: a scale from 'Scales.py' (in the form of a list of intervals)
         """
         self.scale = scale
-        self.notes = scales.gen_range(self.scale, lowest=self.pitch_min, note_range=self.pitch_range)
+        self.notes = Scales.gen_range(self.scale, lowest=self.pitch_min, note_range=self.pitch_range)
         self.range = len(self.notes)
 
     def set_tempo(self, beats_per_min):
@@ -203,9 +198,9 @@ class PolyInterpreter(threading.Thread):
         :return:
         """
         self.beat = 60 / beats_per_min
-        self.rhythms = list(reversed([4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]))  # TODO tinker with
+        # self.rhythms = list(reversed([4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]))  # TODO tinker with
         # self.rhythms = [2, 1, 1/2]
-        # self.rhythms = [4, 3, 2, 3/2, 1, 1/2, 1/4]
+        self.rhythms = [1/4, 1/2, 1, 3/2, 2, 3, 4]
         # self.rhythms = [3/4, 1/4, 3/4, 1/4, 3/4, 1/4, 3/4, 1/4]  # random swing
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat
@@ -265,7 +260,8 @@ class PolyInterpreter(threading.Thread):
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
         data[time_axis] = self.interpret_time(pos[time_axis])
-        data[length_axis] = data[time_axis]  # * pos[length_axis]
+        # TODO this line has a big effect on the sound depending on the instrument:
+        data[length_axis] = data[time_axis] * 2  # * pos[length_axis]
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
 

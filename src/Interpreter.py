@@ -6,9 +6,9 @@ import json
 from heapq import (heappush, heappop)
 from random import random
 from time import sleep
-from parameters import IP
+from Parameters import IP
 from numpy.linalg import norm
-import scales
+import Scales
 from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB,
                                   CONTROL_CHANGE, NOTE_ON, PROGRAM_CHANGE, PAN)
 
@@ -233,7 +233,7 @@ class ChordSequencer(Interpreter):
         self.set_tempo(on=False)
         self.scale = None
         self.notes = None
-        self.set_scale(scales.chrom, on=True)
+        self.set_scale(Scales.chrom, on=True)
 
     def loop(self):
 
@@ -295,11 +295,11 @@ class ChordSequencer(Interpreter):
     def set_scale(self, scale, on=True):
         """
         Set the musical scale for the interpreter
-        :param scale: a scale from 'scales.py' (in the form of a list of intervals)
+        :param scale: a scale from 'Scales.py' (in the form of a list of intervals)
         :param on: whether or not to set snap_to_scale to true
         """
         self.scale = scale
-        self.notes = scales.gen_range(self.scale, lowest=self.pitch_min, note_range=self.pitch_range)
+        self.notes = Scales.gen_range(self.scale, lowest=self.pitch_min, note_range=self.pitch_range)
         self.snap_to_scale = on
 
     def set_tempo(self, tempo=None, on=True):

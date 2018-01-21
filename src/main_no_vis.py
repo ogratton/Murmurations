@@ -3,8 +3,8 @@ import SwarmMain
 import rtmidi
 from numpy import r_
 from Interpreters import *
-import scales
-import instruments as inst
+import Scales
+import Instruments as inst
 from time import sleep
 
 # TODO this is broken-ish now
@@ -72,7 +72,7 @@ def main():
     interps = [PolyInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     map(lambda x: x.set_tempo(tempo=120), interps)
-    map(lambda x: x.set_scale(scales.min_pen), interps)
+    map(lambda x: x.set_scale(Scales.min_pen), interps)
 
     print("Press Control-C to quit.")
 

@@ -6,10 +6,10 @@ from Interpreter import *
 from Interpreters import *
 
 import random
-import scales
+import Scales
 import configparser
-import parameters
-import instruments as inst
+import Parameters
+import Instruments as inst
 from midi_in_stream import InStream, DummyInStream
 
 from numpy import array
@@ -25,29 +25,29 @@ def load_config():
     # TODO error catching
     config.read('config.ini')
 
-    parameters.DP.UPDATE_RATE = int(config['DEFAULT']['UPDATE_RATE'])
+    Parameters.DP.UPDATE_RATE = int(config['DEFAULT']['UPDATE_RATE'])
 
     seed = int(config['SWARM']['RANDOM_SEED'])
     if seed == -1:
         seed = random.randint(1, 1000000)
-    parameters.SP.RANDOM_SEED = seed
-    parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])  # TODO bool
-    parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
-    parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
-    parameters.SP.COHESION_NEIGHBOURHOOD = float(config['SWARM']['COHESION_NEIGHBOURHOOD'])
-    parameters.SP.ALIGNMENT_NEIGHBOURHOOD = float(config['SWARM']['ALIGNMENT_NEIGHBOURHOOD'])
-    parameters.SP.SEPARATION_NEIGHBOURHOOD = float(config['SWARM']['SEPARATION_NEIGHBOURHOOD'])
-    parameters.SP.COHESION_MULTIPLIER = float(config['SWARM']['COHESION_MULTIPLIER'])
-    parameters.SP.ALIGNMENT_MULTIPLIER = float(config['SWARM']['ALIGNMENT_MULTIPLIER'])
-    parameters.SP.SEPARATION_MULTIPLIER = float(config['SWARM']['SEPARATION_MULTIPLIER'])
-    parameters.SP.ATTRACTION_MULTIPLIER = float(config['SWARM']['ATTRACTION_MULTIPLIER'])
-    parameters.SP.CONSTRAINT_MULTIPLIER = float(config['SWARM']['CONSTRAINT_MULTIPLIER'])
-    parameters.SP.TURNING_RATIO = float(config['SWARM']['TURNING_RATIO'])
-    parameters.SP.RAND_ATTRACTOR_CHANGE = float(config['SWARM']['RAND_ATTRACTOR_CHANGE'])
-    parameters.SP.ATTRACTOR_MODE = int(config['SWARM']['ATTRACTOR_MODE'])
-    parameters.SP.ATTRACTORS_NOTICED = int(config['SWARM']['ATTRACTORS_NOTICED'])
-    parameters.SP.MOTION_CONSTANT = float(config['SWARM']['MOTION_CONSTANT'])
-    parameters.SP.BOUNDING_SPHERE = int(config['SWARM']['BOUNDING_SPHERE'])
+    Parameters.SP.RANDOM_SEED = seed
+    Parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])  # TODO bool
+    Parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
+    Parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
+    Parameters.SP.COHESION_NEIGHBOURHOOD = float(config['SWARM']['COHESION_NEIGHBOURHOOD'])
+    Parameters.SP.ALIGNMENT_NEIGHBOURHOOD = float(config['SWARM']['ALIGNMENT_NEIGHBOURHOOD'])
+    Parameters.SP.SEPARATION_NEIGHBOURHOOD = float(config['SWARM']['SEPARATION_NEIGHBOURHOOD'])
+    Parameters.SP.COHESION_MULTIPLIER = float(config['SWARM']['COHESION_MULTIPLIER'])
+    Parameters.SP.ALIGNMENT_MULTIPLIER = float(config['SWARM']['ALIGNMENT_MULTIPLIER'])
+    Parameters.SP.SEPARATION_MULTIPLIER = float(config['SWARM']['SEPARATION_MULTIPLIER'])
+    Parameters.SP.ATTRACTION_MULTIPLIER = float(config['SWARM']['ATTRACTION_MULTIPLIER'])
+    Parameters.SP.CONSTRAINT_MULTIPLIER = float(config['SWARM']['CONSTRAINT_MULTIPLIER'])
+    Parameters.SP.TURNING_RATIO = float(config['SWARM']['TURNING_RATIO'])
+    Parameters.SP.RAND_ATTRACTOR_CHANGE = float(config['SWARM']['RAND_ATTRACTOR_CHANGE'])
+    Parameters.SP.ATTRACTOR_MODE = int(config['SWARM']['ATTRACTOR_MODE'])
+    Parameters.SP.ATTRACTORS_NOTICED = int(config['SWARM']['ATTRACTORS_NOTICED'])
+    Parameters.SP.MOTION_CONSTANT = float(config['SWARM']['MOTION_CONSTANT'])
+    Parameters.SP.BOUNDING_SPHERE = int(config['SWARM']['BOUNDING_SPHERE'])
 
 
 def main():
@@ -64,9 +64,9 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0, inst.POLYSYNTH),
-                    (Swarm.Swarm(20, cube, 10), 1, inst._808_TOM),
-                    # (Swarm.Swarm(7, cube, 6), 2, inst.YAMAHA_GRAND_PIANO),
+                    # (Swarm.Swarm(7, cube, 6), 0, inst.CELLO),
+                    # (Swarm.Swarm(20, cube, 10), 1, inst._808_TOM),
+                    (Swarm.Swarm(7, cube, 6), 2, inst.POLYSYNTH),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
@@ -80,14 +80,14 @@ def main():
     # interps = [MonoInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps = list()
-    interps.append(PolyInterpreter(0, midiout, swarm_data[0]))
-    interps[0].setup_interp("_synth.json")
-    interps[0].set_tempo(120)
-    interps[0].set_scale(scales.locrian)
-    interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
-    interps[1].setup_interp("_mid.json")
-    interps[1].set_tempo(120)
-    interps[1].set_scale(scales.min_pen)
+    interps.append(MonoInterpreter(0, midiout, swarm_data[0]))
+    interps[0].setup_interp("./presets/_synth.json")
+    # interps[0].set_tempo(120)
+    interps[0].set_scale(Scales.mixolydian)
+    # interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
+    # interps[1].setup_interp("_mid.json")
+    # interps[1].set_tempo(120)
+    # interps[1].set_scale(scales.min_pen)
     # interps.append(PolyInterpreter(2, midiout, swarm_data[2]))
     # interps[2].setup_interp("_piano.json")
     # interps[2].set_tempo(120)
@@ -95,7 +95,7 @@ def main():
 
     # start up the midi in stream
     in_stream = None
-    if parameters.SP.ATTRACTOR_MODE == 2:
+    if Parameters.SP.ATTRACTOR_MODE == 2:
         in_stream = InStream(interps, 0)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
