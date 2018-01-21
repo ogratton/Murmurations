@@ -284,7 +284,7 @@ class Window(pyglet.window.Window):
     Takes care of all the viewing functionality
     """
 
-    def __init__(self, swarms, *args, ** kwargs):
+    def __init__(self, swarms, interps, *args, ** kwargs):
         super().__init__(*args, **kwargs)
 
         # Load models from files
@@ -335,7 +335,8 @@ class Window(pyglet.window.Window):
                 self.cube_index = (self.cube_index - 1) % len(self.world.boxes)
 
             elif symbol == pyglet.window.key.R:
-                print("TODO: actually record")
+                for i in interps:
+                    i.toggle_recording()
 
             elif symbol == pyglet.window.key.ESCAPE:
                 # exit

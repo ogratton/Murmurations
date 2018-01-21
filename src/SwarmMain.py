@@ -64,7 +64,7 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    # (Swarm.Swarm(7, cube, 6), 0, inst.POLYSYNTH),
+                    (Swarm.Swarm(7, cube, 6), 0, inst.POLYSYNTH),
                     (Swarm.Swarm(20, cube, 10), 1, inst.ALTO_SAX),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.YAMAHA_GRAND_PIANO),
                     # (Swarm.Swarm(3, cube, 6), 9, 0)
@@ -80,14 +80,14 @@ def main():
     # interps = [MonoInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps = list()
-    interps.append(MonoInterpreter(midiout, swarm_data[0]))
-    interps[0].setup_interp("_mid.json")
+    interps.append(PolyInterpreter(midiout, swarm_data[0]))
+    interps[0].setup_interp("_synth.json")
     interps[0].set_tempo(120)
     interps[0].set_scale(scales.locrian)
-    # interps.append(MonoInterpreter(midiout, swarm_data[1]))
-    # interps[1].setup_interp("_soprano.json")
-    # interps[1].set_tempo(120)
-    # interps[1].set_scale(scales.min_pen)
+    interps.append(MonoInterpreter(midiout, swarm_data[1]))
+    interps[1].setup_interp("_mid.json")
+    interps[1].set_tempo(120)
+    interps[1].set_scale(scales.min_pen)
     # interps.append(PolyInterpreter(midiout, swarm_data[2]))
     # interps[2].setup_interp("_piano.json")
     # interps[2].set_tempo(120)
@@ -101,7 +101,8 @@ def main():
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
     # creates the window and sets its properties
-    window = Window(swarms, config=config, width=1200, height=900, caption='Swarm Music', resizable=True)
+    # TODO don't really like the idea of passing the swarms and the interpreters
+    window = Window(swarms, interps, config=config, width=1200, height=900, caption='Swarm Music', resizable=True)
 
     # starts the application
     pyglet.app.run()

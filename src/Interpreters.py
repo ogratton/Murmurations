@@ -2,6 +2,13 @@
 import threading
 import json
 from time import sleep, time as timenow
+
+# for logs
+from datetime import datetime
+import csv
+import os
+import LogToMidi
+
 from parameters import IP
 import scales
 import random
@@ -35,6 +42,11 @@ class PolyInterpreter(threading.Thread):
 
         self.time_elapsed = 0.0
 
+        # recording stuff
+        self.recording = False
+        self.send_midi = self.midi_message
+        self.log = list()
+
         # SET DEFAULTS
         self.dims = self.swarm.dims
         self.pitch_range = IP.PITCH_RANGE
@@ -56,26 +68,6 @@ class PolyInterpreter(threading.Thread):
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
         self.activate_instrument()
-
-        # # TODO temporary chord progression
-        # seventh_chord = [0, 4, 7, 10, 12]
-        # e7 = list(map(lambda x: x+52, seventh_chord))
-        # a7 = list(map(lambda x: x+57, seventh_chord))
-        # b7 = list(map(lambda x: x+59, seventh_chord))
-        # self.chord_prog = {
-        #     0: e7,
-        #     1: e7,
-        #     2: e7,
-        #     3: e7,
-        #     4: a7,
-        #     5: a7,
-        #     6: e7,
-        #     7: e7,
-        #     8: b7,
-        #     9: a7,
-        #     10: e7,
-        #     11: e7
-        # }
 
         self.done = False
         self.start()
@@ -111,17 +103,66 @@ class PolyInterpreter(threading.Thread):
         self.refresh()
 
     def refresh(self):
-        """ refresh for when params have been changed outside """
+        """ refresh for when params have been changed """
         self.set_scale(self.scale)
+        self.activate_instrument()
+
+    def toggle_recording(self):
+        """ start or stop recording outgoing midi messages """
+        if self.recording:
+            # Stop recording and write log to file
+            print("Stopped recording.")
+            self.recording = False
+            self.send_midi = self.midi_message
+            self.write_log_to_file()
+        else:
+            # Start recording
+            print("Started recording....")
+            self.recording = True
+            self.send_midi = self.midi_message_log
+            # make sure program change commands are sent again
+            self.refresh()
+
+    def write_log_to_file(self):
+        """ Write self.log to a pretty CSV """
+        # should be a distinguishing-enough filename
+        # any recording shorter than a second isn't worth keeping anyway
+        filename = datetime.now().strftime("%Y-%m-%d %H-%M-%S.csv") # TODO stick in "./recordings/"
+        # Convert the log from [[Number]] to [[String]]
+        s_log = [list(map(lambda x: str(x), xs)) for xs in self.log]
+
+        # Flush the log :)
+        self.log = list()
+
+        # Write to the file
+        with open(filename, 'w') as csvfile:
+            writer = csv.writer(csvfile, lineterminator='\n')
+            for row in s_log:
+                writer.writerow(row)
+
+        print("Written log to {}".format(filename))
+
+        self.convert_log_to_midi(filename)
+
+    @staticmethod
+    def convert_log_to_midi(logname):
+        """ Call the conversion func over in LogToMidi """
+        mid_name = ''.join(logname.split('.')[:-1]) + ".mid"
+        LogToMidi.write_from_log(logname, mid_name)
+
+        print("Written recording to {}".format(mid_name))
 
     def midi_message(self, message, duration=None):
-        """ All MIDI messages sent go through here so they can be logged if needed """
+        """ All MIDI messages go through here to be executed """
         self.midiout.send_message(message)
-        # TODO log if recording
+
+    def midi_message_log(self, message, duration=None):
+        """ All MIDI messages that go through here get executed and written to a log """
+        self.midi_message(message, duration)
         message.append(self.time_elapsed)
         if duration:
             message.append(duration)
-        print(*message, sep=',')
+        self.log.append(message)
 
     def play_note(self, pitch, vol, duration=None):
         """
@@ -131,24 +172,24 @@ class PolyInterpreter(threading.Thread):
         :param duration: time until midi event ends (optional)
         """
         if random.random() < self.probability:
-            self.midi_message([self.note_on, pitch, vol], duration=duration)
+            self.send_midi([self.note_on, pitch, vol], duration=duration)
 
     def stop_note(self, pitch):
         """ stop a note playing """
         if self.do_note_offs:
-            self.midi_message([self.note_off, pitch])
+            self.send_midi([self.note_on, pitch, 0], duration=0.001)  # FIXME spoofing note_off with note_on
 
     def pan_note(self, val):
         """ Send a pan control message """
-        self.midi_message([self.control_change, PAN, val & 127])
+        self.send_midi([self.control_change, PAN, val & 127])
 
     def activate_instrument(self):
         # (drums are on channel 9)
         if self.channel != 9:
             # bank and program change
             bank, program = self.instrument
-            self.midi_message([self.control_change, BANK_SELECT_MSB, bank & 0x7F])
-            self.midi_message([self.program_change, program & 0x7F])
+            self.send_midi([self.control_change, BANK_SELECT_MSB, bank & 0x7F])
+            self.send_midi([self.program_change, program & 0x7F])
 
     def set_scale(self, scale):
         """
@@ -246,7 +287,6 @@ class PolyInterpreter(threading.Thread):
     def parse_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
         """ Parse the data from the head of the queue """
         tag, data, boid = heappop(boid_heap)[1]
-        notes_to_play = []
 
         if tag == EVENT_OFF:
             # stop note
@@ -266,8 +306,6 @@ class PolyInterpreter(threading.Thread):
             print("Unexpected event type:", str(tag))
             pass
 
-        return notes_to_play
-
     def loop(self):
         """
         The main segement of the run method
@@ -278,11 +316,6 @@ class PolyInterpreter(threading.Thread):
         time_step = 0.05
         boid_heap = []
         EVENT_START, EVENT_OFF = 1, 0
-        # TODO temp stuff for counting bars, assuming 4/4 time
-        counter = 0  # need this because of floating point inaccuracies
-        beat = 0
-        bars = 0
-        timesig = 4  # forced relative to crotchet because this is temp
 
         self.setup_priority_queue(boid_heap, self.time_elapsed, EVENT_OFF, EVENT_START)
 
@@ -292,7 +325,6 @@ class PolyInterpreter(threading.Thread):
         while not self.done:
 
             time_this_loop = timenow()
-            notes_to_play = []
 
             while boid_heap[0][0] <= self.time_elapsed:
                 self.parse_priority_queue(boid_heap, self.time_elapsed, EVENT_OFF, EVENT_START)
@@ -302,39 +334,14 @@ class PolyInterpreter(threading.Thread):
             if to_sleep == 0:
                 print("OOPS: missed a beat (must be really lagging")
 
-            # # TODO TEMP metronome:
-            # if self.snap_to_beat and counter*time_step % self.beat < time_step:
-            #     woodblock = 77
-            #     beat = (beat+1) % timesig
-            #     if beat == 0:
-            #         woodblock = 76
-            #         bars += 1
-            #         bar = bars % len(self.chord_prog.keys())
-            #         notes = self.chord_prog[bar]
-            #         if self.channel == 0: print("BAR {}".format(bar+1))
-            #         # play the chord
-            #         # for note in notes:
-            #         #     self.midiout.send_message([self.note_on, note, 100])
-            #         # TODO change the scale too (assuming chord is base tonic)
-            #         degree = (notes[0] % 12) - (self.pitch_min % 12)
-            #         new_pitch_min = self.pitch_min + degree
-            #         if new_pitch_min < 0:
-            #             new_pitch_min += 12
-            #         self.pitch_min = new_pitch_min
-            #         self.set_scale(self.scale)
-            #     if self.channel == 0: print(beat+1)
-            #
-            #     self.midiout.send_message([NOTE_ON | 9, woodblock, 50])
-
             sleep(to_sleep)
             self.time_elapsed += time_step
-            counter += 1
 
     def run(self):
-        # TODO any necessary setup
+        # any necessary setup
         self.loop()
         # finish by stopping all the notes that may still be on
-        self.midi_message([self.control_change, ALL_SOUND_OFF, 0])
+        self.send_midi([self.control_change, ALL_SOUND_OFF, 0])
 
 
 class MonoInterpreter(PolyInterpreter):
@@ -343,13 +350,14 @@ class MonoInterpreter(PolyInterpreter):
     def __init__(self, midiout, swarm_data):
         super().__init__(midiout, swarm_data)
 
-    # TODO need to rewrite all the bits that use all the boids and replace them with COM
     def setup_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
         """ Initialise a queue with the sound agents we will use """
         com = self.swarm.get_COM()
         data = self.interpret(com.get_loc_ratios())
+        # TODO there's an odd delay at the start
         self.pan_note(data[pan_axis])
         self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
+        # self.send_midi([self.note_on, data[pitch_axis], data[dynam_axis]])
         heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, com)))
         heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, com)))
 
