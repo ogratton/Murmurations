@@ -111,7 +111,7 @@ class Example(QMainWindow):
         super().__init__()
 
         paths = self.show_dialog()
-        if paths:
+        if len(paths[0]):
             # take the first file's name for inspiration
             fname = paths[0][0][:-3] + "mid"
             MidiMaker(paths[0]).write_midi(fname)
@@ -131,4 +131,4 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     ex = Example()
-    sys.exit(app.exec_())
+    sys.exit()
