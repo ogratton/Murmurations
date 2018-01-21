@@ -10,7 +10,6 @@ import os
 import math
 from copy import deepcopy
 from Parameters import DP, SP
-import GUI
 
 from Swarm import normalise
 """
@@ -337,9 +336,12 @@ class Window(pyglet.window.Window):
 
             elif symbol == pyglet.window.key.R:
                 for i in interps:
-                    i.toggle_recording()
+                    i.set_recording(True)
 
             elif symbol == pyglet.window.key.ESCAPE:
+                # finish up any recordings
+                for i in interps:
+                    i.set_recording(False)
                 # exit
                 self.close()
 

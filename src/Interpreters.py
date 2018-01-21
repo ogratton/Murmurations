@@ -106,21 +106,28 @@ class PolyInterpreter(threading.Thread):
         self.set_scale(self.scale)
         self.activate_instrument()
 
-    def toggle_recording(self):
+    def set_recording(self, new_rec):
         """ start or stop recording outgoing midi messages """
-        if self.recording:
+        # If we're recording and being told to stop...
+        if not new_rec and self.recording:
             # Stop recording and write log to file
             print("I{}: Stopped recording.".format(self.id))
             self.recording = False
             self.send_midi = self.midi_message
             self.write_log_to_file()
-        else:
+
+        # If we're not recording and being told to start...
+        elif new_rec and not self.recording:
             # Start recording
             print("I{}: Started recording....".format(self.id))
             self.recording = True
             self.send_midi = self.midi_message_log
             # make sure program change commands are sent again
             self.refresh()
+
+        # If we're being nagged to do something we're already doing...
+        else:
+            pass  # wasted call
 
     def write_log_to_file(self):
         """ Write self.log to a pretty CSV """
@@ -247,6 +254,9 @@ class PolyInterpreter(threading.Thread):
     def interpret_time_free(self, prop):
         return PolyInterpreter.lin_interp(prop, self.time_min, self.time_range)
 
+    def interpret_articulation(self, prop):
+        return PolyInterpreter.lin_interp(prop, 5, 0)  # TODO put as JSON param (remember it's min, range)
+
     def interpret_pan(self, prop):
         return int(PolyInterpreter.lin_interp(prop, self.pan_min, self.pan_range))
 
@@ -261,7 +271,7 @@ class PolyInterpreter(threading.Thread):
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
         data[time_axis] = self.interpret_time(pos[time_axis])
         # TODO this line has a big effect on the sound depending on the instrument:
-        data[length_axis] = data[time_axis] * 2  # * pos[length_axis]
+        data[length_axis] = data[time_axis] * self.interpret_articulation(pos[length_axis])
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
 

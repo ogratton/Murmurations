@@ -88,5 +88,21 @@
 * Added more dimensions in the swarm simulation (for pan, note length etc.)
 * Discovered how to link to proper VST synths etc. on windows (requires no code change except midiout port)
 * Experimented with Cython on Linux and it sped up quite a lot, but can't get it to work on Windows
+
+### 2018/01/12 - Week 16
+
 * Added Monophonic interpreter (second coming of NaiveSequencer)
 	* produces monophonic melodies as opposed to a vomit of notes
+* Reading and write-up plan
+
+### 2018/01/19 - Week 17
+
+* Found new soundfont, which makes everything sound a bit nicer
+* Made models of absolute scale to emphasise importance of cube size on sound
+* Implemented recording real-time performances to MIDI files (and then to dodgy sheet music)
+* Made some basic GUIs with PyQt5 (yet to be integrated)
+
+### 2018/01/26 - Week 18
+
+*
+

@@ -8,6 +8,7 @@ Move points to logbook when done
 * Stigmery between swarms: Think about how swarms can interact with one another (add their position as attractor)
 * Attractors as food sources (renewable for path-mode but non- for user input mode)
 	* Though that then makes stigmergy between swarms a bit odd...
+* Do away with cubes and have the bounds determined by how the flock moves
 * Make separation spongier
 * Add predators
 	* Patrolling predators can reduce the probability of a swarm visiting an area of music space without making it impossible
@@ -37,8 +38,6 @@ Move points to logbook when done
     * Musician
 	* VR/Wii conductor
 	* Or Dancer...? (kinect)
-* Output midi file too so I can open in musescore (or at least write to log file)?
-* Use virtual ports (JACK or switch to UNIX) to play real MIDI instruments
 * Work out best configurations for jazz, classical etc.
 * A sort of loop pedal to capture phrase/melody ideas
 * Have a look at this interesting rhythm idea https://www.youtube.com/watch?v=2UphAzryVpY

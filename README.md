@@ -7,3 +7,4 @@
 * Python 3
 * python-rtmidi
 * pyglet
+* PyQt5
