@@ -6,8 +6,6 @@ from time import sleep, time as timenow
 # for logs
 from datetime import datetime
 import csv
-import os
-import LogToMidi
 
 from parameters import IP
 import scales
@@ -26,11 +24,12 @@ pan_axis = 4
 class PolyInterpreter(threading.Thread):
     """ Uses every boid as a sound source """
 
-    def __init__(self, midiout, swarm_data):
+    def __init__(self, id_, midiout, swarm_data):
         """
         Make a new interpreter
         """
         super(PolyInterpreter, self).__init__()
+        self.id = id_
         self.midiout = midiout
         self.swarm, self.channel, self.instrument = swarm_data
 
@@ -107,17 +106,19 @@ class PolyInterpreter(threading.Thread):
         self.set_scale(self.scale)
         self.activate_instrument()
 
+########################################################################################################################
+
     def toggle_recording(self):
         """ start or stop recording outgoing midi messages """
         if self.recording:
             # Stop recording and write log to file
-            print("Stopped recording.")
+            print("I{}: Stopped recording.".format(self.id))
             self.recording = False
             self.send_midi = self.midi_message
             self.write_log_to_file()
         else:
             # Start recording
-            print("Started recording....")
+            print("I{}: Started recording....".format(self.id))
             self.recording = True
             self.send_midi = self.midi_message_log
             # make sure program change commands are sent again
@@ -127,7 +128,8 @@ class PolyInterpreter(threading.Thread):
         """ Write self.log to a pretty CSV """
         # should be a distinguishing-enough filename
         # any recording shorter than a second isn't worth keeping anyway
-        filename = datetime.now().strftime("%Y-%m-%d %H-%M-%S.csv") # TODO stick in "./recordings/"
+        # FIXME putting in folder breaks MIDI code later
+        filename = datetime.now().strftime("./recordings/%Y-%m-%d %H-%M-%S {}.csv".format(self.id))
         # Convert the log from [[Number]] to [[String]]
         s_log = [list(map(lambda x: str(x), xs)) for xs in self.log]
 
@@ -140,17 +142,9 @@ class PolyInterpreter(threading.Thread):
             for row in s_log:
                 writer.writerow(row)
 
-        print("Written log to {}".format(filename))
+        print("I{}: Written log to {}".format(self.id, filename))
 
-        self.convert_log_to_midi(filename)
-
-    @staticmethod
-    def convert_log_to_midi(logname):
-        """ Call the conversion func over in LogToMidi """
-        mid_name = ''.join(logname.split('.')[:-1]) + ".mid"
-        LogToMidi.write_from_log(logname, mid_name)
-
-        print("Written recording to {}".format(mid_name))
+########################################################################################################################
 
     def midi_message(self, message, duration=None):
         """ All MIDI messages go through here to be executed """
@@ -159,9 +153,9 @@ class PolyInterpreter(threading.Thread):
     def midi_message_log(self, message, duration=None):
         """ All MIDI messages that go through here get executed and written to a log """
         self.midi_message(message, duration)
-        message.append(self.time_elapsed)
         if duration:
             message.append(duration)
+        message.append(self.time_elapsed)
         self.log.append(message)
 
     def play_note(self, pitch, vol, duration=None):
@@ -271,7 +265,7 @@ class PolyInterpreter(threading.Thread):
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
         data[time_axis] = self.interpret_time(pos[time_axis])
-        data[length_axis] = data[time_axis] # * pos[length_axis]
+        data[length_axis] = data[time_axis]  # * pos[length_axis]
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
 
@@ -347,8 +341,8 @@ class PolyInterpreter(threading.Thread):
 class MonoInterpreter(PolyInterpreter):
     """ Uses the centre of gravity of the swarm, thus only playing one note at a time """
 
-    def __init__(self, midiout, swarm_data):
-        super().__init__(midiout, swarm_data)
+    def __init__(self, id_, midiout, swarm_data):
+        super().__init__(id_, midiout, swarm_data)
 
     def setup_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
         """ Initialise a queue with the sound agents we will use """
