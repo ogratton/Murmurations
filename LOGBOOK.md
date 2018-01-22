@@ -97,10 +97,10 @@
 
 ### 2018/01/19 - Week 17
 
-* Found new soundfont, which makes everything sound a bit nicer
-* Made models of absolute scale to emphasise importance of cube size on sound
 * Implemented recording real-time performances to MIDI files (and then to dodgy sheet music)
 * Made some basic GUIs with PyQt5 (yet to be integrated)
+* Found new soundfont, which makes everything sound a bit nicer
+* Made models of absolute scale to emphasise importance of cube size on sound
 
 ### 2018/01/26 - Week 18
 
