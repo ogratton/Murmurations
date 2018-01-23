@@ -9,7 +9,7 @@ from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
 
 # TODO TEMP
-# random.seed(SP.RANDOM_SEED)
+random.seed(SP.RANDOM_SEED)
 
 DIMS = 5  # for when dimensions must be hardcoded
 
@@ -232,7 +232,7 @@ class Boid(object):
         return "Boid - pos:{0}, vel:{1}".format(self.location, self.velocity)
 
     def __lt__(self, other):
-        return self.location < other.location
+        return (self.location < other.location).all()
 
     def calc_v(self, all_boids, dist_mat):
         """

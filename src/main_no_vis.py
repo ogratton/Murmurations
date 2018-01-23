@@ -5,7 +5,7 @@ from numpy import r_
 from Interpreters import *
 import Scales
 import Instruments as inst
-from time import sleep
+from time import sleep, time as timenow
 
 # TODO this is broken-ish now
 
@@ -68,11 +68,13 @@ def main():
     manager = Manager(swarms)
 
     # SET UP MIDI
-    midiout = rtmidi.MidiOut().open_port(0)
-    interps = [PolyInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
+    midiout = rtmidi.MidiOut().open_port(2)
 
-    map(lambda x: x.set_tempo(tempo=120), interps)
-    map(lambda x: x.set_scale(Scales.min_pen), interps)
+    interps = list()
+    interps.append(MonoInterpreter(0, midiout, swarm_data[0]))
+    interps[0].setup_interp("./presets/_bass.json")
+    interps[0].set_tempo(80)
+    interps[0].set_scale(Scales.aeolian)
 
     print("Press Control-C to quit.")
 

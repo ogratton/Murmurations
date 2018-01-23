@@ -5,5 +5,6 @@ python2 "D:\Program Files (x86)\LilyPond\usr\bin\midi2ly.py" -o "output.ly" ".\o
 Then compile the .ly file with LilyPond to receive the disappointing results.
 WARNING: midi file is overwritten by LilyPond if you just double-click the .ly and are using the same filenames
 
-
 (TODO: write another .py to run this. Will need to read command from a separate file for cross-platform compat.)
+
+ALTERNATIVELY AND BETTERLY, JUST USE MUSESCORE. IT CAN COPE WITH THE MULTIPLE VOICES BETTER AND YOU CAN CUSTOMISE IT.

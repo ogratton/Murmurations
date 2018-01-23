@@ -7,12 +7,15 @@ from time import sleep, time as timenow
 from datetime import datetime
 import csv
 
-from Parameters import IP
+from Parameters import IP, SP  # FIXME SP is temp
 import Scales
 import random
 from heapq import (heappush, heappop)
 from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE,
                                   NOTE_ON, NOTE_OFF, PROGRAM_CHANGE, PAN)
+
+# TODO TEMP
+random.seed(SP.RANDOM_SEED)
 
 dynam_axis = 0
 pitch_axis = 1
@@ -255,7 +258,7 @@ class PolyInterpreter(threading.Thread):
         return PolyInterpreter.lin_interp(prop, self.time_min, self.time_range)
 
     def interpret_articulation(self, prop):
-        return PolyInterpreter.lin_interp(prop, 5, 0)  # TODO put as JSON param (remember it's min, range)
+        return PolyInterpreter.lin_interp(prop, 1, 0)  # TODO put as JSON param (remember it's min, range)
 
     def interpret_pan(self, prop):
         return int(PolyInterpreter.lin_interp(prop, self.pan_min, self.pan_range))
@@ -320,8 +323,6 @@ class PolyInterpreter(threading.Thread):
         self.setup_priority_queue(boid_heap, self.time_elapsed, EVENT_OFF, EVENT_START)
 
         # TODO add all notes to a list to ensure concurrency (as much as poss)
-
-        # TODO check this definitely does what I want it to do
         while not self.done:
 
             time_this_loop = timenow()
@@ -332,7 +333,7 @@ class PolyInterpreter(threading.Thread):
             time_this_loop = timenow() - time_this_loop
             to_sleep = max(0, time_step - time_this_loop)
             if to_sleep == 0:
-                print("OOPS: missed a beat (must be really lagging")
+                print("OOPS: missed a beat (must be really lagging)")
 
             sleep(to_sleep)
             self.time_elapsed += time_step

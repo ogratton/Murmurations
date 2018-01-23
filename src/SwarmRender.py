@@ -11,6 +11,8 @@ import math
 from copy import deepcopy
 from Parameters import DP, SP
 
+import time
+
 from Swarm import normalise
 """
 Render the swarm objects
@@ -298,6 +300,8 @@ class Window(pyglet.window.Window):
 
         self.world = World(swarms, [0, 0, -DIST_BACK], self.models)
 
+        self.recording = False
+
         if SP.RANDOM_SEED != SP.TRUE_RANDOM:
             random.seed(SP.RANDOM_SEED)  # for repeatability
 
@@ -336,7 +340,8 @@ class Window(pyglet.window.Window):
 
             elif symbol == pyglet.window.key.R:
                 for i in interps:
-                    i.set_recording(True)
+                    self.recording = not self.recording
+                    i.set_recording(self.recording)
 
             elif symbol == pyglet.window.key.ESCAPE:
                 # finish up any recordings
