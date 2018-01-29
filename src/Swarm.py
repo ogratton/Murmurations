@@ -9,7 +9,7 @@ from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
 
 # TODO TEMP
-random.seed(SP.RANDOM_SEED)
+# random.seed(SP.RANDOM_SEED)
 
 DIMS = 5  # for when dimensions must be hardcoded
 
@@ -333,6 +333,7 @@ class Attractor(object):
         # less dynamic interest
         a, b, c, d, e = random.randint(1, 8), random.randint(1, 7), random.randint(1, 5), \
             random.randint(1, 4), random.randint(1, 6)
+        # TODO make smaller paths (that loop faster and lead to repetition if followed)
         self.x_f = lambda t: cos(a * pi * t)
         self.y_f = lambda t: sin(b * pi * t)
         self.z_f = lambda t: sin(c * pi * t)

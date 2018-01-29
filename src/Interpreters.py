@@ -1,4 +1,3 @@
-# TODO second go at interpreters cos the old one got very messy
 import threading
 import json
 from time import sleep, time as timenow
@@ -13,6 +12,9 @@ import random
 from heapq import (heappush, heappop)
 from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE,
                                   NOTE_ON, NOTE_OFF, PROGRAM_CHANGE, PAN)
+
+
+# TODO USE VELOCITY
 
 # TODO TEMP
 random.seed(SP.RANDOM_SEED)
@@ -43,6 +45,7 @@ class PolyInterpreter(threading.Thread):
         self.program_change = PROGRAM_CHANGE | self.channel
 
         self.time_elapsed = 0.0
+        self.EVENT_START, self.EVENT_OFF = 1, 0
 
         # recording stuff
         self.recording = False
@@ -152,11 +155,17 @@ class PolyInterpreter(threading.Thread):
         print("I{}: Written log to {}".format(self.id, filename))
 
     def midi_message(self, message, duration=None):
-        """ All MIDI messages go through here to be executed """
+        """
+        All MIDI messages go through here to be executed
+        NOTE: duration is here for polymorphism only and is not used here
+        """
         self.midiout.send_message(message)
 
     def midi_message_log(self, message, duration=None):
-        """ All MIDI messages that go through here get executed and written to a log """
+        """
+        All MIDI messages that go through here get executed and written to a log
+        NOTE: duration is for log only and does not affect audio output
+        """
         self.midi_message(message, duration)
         if duration:
             message.append(duration)
@@ -278,32 +287,32 @@ class PolyInterpreter(threading.Thread):
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
 
-    def setup_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+    def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """
         for boid in self.swarm.boids:
             data = self.interpret(boid.get_loc_ratios())
             self.pan_note(data[pan_axis])
             self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
-            heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, boid)))
-            heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, boid)))
+            heappush(boid_heap, (time_elapsed + data[length_axis], (self.EVENT_OFF, data, boid)))
+            heappush(boid_heap, (time_elapsed + data[time_axis], (self.EVENT_START, data, boid)))
 
-    def parse_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+    def parse_priority_queue(self, boid_heap, time_elapsed):
         """ Parse the data from the head of the queue """
         tag, data, boid = heappop(boid_heap)[1]
 
-        if tag == EVENT_OFF:
+        if tag == self.EVENT_OFF:
             # stop note
             self.stop_note(data[pitch_axis])
             pass
-        elif tag == EVENT_START:
+        elif tag == self.EVENT_START:
             # interpret next data
             next_data = self.interpret(boid.get_loc_ratios())
             # TODO selective boid playing by options
             self.pan_note(data[pan_axis])
             self.play_note(next_data[pitch_axis], next_data[dynam_axis], data[length_axis])
             # schedule next events
-            heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, boid)))
-            heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, boid)))
+            heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
+            heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
             pass
         else:
             print("Unexpected event type:", str(tag))
@@ -318,9 +327,8 @@ class PolyInterpreter(threading.Thread):
         # time_elapsed = 0.0
         time_step = 0.05
         boid_heap = []
-        EVENT_START, EVENT_OFF = 1, 0
 
-        self.setup_priority_queue(boid_heap, self.time_elapsed, EVENT_OFF, EVENT_START)
+        self.setup_priority_queue(boid_heap, self.time_elapsed)
 
         # TODO add all notes to a list to ensure concurrency (as much as poss)
         while not self.done:
@@ -328,7 +336,7 @@ class PolyInterpreter(threading.Thread):
             time_this_loop = timenow()
 
             while boid_heap[0][0] <= self.time_elapsed:
-                self.parse_priority_queue(boid_heap, self.time_elapsed, EVENT_OFF, EVENT_START)
+                self.parse_priority_queue(boid_heap, self.time_elapsed)
 
             time_this_loop = timenow() - time_this_loop
             to_sleep = max(0, time_step - time_this_loop)
@@ -351,7 +359,7 @@ class MonoInterpreter(PolyInterpreter):
     def __init__(self, id_, midiout, swarm_data):
         super().__init__(id_, midiout, swarm_data)
 
-    def setup_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+    def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """
         com = self.swarm.get_COM()
         data = self.interpret(com.get_loc_ratios())
@@ -359,26 +367,66 @@ class MonoInterpreter(PolyInterpreter):
         self.pan_note(data[pan_axis])
         self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
         # self.send_midi([self.note_on, data[pitch_axis], data[dynam_axis]])
-        heappush(boid_heap, (time_elapsed + data[length_axis], (EVENT_OFF, data, com)))
-        heappush(boid_heap, (time_elapsed + data[time_axis], (EVENT_START, data, com)))
+        heappush(boid_heap, (time_elapsed + data[length_axis], (self.EVENT_OFF, data, com)))
+        heappush(boid_heap, (time_elapsed + data[time_axis], (self.EVENT_START, data, com)))
 
-    def parse_priority_queue(self, boid_heap, time_elapsed, EVENT_OFF, EVENT_START):
+    def parse_priority_queue(self, boid_heap, time_elapsed):
         """ Parse the data from the head of the queue """
         tag, data, com = heappop(boid_heap)[1]
 
-        if tag == EVENT_OFF:
+        if tag == self.EVENT_OFF:
             # stop note
             self.stop_note(data[pitch_axis])
             pass
-        elif tag == EVENT_START:
+        elif tag == self.EVENT_START:
             # interpret next data
             next_data = self.interpret(com.get_loc_ratios())
             self.pan_note(data[pan_axis])
             self.play_note(next_data[pitch_axis], next_data[dynam_axis], duration=data[length_axis])
             # schedule next events
-            heappush(boid_heap, (time_elapsed + next_data[length_axis], (EVENT_OFF, next_data, com)))
-            heappush(boid_heap, (time_elapsed + next_data[time_axis], (EVENT_START, next_data, com)))
+            heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, com)))
+            heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, com)))
             pass
         else:
             print("Unexpected event type:", str(tag))
             pass
+
+
+class RandomNotes(PolyInterpreter):
+    """ Literally just random stuff (ignoring swarm), for showing that the others are better (hopefully) """
+
+    def __init__(self, id_, midiout, swarm_data):
+        """ we inherit poly for convenience but don't need most of its functionality """
+        super().__init__(id_, midiout, swarm_data)
+
+    def loop(self):
+        """ Play any old thing within the MIDI range """
+        # TODO
+        time_step = 0.1
+        priority_queue = []
+        chance = 0.5  # chance to play a note at any given time_step
+
+        while not self.done:
+
+            time_this_loop = timenow()
+
+            # random chance to add a new event
+            if random.random() < chance:
+                note = random.randrange(0, 127)
+                length = random.random() * 2
+                volume = random.randrange(0, 127)
+                message = (note, length, volume)
+                self.send_midi([self.note_on, note, volume], duration=message[1])
+                heappush(priority_queue, (self.time_elapsed + length, message))
+
+            while priority_queue and priority_queue[0][0] <= self.time_elapsed:
+                message = heappop(priority_queue)[1]
+                self.send_midi([self.note_off, message[0]], duration=message[1])
+
+            time_this_loop = timenow() - time_this_loop
+            to_sleep = max(0, time_step - time_this_loop)
+            if to_sleep == 0:
+                print("OOPS: missed a beat (must be really lagging)")
+
+            sleep(to_sleep)
+            self.time_elapsed += time_step

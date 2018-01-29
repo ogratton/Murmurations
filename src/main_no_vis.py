@@ -59,22 +59,26 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 1, inst.TRUMPET),
-                    # (Swarm.Swarm(7, cube, 2), 2, inst.AGOGO),
-                    # (Swarm.Swarm(7, cube, 1), 3, inst.BLOWN_BOTTLE),
-                    # (Swarm.Swarm(7, cube), 9, 0)
+                    (Swarm.Swarm(7, cube, 6), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(7, cube, 2), 1, inst.PICKED_BASS),
+                    # (Swarm.Swarm(7, cube, 6), 2, inst.TRUMPET),
+                    # (Swarm.Swarm(3, cube, 6), 9, inst.YAMAHA_GRAND_PIANO)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
     manager = Manager(swarms)
 
     # SET UP MIDI
-    midiout = rtmidi.MidiOut().open_port(2)
+    midiout = rtmidi.MidiOut().open_port(0)
 
     interps = list()
-    interps.append(MonoInterpreter(0, midiout, swarm_data[0]))
-    interps[0].setup_interp("./presets/_bass.json")
+    interps.append(PolyInterpreter(0, midiout, swarm_data[0]))
+    interps[0].setup_interp("./presets/_mid.json")
     interps[0].set_tempo(80)
     interps[0].set_scale(Scales.aeolian)
+    interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
+    interps[1].setup_interp("./presets/_bass.json")
+    interps[1].set_tempo(80)
+    interps[1].set_scale(Scales.aeolian)
 
     print("Press Control-C to quit.")
 

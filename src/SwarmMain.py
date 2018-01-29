@@ -57,15 +57,15 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = array([10, 50, 7, 0, 0])
-    edge_length = 40
+    edge_length = 30
     cube = Swarm.Cube(cube_min, edge_length)
     # cube2 = Swarm.Cube(array([40, 10, 17, 0, 0]), 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(7, cube, 2), 1, inst.PICKED_BASS),
+                    (Swarm.Swarm(7, cube, 6), 0, inst.GLOCKENSPIEL),
+                    # (Swarm.Swarm(7, cube, 2), 1, inst.PICKED_BASS),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.TRUMPET),
                     # (Swarm.Swarm(3, cube, 6), 9, inst.YAMAHA_GRAND_PIANO)
     ]
@@ -75,19 +75,19 @@ def main():
     midiout = rtmidi.MidiOut()
     # for port_name in midiout.get_ports():
     #     print(port_name)
-    midiout.open_port(2)
+    midiout.open_port(0)
     # interps = [ChordSequencer(midiout, swarm_d) for swarm_d in swarm_data]
     # interps = [MonoInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps = list()
-    interps.append(PolyInterpreter(0, midiout, swarm_data[0]))
-    interps[0].setup_interp("./presets/_mid.json")
+    interps.append(RandomNotes(0, midiout, swarm_data[0]))
+    interps[0].setup_interp("./presets/_piano.json")
     interps[0].set_tempo(80)
-    interps[0].set_scale(Scales.aeolian)
-    interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
-    interps[1].setup_interp("./presets/_bass.json")
-    interps[1].set_tempo(80)
-    interps[1].set_scale(Scales.aeolian)
+    interps[0].set_scale(Scales.locrian)
+    # interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
+    # interps[1].setup_interp("./presets/_bass.json")
+    # interps[1].set_tempo(80)
+    # interps[1].set_scale(Scales.aeolian)
     # interps.append(PolyInterpreter(2, midiout, swarm_data[2]))
     # interps[2].setup_interp("./presets/_piano.json")
     # interps[2].set_tempo(120)
