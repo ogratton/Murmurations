@@ -9,7 +9,7 @@ from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
 
 # TODO TEMP
-# random.seed(SP.RANDOM_SEED)
+random.seed(SP.RANDOM_SEED)
 
 DIMS = 5  # for when dimensions must be hardcoded
 
@@ -184,6 +184,8 @@ class Attraction:
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
             dist = norm(to_attractor)
+            # TODO TEMP VALUES
+            boid.feeding = dist < SP.FEED_DIST
             # 1/dist makes attraction stronger for closer attractors
             change = (to_attractor - boid.velocity) * SP.ATTRACTION_MULTIPLIER * (1/dist)
             heappush(dist_mat, (dist, list(change)))  # needs to be a list as ndarray is 'ambiguous'
@@ -227,6 +229,7 @@ class Boid(object):
         self.velocity = random_vector(DIMS, -1.0, 1.0)  # vx vy vz
         self.adjustment = zeros(DIMS, dtype=float64)  # to accumulate corrections from rules
         self.turning = False
+        self.feeding = False
 
     def __repr__(self):
         return "Boid - pos:{0}, vel:{1}".format(self.location, self.velocity)
@@ -451,9 +454,8 @@ class Swarm(object):
         :param ratios: ratio of how far along to place attractor on each axis
         """
         # TODO an interpolated path would be better
-        cube = self.cube
-        v_min = cube.v_min
-        edge = cube.edge_length
+        v_min = self.cube.v_min
+        edge = self.cube.edge_length
         pos = []
         for i, dim in enumerate(ratios):
             pos.append(v_min[i] + dim*edge)

@@ -31,7 +31,9 @@ def load_config():
     if seed == -1:
         seed = random.randint(1, 1000000)
     Parameters.SP.RANDOM_SEED = seed
-    Parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])  # TODO bool
+    Parameters.SP.IS_FLOCK = int(config['SWARM']['IS_FLOCK'])
+    Parameters.SP.FEEDING = int(config['SWARM']['FEEDING'])
+    Parameters.SP.FEED_DIST = float(config['SWARM']['FEED_DIST'])
     Parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
     Parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
     Parameters.SP.COHESION_NEIGHBOURHOOD = float(config['SWARM']['COHESION_NEIGHBOURHOOD'])
@@ -57,15 +59,15 @@ def main():
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = array([10, 50, 7, 0, 0])
-    edge_length = 30
+    edge_length = 35  # 35
     cube = Swarm.Cube(cube_min, edge_length)
     # cube2 = Swarm.Cube(array([40, 10, 17, 0, 0]), 30)
 
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0, inst.GLOCKENSPIEL),
-                    # (Swarm.Swarm(7, cube, 2), 1, inst.PICKED_BASS),
+                    # (Swarm.Swarm(7, cube, 1), 0, inst.GLOCKENSPIEL),
+                    (Swarm.Swarm(15, cube, 2), 1, inst.HARP),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.TRUMPET),
                     # (Swarm.Swarm(3, cube, 6), 9, inst.YAMAHA_GRAND_PIANO)
     ]
@@ -80,9 +82,9 @@ def main():
     # interps = [MonoInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps = list()
-    interps.append(RandomNotes(0, midiout, swarm_data[0]))
+    interps.append(MonoInterpreter(0, midiout, swarm_data[0]))
     interps[0].setup_interp("./presets/_piano.json")
-    interps[0].set_tempo(80)
+    # interps[0].set_tempo(80)
     interps[0].set_scale(Scales.locrian)
     # interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
     # interps[1].setup_interp("./presets/_bass.json")
@@ -96,7 +98,7 @@ def main():
     # start up the midi in stream
     in_stream = None
     if Parameters.SP.ATTRACTOR_MODE == 2:
-        in_stream = InStream(interps, 0)
+        in_stream = InStream(interps, 1)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 

@@ -20,6 +20,7 @@ class InStream(threading.Thread):
 
         try:
             self.midiin, self.port_name = open_midiinput(port)
+            print("Listening for midi on port {}".format(port))
         except (EOFError, KeyboardInterrupt):
             print("WARNING: failed to open MIDI-in port {0}".format(port))
 

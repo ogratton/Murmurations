@@ -6,7 +6,7 @@ from time import sleep, time as timenow
 from datetime import datetime
 import csv
 
-from Parameters import IP, SP  # FIXME SP is temp
+from Parameters import IP, SP
 import Scales
 import random
 from heapq import (heappush, heappop)
@@ -287,12 +287,58 @@ class PolyInterpreter(threading.Thread):
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
 
+    def backwards_interpret(self, message, time):
+        """
+        Convert a midi input message to boid-space
+        :param message: e.g. [144,47,120] (i.e. note on, B3, loud)
+        :param time: in seconds, since last midi-in message
+        """
+        # TODO other sound dimensions are ignored/left average as midi input only has so much info
+
+        # proportion along the axes (default middle)
+        pitch_space = 0.5
+        dynam_space = 0.5
+        time_space = 0.5
+        length_space = 0.5
+        pan_space = 0.5
+
+        pi_min, pi_ran = self.pitch_min, self.pitch_range
+        d_min, d_ran = self.dynam_min, self.dynam_range
+        t_min, t_ran = self.time_min, self.time_range  # TODO note that these are not used when beat is on
+        # TODO length
+        pa_min, pa_max = self.pan_min, self.pan_range
+
+        # TODO catch more types of message
+        # note on messages
+        if 144 <= message[0] < 160:
+
+            # DEBUG: PLAY THE INCOMING MESSAGE (on a different channel)
+            # n.b. this has an alarmingly long delay despite the attractors appearing almost immediately
+            # self.midiout.send_message([self.note_on | 1, message[1], message[2]])
+
+            # TODO should account for the scale and take note of "wrong" notes
+            if message[1] in range(pi_min, pi_min+pi_ran+1):
+                pitch_space = (message[1]-pi_min)/pi_ran
+            else:
+                print("need something smarter for pitch: {0}".format(message[1]))
+
+            dval = max(min(d_min+d_ran+1, message[2]), d_min)
+            dynam_space = (dval - d_min) / d_ran
+
+            if t_min <= time <= t_min+t_ran:
+                time_space = (time-t_min)/t_ran
+            else:
+                print("need something smarter for time: {0}".format(time))
+
+        self.swarm.place_attractor([dynam_space, pitch_space, time_space, length_space, pan_space])
+
     def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """
         for boid in self.swarm.boids:
             data = self.interpret(boid.get_loc_ratios())
-            self.pan_note(data[pan_axis])
-            self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
+            if boid.feeding or not SP.FEEDING:
+                self.pan_note(data[pan_axis])
+                self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
             heappush(boid_heap, (time_elapsed + data[length_axis], (self.EVENT_OFF, data, boid)))
             heappush(boid_heap, (time_elapsed + data[time_axis], (self.EVENT_START, data, boid)))
 
@@ -308,8 +354,9 @@ class PolyInterpreter(threading.Thread):
             # interpret next data
             next_data = self.interpret(boid.get_loc_ratios())
             # TODO selective boid playing by options
-            self.pan_note(data[pan_axis])
-            self.play_note(next_data[pitch_axis], next_data[dynam_axis], data[length_axis])
+            if boid.feeding or not SP.FEEDING:
+                self.pan_note(data[pan_axis])
+                self.play_note(next_data[pitch_axis], next_data[dynam_axis], data[length_axis])
             # schedule next events
             heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
             heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
@@ -393,7 +440,10 @@ class MonoInterpreter(PolyInterpreter):
 
 
 class RandomNotes(PolyInterpreter):
-    """ Literally just random stuff (ignoring swarm), for showing that the others are better (hopefully) """
+    """
+    Literally just random stuff (ignoring swarm), for showing that the others are better (hopefully)
+    (Annoyingly this actually sounds basically exactly the same............)
+    """
 
     def __init__(self, id_, midiout, swarm_data):
         """ we inherit poly for convenience but don't need most of its functionality """
@@ -401,7 +451,7 @@ class RandomNotes(PolyInterpreter):
 
     def loop(self):
         """ Play any old thing within the MIDI range """
-        # TODO
+        # TODO make something even more random to make me look better
         time_step = 0.1
         priority_queue = []
         chance = 0.5  # chance to play a note at any given time_step
@@ -415,13 +465,13 @@ class RandomNotes(PolyInterpreter):
                 note = random.randrange(0, 127)
                 length = random.random() * 2
                 volume = random.randrange(0, 127)
-                message = (note, length, volume)
-                self.send_midi([self.note_on, note, volume], duration=message[1])
-                heappush(priority_queue, (self.time_elapsed + length, message))
+                print(note)
+                self.send_midi([self.note_on, note, volume], duration=length)
+                heappush(priority_queue, (self.time_elapsed + length, (note, length)))
 
             while priority_queue and priority_queue[0][0] <= self.time_elapsed:
-                message = heappop(priority_queue)[1]
-                self.send_midi([self.note_off, message[0]], duration=message[1])
+                note, length = heappop(priority_queue)[1]
+                self.send_midi([self.note_off, note], duration=length)
 
             time_this_loop = timenow() - time_this_loop
             to_sleep = max(0, time_step - time_this_loop)
