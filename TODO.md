@@ -7,7 +7,6 @@ Things that need to actually be done rather than vague ideas
 	* Some swarms are repulsed by other swarms and some attract, or maybe it changes who knows
 * Finish lit review
 * Design & Implementation sections of report
-* Check the articulation dimension works
 * Attractors:
 	* Smaller paths for attractors/better path generation
 	* Dynamic numbers of attractors
@@ -16,11 +15,10 @@ Things that need to actually be done rather than vague ideas
 	* Implement some sort of attractor memory
 * Not sure I like probability as a method for deciding which notes to play
 * Use velocity as factor in sound events
-* Dynamic cube size (determined by COG)
-	* Might be a bit stagnant but worth a shot
 * Key detection/dynamic scale changing
+	* Lightness/Darkness dimension where the mode changes
 * Improv mode (make attractors move smoothly, not teleport)
-	* Can now pipe a midi file in for repeatable input
+	* Could now pipe a midi file in for repeatable input
 * GUIs
 	* Link PyQt GUI over server
 		* This includes for the no-vis version

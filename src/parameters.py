@@ -52,4 +52,6 @@ class IP:
     DYNAM_RANGE = 102
     PAN_MIN = 30
     PAN_RANGE = 67
+    ARTIC_MIN = 1
+    ARTIC_RANGE = 0
     PROBABILITY = 0.75  # 0.75 - prob of playing a note

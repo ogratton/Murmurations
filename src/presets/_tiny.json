@@ -5,6 +5,8 @@
 	"time_range":0.25,
 	"dynam_min":25,
 	"dynam_range":102,
+	"artic_min":1,
+	"artic_range":0,
 	"probability":0.65,
 	"note_offs":1
 }

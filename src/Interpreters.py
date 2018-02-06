@@ -62,6 +62,8 @@ class PolyInterpreter(threading.Thread):
         self.time_min = IP.TIME_MIN
         self.pan_range = IP.PAN_RANGE
         self.pan_min = IP.PAN_MIN
+        self.artic_min = IP.ARTIC_MIN
+        self.artic_range = IP.ARTIC_RANGE
         self.probability = IP.PROBABILITY
         self.do_note_offs = 1
         self.scale = None
@@ -102,6 +104,10 @@ class PolyInterpreter(threading.Thread):
                 self.probability = d[1]
             elif d[0] == 'note_offs':
                 self.do_note_offs = d[1]
+            elif d[0] == 'artic_min':
+                self.artic_min = d[1]
+            elif d[0] == 'artic_range':
+                self.artic_range = d[1]
             else:
                 print("Unexpected parameter: {}".format(d[0]))
 
@@ -267,7 +273,7 @@ class PolyInterpreter(threading.Thread):
         return PolyInterpreter.lin_interp(prop, self.time_min, self.time_range)
 
     def interpret_articulation(self, prop):
-        return PolyInterpreter.lin_interp(prop, 1, 0)  # TODO put as JSON param (remember it's min, range)
+        return PolyInterpreter.lin_interp(prop, self.artic_min, self.artic_range)
 
     def interpret_pan(self, prop):
         return int(PolyInterpreter.lin_interp(prop, self.pan_min, self.pan_range))
@@ -335,12 +341,13 @@ class PolyInterpreter(threading.Thread):
     def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """
         for boid in self.swarm.boids:
-            data = self.interpret(boid.get_loc_ratios())
+            # TODO the next few lines are copied in parse_priority_queue. fix if bothered
+            next_data = self.interpret(boid.get_loc_ratios())
             if boid.feeding or not SP.FEEDING:
-                self.pan_note(data[pan_axis])
-                self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
-            heappush(boid_heap, (time_elapsed + data[length_axis], (self.EVENT_OFF, data, boid)))
-            heappush(boid_heap, (time_elapsed + data[time_axis], (self.EVENT_START, data, boid)))
+                self.pan_note(next_data[pan_axis])
+                self.play_note(next_data[pitch_axis], next_data[dynam_axis], duration=next_data[length_axis])
+            heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
+            heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
 
     def parse_priority_queue(self, boid_heap, time_elapsed):
         """ Parse the data from the head of the queue """
@@ -349,21 +356,17 @@ class PolyInterpreter(threading.Thread):
         if tag == self.EVENT_OFF:
             # stop note
             self.stop_note(data[pitch_axis])
-            pass
         elif tag == self.EVENT_START:
             # interpret next data
             next_data = self.interpret(boid.get_loc_ratios())
-            # TODO selective boid playing by options
             if boid.feeding or not SP.FEEDING:
                 self.pan_note(data[pan_axis])
-                self.play_note(next_data[pitch_axis], next_data[dynam_axis], data[length_axis])
+                self.play_note(next_data[pitch_axis], next_data[dynam_axis], duration=data[length_axis])
             # schedule next events
             heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
             heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
-            pass
         else:
             print("Unexpected event type:", str(tag))
-            pass
 
     def loop(self):
         """

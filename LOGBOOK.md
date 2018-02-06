@@ -104,5 +104,13 @@
 
 ### 2018/01/26 - Week 18
 
-*
+* Nothing...
+
+### 2018/02/06 - Week 20
+
+* Fixed articulation dimension
+* Boids only play when near attractors so as to cut down on the mess of notes
+* Made random notes generator to compare my interpreters and guide it away from randomness and towards structure/niceness :)
+* Worked on the midi-input mode (improvising with a real person)
+	* need to work out how to make it less like a mimic though
 
