@@ -7,6 +7,6 @@
 	"dynam_range":102,
 	"artic_min":1,
 	"artic_range":0,
-	"probability":1.0,
+	"probability":0.5,
 	"note_offs":0
 }
