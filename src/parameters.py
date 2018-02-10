@@ -20,8 +20,6 @@ class SP:
     TRUE_RANDOM = -1                    # sets standard for below (not changeable from config.ini)
     RANDOM_SEED = TRUE_RANDOM           # seed for random throughout program TODO doesn't seem to affect Swarm...
     IS_FLOCK = False                    # flock or swarm
-    FEEDING = False                     # only play notes when the boids are near food
-    FEED_DIST = 10.0                    # distance from which boids can feed on an attractor
     MAX_SPEED = 0.7                     # recommended max of 1.0
     RAND_POINT_SD = 7.5                 # 7.5
     COHESION_NEIGHBOURHOOD = 0.5        # NEIGHBOURHOOD is ratio of edgelength (so 0.5 is from half the cube away)
