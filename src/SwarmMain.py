@@ -66,8 +66,8 @@ def main():
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(20, cube, 7), 0, inst.YAMAHA_GRAND_PIANO),
-                    # (Swarm.Swarm(7, cube, 6), 1, inst.POLYSYNTH),
+                    # (Swarm.Swarm(20, cube, 7), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(7, cube, 6), 1, inst.POLYSYNTH),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.TRUMPET),
                     # (Swarm.Swarm(3, cube, 6), 9, inst.YAMAHA_GRAND_PIANO)
     ]
@@ -77,13 +77,13 @@ def main():
     midiout = rtmidi.MidiOut()
     # for port_name in midiout.get_ports():
     #     print(port_name)
-    midiout.open_port(0)
+    midiout.open_port(1)
     # interps = [ChordSequencer(midiout, swarm_d) for swarm_d in swarm_data]
     # interps = [MonoInterpreter(midiout, swarm_d) for swarm_d in swarm_data]
 
     interps = list()
     interps.append(PolyInterpreter(0, midiout, swarm_data[0]))
-    interps[0].setup_interp("./presets/_piano.json")
+    interps[0].setup_interp("./presets/_synth.json")
     interps[0].set_tempo(70)
     interps[0].set_scale(Scales.satie)
     # interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
