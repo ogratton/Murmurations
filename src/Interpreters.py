@@ -8,6 +8,7 @@ import csv
 
 from Parameters import IP, SP
 import Scales
+import Instruments
 import random
 from heapq import (heappush, heappop)
 from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE,
@@ -24,6 +25,7 @@ pitch_axis = 1
 time_axis = 2
 length_axis = 3
 pan_axis = 4
+vel_axis = -1  # velocity data sits at the end
 
 
 class PolyInterpreter(threading.Thread):
@@ -36,7 +38,8 @@ class PolyInterpreter(threading.Thread):
         super(PolyInterpreter, self).__init__()
         self.id = id_
         self.midiout = midiout
-        self.swarm, self.channel, self.instrument = swarm_data
+        self.swarm, self.channel = swarm_data
+        self.instrument = Instruments.insts["HARP"]  # default instrument
 
         # make sure we're targeting the right channel with our MIDI messages
         self.control_change = CONTROL_CHANGE | self.channel
@@ -77,7 +80,7 @@ class PolyInterpreter(threading.Thread):
         self.activate_instrument()
 
         self.done = False
-        self.start()
+        # self.start()
 
     def setup_interp(self, json_file):
         """
@@ -88,7 +91,9 @@ class PolyInterpreter(threading.Thread):
         data = json.load(open(json_file))
 
         for d in data.items():
-            if d[0] == 'pitch_min':
+            if d[0] == 'instrument':
+                self.set_instrument(d[1])
+            elif d[0] == 'pitch_min':
                 self.pitch_min = d[1]
             elif d[0] == 'pitch_range':
                 self.pitch_range = d[1]
@@ -205,6 +210,13 @@ class PolyInterpreter(threading.Thread):
             self.send_midi([self.control_change, BANK_SELECT_MSB, bank & 0x7F])
             self.send_midi([self.program_change, program & 0x7F])
 
+    def set_instrument(self, inst):
+        try:
+            self.instrument = Instruments.insts[inst.upper()]
+            self.activate_instrument()
+        except KeyError:
+            print("{} not found. Please check spelling or consult Instruments.py for a full list".format(inst))
+
     def set_scale(self, scale):
         """
         Set the musical scale for the interpreter
@@ -288,6 +300,7 @@ class PolyInterpreter(threading.Thread):
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
         data[time_axis] = self.interpret_time(pos[time_axis])
+        # TODO use velocity too
         # TODO this line has a big effect on the sound depending on the instrument:
         data[length_axis] = data[time_axis] * self.interpret_articulation(pos[length_axis])
         data[pan_axis] = self.interpret_pan(pos[pan_axis])

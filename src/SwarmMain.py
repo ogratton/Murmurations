@@ -52,6 +52,17 @@ def load_config():
     Parameters.SP.BOUNDING_SPHERE = int(config['SWARM']['BOUNDING_SPHERE'])
 
 
+def start_interp(interp, tempo=70, scale=Scales.persian, preset="piano", instrument=None):
+    preset_path = "./presets/{}.json".format(preset)
+    interp.setup_interp(preset_path)
+    interp.set_tempo(tempo)
+    interp.set_scale(scale)
+    if instrument:
+        interp.set_instrument(instrument)
+    interp.start()
+    return interp
+
+
 def main(port_num):
 
     # LOAD PARAMS FROM CONFIG
@@ -66,10 +77,10 @@ def main(port_num):
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(15, cube, 3), 0, inst.YAMAHA_GRAND_PIANO),
-                    (Swarm.Swarm(15, cube, 3), 1, inst.POLYSYNTH),
-                    # (Swarm.Swarm(7, cube, 6), 2, inst.TRUMPET),
-                    # (Swarm.Swarm(3, cube, 6), 9, inst.YAMAHA_GRAND_PIANO)
+                    # (Swarm.Swarm(7, cube, 2), 0),
+                    (Swarm.Swarm(7, cube, 5), 1),
+                    # (Swarm.Swarm(7, cube, 6), 2),
+                    # (Swarm.Swarm(3, cube, 6), 9)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
@@ -80,18 +91,9 @@ def main(port_num):
     midiout.open_port(port_num)
 
     interps = list()
-    interps.append(PolyInterpreter(0, midiout, swarm_data[0]))
-    interps[0].setup_interp("./presets/_piano.json")
-    # interps[0].set_tempo(70)
-    interps[0].set_scale(Scales.lydian)
-    interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
-    interps[1].setup_interp("./presets/_mid.json")
-    interps[1].set_tempo(80)
-    interps[1].set_scale(Scales.aeolian)
-    # interps.append(PolyInterpreter(2, midiout, swarm_data[2]))
-    # interps[2].setup_interp("./presets/_piano.json")
-    # interps[2].set_tempo(120)
-    # interps[2].set_scale(Scales.min_pen)
+    i1 = PolyInterpreter(0, midiout, swarm_data[0])
+    start_interp(i1, tempo=70, scale=Scales.persian, preset="synth", instrument="glockenspiel")
+    interps.append(i1)
 
     # start up the midi in stream
     in_stream = None

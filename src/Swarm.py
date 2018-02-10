@@ -9,7 +9,7 @@ from heapq import (heappush, heappop)
 from math import (cos, sin, pi)
 
 # TODO TEMP
-random.seed(SP.RANDOM_SEED)
+# random.seed(SP.RANDOM_SEED)
 
 DIMS = 5  # for when dimensions must be hardcoded
 
@@ -184,7 +184,6 @@ class Attraction:
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
             dist = norm(to_attractor)
-            # TODO TEMP VALUES
             boid.feeding = dist < SP.FEED_DIST
             # 1/dist makes attraction stronger for closer attractors
             change = (to_attractor - boid.velocity) * SP.ATTRACTION_MULTIPLIER * (1/dist)
@@ -252,10 +251,8 @@ class Boid(object):
         # bonus rules don't need the accumulate stage
         bonus_rules = [Constraint(), Attraction()]
 
-        # TODO this makes the swarm closer to O(n^2) than linear. Maybe find a better data structure than list
         # turns out this is the bottleneck of the whole program...
         for boid in all_boids:
-            # TODO test if it's faster with dist_mat
             key = (min(self.id, boid.id), max(self.id, boid.id))
             try:
                 distance = dist_mat[key]
@@ -290,8 +287,11 @@ class Boid(object):
         :return: a list of 0-1 proportions of how far the boid is along each axis
         """
         loc = self.get_location()
+        # this looks weird but it's just a faster way of iterating over the loc array and clamping values
         for dim in nditer(loc, op_flags=['readwrite']):
             dim[...] = min(0.99, max(0.0, dim/self.cube.edge_length))
+
+
 
         return loc
 
@@ -441,10 +441,6 @@ class Swarm(object):
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             self.update_attractors = self.ua_random
 
-        # TODO this doesn't actually work here
-        if SP.RANDOM_SEED != SP.TRUE_RANDOM:
-            random.seed(SP.RANDOM_SEED)  # for repeatability
-
     def __repr__(self):
         return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)
 
@@ -468,7 +464,6 @@ class Swarm(object):
         """
         Update every boid in the swarm and calculate the swarm's centre of mass
         """
-        # time = timenow()
         # position and velocity accumulators
         p_acc = zeros(DIMS, dtype=float64)
         v_acc = zeros(DIMS, dtype=float64)
@@ -485,8 +480,6 @@ class Swarm(object):
         self.c_o_m.set(p_acc / self.num_boids, v_acc / self.num_boids)
 
         self.update_attractors()
-
-        # print(timenow() - time)
 
     def ua_random(self):
         """ a chance to update each attractor to a random place """
