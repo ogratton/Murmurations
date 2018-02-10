@@ -339,9 +339,10 @@ class Window(pyglet.window.Window):
                 self.cube_index = (self.cube_index - 1) % len(self.world.boxes)
 
             elif symbol == pyglet.window.key.R:
+                new_status = not self.recording
                 for i in interps:
-                    self.recording = not self.recording
-                    i.set_recording(self.recording)
+                    i.set_recording(new_status)
+                self.recording = new_status
 
             elif symbol == pyglet.window.key.ESCAPE:
                 # finish up any recordings

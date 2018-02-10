@@ -66,8 +66,8 @@ def main(port_num):
     # MAKE SWARM OBJECTS
     # swarm, channel, instrument code (bank, pc)
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 3), 0, inst.YAMAHA_GRAND_PIANO),
-                    # (Swarm.Swarm(7, cube, 6), 1, inst.POLYSYNTH),
+                    (Swarm.Swarm(15, cube, 3), 0, inst.YAMAHA_GRAND_PIANO),
+                    (Swarm.Swarm(15, cube, 3), 1, inst.POLYSYNTH),
                     # (Swarm.Swarm(7, cube, 6), 2, inst.TRUMPET),
                     # (Swarm.Swarm(3, cube, 6), 9, inst.YAMAHA_GRAND_PIANO)
     ]
@@ -84,10 +84,10 @@ def main(port_num):
     interps[0].setup_interp("./presets/_piano.json")
     # interps[0].set_tempo(70)
     interps[0].set_scale(Scales.lydian)
-    # interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
-    # interps[1].setup_interp("./presets/_bass.json")
-    # interps[1].set_tempo(80)
-    # interps[1].set_scale(Scales.aeolian)
+    interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
+    interps[1].setup_interp("./presets/_mid.json")
+    interps[1].set_tempo(80)
+    interps[1].set_scale(Scales.aeolian)
     # interps.append(PolyInterpreter(2, midiout, swarm_data[2]))
     # interps[2].setup_interp("./presets/_piano.json")
     # interps[2].set_tempo(120)
