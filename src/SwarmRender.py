@@ -10,8 +10,8 @@ import os
 import math
 from copy import deepcopy
 from Parameters import DP, SP
+from numpy import zeros, float64
 
-import time
 
 from Swarm import normalise
 """
@@ -58,6 +58,11 @@ class World:
         self.cubes = set()
         for swarm in swarms:
             self.cubes.add(swarm.cube)
+
+        # TODO stigmergy in development:
+        self.num_leading_boids = len(swarms[0].boids)
+        self.num_dims = len(swarms[0].boids[0].location)
+        self.leads = [zeros(self.num_dims, dtype=float64)]*self.num_leading_boids
 
         # make the objects for the cube
         self.boxes = []
@@ -220,10 +225,13 @@ class World:
             if i == 0:
                 # LEAD SWARM:
                 # get position of every boid as ratios
-                pass
+                for j, boid in enumerate(swarm.boids):
+                    self.leads[j] = boid.get_loc_ratios()
             else:
                 # FOLLOWER SWARMS:
                 # set leading swarm positions as the attractors in followers
+                for att in self.leads:
+                    swarm.place_attractor(att)
                 pass
             swarm.update()
 

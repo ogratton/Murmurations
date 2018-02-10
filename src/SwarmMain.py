@@ -80,8 +80,8 @@ def main(port_num):
     # format:       swarm,                    channel
     swarm_data = [
                     # (Swarm.Swarm(7, cube, 2), 0),
-                    (Swarm.Swarm(7, cube, 1), 1),
-                    # (Swarm.Swarm(7, cube, 6), 2),
+                    (Swarm.Swarm(7, cube, 5), 1),
+                    (Swarm.Swarm(7, cube, follow=5), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
@@ -92,8 +92,14 @@ def main(port_num):
 
     interps = list()
     i1 = MonoInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=None, scale=Scales.locrian, preset="piano", instrument="")
+    start_interp(i1, tempo=None, scale=Scales.locrian, preset="piano lh", instrument="")
     interps.append(i1)
+
+    i2 = MonoInterpreter(1, midiout, swarm_data[1])
+    start_interp(i2, tempo=None, scale=Scales.locrian, preset="piano rh", instrument="")
+    interps.append(i2)
+
+
 
     # start up the midi in stream
     in_stream = None

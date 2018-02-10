@@ -184,10 +184,10 @@ class Attraction:
         # TODO TEMP: ATTRACTION_MULTIPLIER is a function of its position in the nth dimension
         # this means that when the boid will be attracted to the attractor at the top of d1, and repulsed at the base
         att_mul = SP.ATTRACTION_MULTIPLIER
-        n = 4
-        proportion = boid.get_loc_ratios()[n]
-        if proportion < 0.5:
-            att_mul = -SP.ATTRACTION_MULTIPLIER
+        # n = 4
+        # proportion = boid.get_loc_ratios()[n]
+        # if proportion < 0.5:
+        #     att_mul = -SP.ATTRACTION_MULTIPLIER
 
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
@@ -424,7 +424,7 @@ class Swarm(object):
     """
     A swarm of boids
     """
-    def __init__(self, num_boids, cube, num_attractors=1):
+    def __init__(self, num_boids, cube, num_attractors=None, follow=None):
         """
         Set up a swarm
         :param num_boids: int   number of boids in the swarm
@@ -438,12 +438,6 @@ class Swarm(object):
         self.cube = cube
         self.attractors = []
         self.att_index = 0  # for midi-input mode
-        for _ in range(num_attractors):
-            self.attractors.append(Attractor(rand_point_in_cube(self.cube, DIMS), cube))  # cube.centre
-
-        for i in range(num_boids):
-            self.boids.append(Boid(cube, self.attractors, i))
-        self.c_o_m = CentOfMass(cube.centre, zeros(DIMS, dtype=float64), cube.v_min, cube.edge_length)
 
         # which attractor update to use
         if SP.ATTRACTOR_MODE == 0:
@@ -455,6 +449,23 @@ class Swarm(object):
         else:
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             self.update_attractors = self.ua_random
+
+        # TODO STIGMERGY:
+        if num_attractors is None:
+            # then they are a follower swarm
+            # they don't need the update_attractors method
+            self.update_attractors = lambda: None
+            if follow is None:
+                print("ERROR: please state number of attractors for follower swarm")
+            else:
+                self.num_attractors = follow
+
+        for _ in range(self.num_attractors):
+            self.attractors.append(Attractor(rand_point_in_cube(self.cube, DIMS), cube))
+
+        for i in range(num_boids):
+            self.boids.append(Boid(cube, self.attractors, i))
+        self.c_o_m = CentOfMass(cube.centre, zeros(DIMS, dtype=float64), cube.v_min, cube.edge_length)
 
     def __repr__(self):
         return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)

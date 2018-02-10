@@ -106,7 +106,7 @@
 
 * Nothing...
 
-### 2018/02/06 - Week 20
+### 2018/02/02 - Week 20
 
 * Fixed articulation dimension
 * Boids only play when near attractors so as to cut down on the mess of notes
@@ -114,3 +114,9 @@
 * Worked on the midi-input mode (improvising with a real person)
 	* need to work out how to make it less like a mimic though
 
+### 2018/02/09 - Week 21
+
+* Properly started work on stigmergy (inter-swarm communication)
+* Attractors become repulsors if a boid is in the lower half of the 5th dimension (an arbitrary design choice but means that using only one attractor is no longer guaranteed chromaticism)
+* Tidied up code so I don't have to change stuff in 5 different places every time I want to change settings
+* Minor improvements and bug fixes
