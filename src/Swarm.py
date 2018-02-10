@@ -2,7 +2,7 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
-from numpy import array, zeros, float64, nditer
+from numpy import array, zeros, float64, nditer, append
 from numpy.linalg import norm
 from Parameters import SP
 from heapq import (heappush, heappop)
@@ -181,12 +181,20 @@ class Attraction:
         # priority queue of (distance, change)
         dist_mat = []
 
+        # TODO TEMP: ATTRACTION_MULTIPLIER is a function of its position in the nth dimension
+        # this means that when the boid will be attracted to the attractor at the top of d1, and repulsed at the base
+        att_mul = SP.ATTRACTION_MULTIPLIER
+        n = 4
+        proportion = boid.get_loc_ratios()[n]
+        if proportion < 0.5:
+            att_mul = -SP.ATTRACTION_MULTIPLIER
+
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
             dist = norm(to_attractor)
             boid.feeding = dist < SP.FEED_DIST
             # 1/dist makes attraction stronger for closer attractors
-            change = (to_attractor - boid.velocity) * SP.ATTRACTION_MULTIPLIER * (1/dist)
+            change = (to_attractor - boid.velocity) * att_mul * (1/dist)
             heappush(dist_mat, (dist, list(change)))  # needs to be a list as ndarray is 'ambiguous'
 
         # only feel the pull of the nearest <x> attractors
@@ -291,7 +299,9 @@ class Boid(object):
         for dim in nditer(loc, op_flags=['readwrite']):
             dim[...] = min(0.99, max(0.0, dim/self.cube.edge_length))
 
-
+        # append velocity to the end (as a fraction of max_speed)
+        vel_frac = self.velocity / SP.MAX_SPEED
+        append(loc, vel_frac)
 
         return loc
 
@@ -403,7 +413,12 @@ class CentOfMass(object):
         for dim in nditer(loc, op_flags=['readwrite']):
             dim[...] = min(0.99, max(0.0, dim/self.edge_length))
 
+        # append velocity to the end (as a fraction of max_speed)
+        vel_frac = self.velocity / SP.MAX_SPEED
+        append(loc, vel_frac)
+
         return loc
+
 
 class Swarm(object):
     """

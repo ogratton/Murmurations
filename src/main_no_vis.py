@@ -74,11 +74,11 @@ def main():
     interps.append(PolyInterpreter(0, midiout, swarm_data[0]))
     interps[0].setup_interp("./presets/_mid.json")
     interps[0].set_tempo(80)
-    interps[0].set_scale(Scales.aeolian)
+    interps[0].set_scale(Scales.base_mode)
     interps.append(MonoInterpreter(1, midiout, swarm_data[1]))
     interps[1].setup_interp("./presets/_bass.json")
     interps[1].set_tempo(80)
-    interps[1].set_scale(Scales.aeolian)
+    interps[1].set_scale(Scales.base_mode)
 
     print("Press Control-C to quit.")
 

@@ -1,16 +1,17 @@
-from numpy import r_, roll
+from numpy import array, roll
 
 s = 1  # semitone
 t = 2  # tone
 p = 3  # tone+
 
-aeolian    = r_[t, s, t, t, s, t, t]
-locrian    = roll(aeolian, -1)
-ionian     = roll(aeolian, -2)
-dorian     = roll(aeolian, -3)
-phrygian   = roll(aeolian, -4)
-lydian     = roll(aeolian, -5)
-mixolydian = roll(aeolian, -6)
+base_mode  = array([t, s, t, t, s, t, t])
+aeolian    = list(base_mode)
+locrian    = list(roll(base_mode, -1))
+ionian     = list(roll(base_mode, -2))
+dorian     = list(roll(base_mode, -3))
+phrygian   = list(roll(base_mode, -4))
+lydian     = list(roll(base_mode, -5))
+mixolydian = list(roll(base_mode, -6))
 
 major   = ionian
 nat_min = aeolian
@@ -28,7 +29,7 @@ satie   = [t, s, p, s, t, p]      # from gnossienne no. 3 (min arp interlaced wi
 sev_alt = [s, t, s, t, t, t, t]
 
 
-def gen_range(mode=aeolian, lowest=60, note_range=48):
+def gen_range(mode=base_mode, lowest=60, note_range=48):
     """
     Generate a list of midi notes in the desired mode, treating the lowest note as the tonic
     :param mode: musical mode, in the form of a list of intervals

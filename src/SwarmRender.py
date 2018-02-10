@@ -19,7 +19,6 @@ Render the swarm objects
 Contains render methods for the displayable classes
 """
 
-# TODO all objects need proper scaling down
 # TODO do not allow zooming of total > DIST_BACK
 # TODO actually change the whole camera movement controls
 
@@ -67,7 +66,7 @@ class World:
                 box_model = deepcopy(self.models[SPHERE])
             else:
                 box_model = deepcopy(self.models[BOX])
-            box_model.x, box_model.y, box_model.z = list(cube.centre)[:3]  # TODO atm just take the first 3 dims
+            box_model.x, box_model.y, box_model.z = list(cube.centre)[:3]
             box_model.color = red  # doesn't matter cos not filled in
             box_model.scale = cube.edge_length/2
             self.boxes.append(box_model)
@@ -82,7 +81,7 @@ class World:
             boid_models = []
             for boid in swarm.boids:
                 boid_model = deepcopy(self.models[PYRAMID])
-                boid_model.x, boid_model.y, boid_model.z = list(boid.location)[:3]  # TODO !!
+                boid_model.x, boid_model.y, boid_model.z = list(boid.location)[:3]
                 boid_model.color = colour
                 boid_model.scale = model_size
                 boid_models.append(boid_model)
@@ -90,7 +89,7 @@ class World:
             attr_models = []
             for attr in swarm.attractors:
                 attractor_model = deepcopy(self.models[BOX])
-                attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]  # TODO !!
+                attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]
                 attractor_model.color = colour
                 attractor_model.scale = model_size * 0.5
                 attr_models.append(attractor_model)
@@ -104,7 +103,6 @@ class World:
         [self.x, self.y, self.z] = coords
         # rotation values
         self.rx = self.ry = self.rz = 0
-        # TODO focal point?
         self.cx, self.cy, self.cz = 0, 0, 0
 
     def draw(self):
@@ -135,20 +133,20 @@ class World:
         for i, (boids_m, atts) in enumerate(self.swarm_models):
             swarm = self.swarms[i]
             for j, boid_m in enumerate(boids_m):
-                new_loc = list(swarm.boids[j].location)[:3]  # TODO hard-coded 3d!!
+                new_loc = list(swarm.boids[j].location)[:3]
                 boid_m.x, boid_m.y, boid_m.z = new_loc
 
                 # boid direction based on velocity
                 new_vel = list(normalise(swarm.boids[j].velocity[:3]))
-                # TODO completely wrong and also stupid
-                ## boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
+                # TODO completely wrong and also stupid but seems to be good enough if you don't look too hard
+                # boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
                 boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
                 boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
 
                 self.render_model(boid_m)
 
             for j, att in enumerate(atts):
-                new_att = list(swarm.attractors[j].location)[:3]  # TODO !!
+                new_att = list(swarm.attractors[j].location)[:3]
                 att.x, att.y, att.z = new_att
                 self.render_model(att, frame=True)
 
@@ -215,8 +213,18 @@ class World:
         gl.glPopMatrix()
 
     def update(self):
+        """ main update loop of the entire simulation is hidden way down here """
 
-        for swarm in self.swarms:
+        for i, swarm in enumerate(self.swarms):
+            # TODO stigmergy!
+            if i == 0:
+                # LEAD SWARM:
+                # get position of every boid as ratios
+                pass
+            else:
+                # FOLLOWER SWARMS:
+                # set leading swarm positions as the attractors in followers
+                pass
             swarm.update()
 
 
@@ -302,8 +310,8 @@ class Window(pyglet.window.Window):
 
         self.recording = False
 
-        if SP.RANDOM_SEED != SP.TRUE_RANDOM:
-            random.seed(SP.RANDOM_SEED)  # for repeatability
+        # if SP.RANDOM_SEED != SP.TRUE_RANDOM:
+        #     random.seed(SP.RANDOM_SEED)  # for repeatability
 
         @self.event
         def on_resize(width, height):

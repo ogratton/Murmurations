@@ -1,0 +1,13 @@
+{
+	"instrument":"BARITONE SAX",
+	"pitch_min":37,
+	"pitch_range":33,
+	"time_min":0.2,
+	"time_range":0.7,
+	"dynam_min":20,
+	"dynam_range":107,
+	"artic_min":0.75,
+	"artic_range":0.25,
+	"probability":0.9,
+	"note_offs":1
+}

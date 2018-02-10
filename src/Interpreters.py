@@ -15,10 +15,8 @@ from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE
                                   NOTE_ON, NOTE_OFF, PROGRAM_CHANGE, PAN)
 
 
-# TODO USE VELOCITY
-
 # TODO TEMP
-random.seed(SP.RANDOM_SEED)
+# random.seed(SP.RANDOM_SEED)
 
 dynam_axis = 0
 pitch_axis = 1
@@ -215,7 +213,7 @@ class PolyInterpreter(threading.Thread):
             self.instrument = Instruments.insts[inst.upper()]
             self.activate_instrument()
         except KeyError:
-            print("{} not found. Please check spelling or consult Instruments.py for a full list".format(inst))
+            print("WARNING: \"{}\" not found. Please check spelling or consult Instruments.py for a full list".format(inst))
 
     def set_scale(self, scale):
         """
@@ -299,9 +297,8 @@ class PolyInterpreter(threading.Thread):
         data = [-1] * self.dims
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
-        data[time_axis] = self.interpret_time(pos[time_axis])
         # TODO use velocity too
-        # TODO this line has a big effect on the sound depending on the instrument:
+        data[time_axis] = self.interpret_time(pos[time_axis]) * 2 * (1-pos[vel_axis])  # TODO experimental
         data[length_axis] = data[time_axis] * self.interpret_articulation(pos[length_axis])
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data

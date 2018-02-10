@@ -9,7 +9,6 @@ import random
 import Scales
 import configparser
 import Parameters
-import Instruments as inst
 from midi_in_stream import InStream, DummyInStream
 
 from numpy import array
@@ -52,11 +51,14 @@ def load_config():
     Parameters.SP.BOUNDING_SPHERE = int(config['SWARM']['BOUNDING_SPHERE'])
 
 
-def start_interp(interp, tempo=70, scale=Scales.persian, preset="piano", instrument=None):
-    preset_path = "./presets/{}.json".format(preset)
-    interp.setup_interp(preset_path)
-    interp.set_tempo(tempo)
-    interp.set_scale(scale)
+def start_interp(interp, tempo=None, scale=None, preset=None, instrument=None):
+    if preset:
+        preset_path = "./presets/{}.json".format(preset)
+        interp.setup_interp(preset_path)
+    if tempo:
+        interp.set_tempo(tempo)
+    if scale:
+        interp.set_scale(scale)
     if instrument:
         interp.set_instrument(instrument)
     interp.start()
@@ -75,10 +77,10 @@ def main(port_num):
     # cube2 = Swarm.Cube(array([40, 10, 17, 0, 0]), 30)
 
     # MAKE SWARM OBJECTS
-    # swarm, channel, instrument code (bank, pc)
+    # format:       swarm,                    channel
     swarm_data = [
                     # (Swarm.Swarm(7, cube, 2), 0),
-                    (Swarm.Swarm(7, cube, 5), 1),
+                    (Swarm.Swarm(7, cube, 1), 1),
                     # (Swarm.Swarm(7, cube, 6), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
@@ -86,13 +88,11 @@ def main(port_num):
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut()
-    # for port_name in midiout.get_ports():
-    #     print(port_name)
     midiout.open_port(port_num)
 
     interps = list()
-    i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=70, scale=Scales.persian, preset="synth", instrument="glockenspiel")
+    i1 = MonoInterpreter(0, midiout, swarm_data[0])
+    start_interp(i1, tempo=None, scale=Scales.locrian, preset="piano", instrument="")
     interps.append(i1)
 
     # start up the midi in stream
@@ -104,9 +104,9 @@ def main(port_num):
 
     # creates the window and sets its properties
     # TODO don't really like the idea of passing the swarms and the interpreters
-    window = Window(swarms, interps, config=config, width=1200, height=900, caption='Swarm Music', resizable=True)
+    Window(swarms, interps, config=config, width=1200, height=900, caption='Murmurations', resizable=True)
 
-    # starts the application
+    # start the application
     pyglet.app.run()
 
     # CLEAN UP
@@ -120,6 +120,9 @@ def main(port_num):
     print("Exiting")
 
 if __name__ == '__main__':
+
+    # on linux I use port 1, windows I use port 1
+    # change to whichever port you need
     import os
     port = 0
     if os.name != "nt":
