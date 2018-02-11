@@ -1,199 +1,198 @@
 """
-Simply a list of the MIDI instrument numbers
+Simply a dictionary of the MIDI instrument numbers
+format:         'NAME': (bank, prog)
 Note that where bank!=0, these are specific to the FluidR3_GM.sf2 soundfont I'm using
+(Indicated by the FR3 prefix)
 """
 
-# name = (bank_no, pc_no)
-
-YAMAHA_GRAND_PIANO = (0, 0)
-BRIGHT_YAMAHA_GRAND = (0, 1)
-ELECTRIC_PIANO = (0, 2)
-HONKY_TONK = (0, 3)
-RHODES_EP = (0, 4)
-LEGEND_EP_2 = (0, 5)
-HARPSICHORD = (0, 6)
-CLAVINET = (0, 7)
-CELESTA = (0, 8)
-GLOCKENSPIEL = (0, 9)
-MUSIC_BOX = (0, 10)
-VIBRAPHONE = (0, 11)
-MARIMBA = (0, 12)
-XYLOPHONE = (0, 13)
-TUBULAR_BELLS = (0, 14)
-DULCIMER = (0, 15)
-DRAWBAR_ORGAN = (0, 16)
-PERCUSSIVE_ORGAN = (0, 17)
-ROCK_ORGAN = (0, 18)
-CHURCH_ORGAN = (0, 19)
-REED_ORGAN = (0, 20)
-ACCORDIAN = (0, 21)
-HARMONICA = (0, 22)
-BANDONEON = (0, 23)
-NYLON_STRING_GUITAR = (0, 24)
-STEEL_STRING_GUITAR = (0, 25)
-JAZZ_GUITAR = (0, 26)
-CLEAN_GUITAR = (0, 27)
-PALM_MUTED_GUITAR = (0, 28)
-OVERDRIVE_GUITAR = (0, 29)
-DISTORTION_GUITAR = (0, 30)
-GUITAR_HARMONICS = (0, 31)
-ACOUSTIC_BASS = (0, 32)
-FINGERED_BASS = (0, 33)
-PICKED_BASS = (0, 34)
-FRETLESS_BASS = (0, 35)
-SLAP_BASS = (0, 36)
-POP_BASS = (0, 37)
-SYNTH_BASS_1 = (0, 38)
-SYNTH_BASS_2 = (0, 39)
-VIOLIN = (0, 40)
-VIOLA = (0, 41)
-CELLO = (0, 42)
-CONTRABASS = (0, 43)
-TREMOLO = (0, 44)
-PIZZICATO_SECTION = (0, 45)
-HARP = (0, 46)
-TIMPANI = (0, 47)
-STRINGS = (0, 48)
-SLOW_STRINGS = (0, 49)
-SYNTH_STRINGS_1 = (0, 50)
-SYNTH_STRINGS_2 = (0, 51)
-AHH_CHOIR = (0, 52)
-OHH_VOICES = (0, 53)
-SYNTH_VOICE = (0, 54)
-ORCHESTRA_HIT = (0, 55)
-TRUMPET = (0, 56)
-TROMBONE = (0, 57)
-TUBA = (0, 58)
-MUTED_TRUMPET = (0, 59)
-FRENCH_HORNS = (0, 60)
-BRASS_SECTION = (0, 61)
-SYNTH_BRASS_1 = (0, 62)
-SYNTH_BRASS_2 = (0, 63)
-SOPRANO_SAX = (0, 64)
-ALTO_SAX = (0, 65)
-TENOR_SAX = (0, 66)
-BARITONE_SAX = (0, 67)
-OBOE = (0, 68)
-ENGLISH_HORN = (0, 69)
-BASSOON = (0, 70)
-CLARINET = (0, 71)
-PICCOLO = (0, 72)
-FLUTE = (0, 73)
-RECORDER = (0, 74)
-PAN_FLUTE = (0, 75)
-BLOWN_BOTTLE = (0, 76)
-SHAKUHACHI = (0, 77)
-WHISTLE = (0, 78)
-OCARINA = (0, 79)
-SQUARE_LEAD = (0, 80)
-SAW_WAVE = (0, 81)
-CALLIOPE_LEAD = (0, 82)
-CHIFFER_LEAD = (0, 83)
-CHARANG = (0, 84)
-SOLO_VOX = (0, 85)
-FIFTH_SAWTOOTH_WAVE = (0, 86)
-BASS_AND_LEAD = (0, 87)
-FANTASIA = (0, 88)
-WARM_PAD = (0, 89)
-POLYSYNTH = (0, 90)
-SPACE_VOICE = (0, 91)
-BOWED_GLASS = (0, 92)
-METAL_PAD = (0, 93)
-HALO_PAD = (0, 94)
-SWEEP_PAD = (0, 95)
-ICE_RAIN = (0, 96)
-SOUNDTRACK = (0, 97)
-CRYSTAL = (0, 98)
-ATMOSPHERE = (0, 99)
-BRIGHTNESS = (0, 100)
-GOBLIN = (0, 101)
-ECHO_DROPS = (0, 102)
-STAR_THEME = (0, 103)
-SITAR = (0, 104)
-BANJO = (0, 105)
-SHAMISEN = (0, 106)
-KOTO = (0, 107)
-KALIMBA = (0, 108)
-BAGPIPE = (0, 109)
-FIDDLE = (0, 110)
-SHENAI = (0, 111)
-TINKER_BELL = (0, 112)
-AGOGO = (0, 113)
-STEEL_DRUMS = (0, 114)
-WOODBLOCK = (0, 115)
-TAIKO_DRUM = (0, 116)
-MELODIC_TOM = (0, 117)
-SYNTH_DRUM = (0, 118)
-REVERSE_CYMBAL = (0, 119)
-FRET_NOISE = (0, 120)
-BREATH_NOISE = (0, 121)
-SEA_SHORE = (0, 122)
-BIRD_TWEET = (0, 123)
-TELEPHONE = (0, 124)
-HELICOPTER = (0, 125)
-APPLAUSE = (0, 126)
-GUN_SHOT = (0, 127)
-
-# all below this point are non-standard and only apply to the FluidR3_GM.sf2
-# (indicated by FR3_ prefix)
-FR3_DETUNED_EP_1 = (8, 4)
-FR3_DETUNED_EP_2 = (8, 5)
-FR3_COUPLED_HARPSICHORD = (8, 6)
-FR3_CHURCH_BELL = (8, 14)
-FR3_DETUNED_ORGAN_1 = (8, 16)
-FR3_DETUNED_ORGAN_2 = (8, 17)
-FR3_CHURCH_ORGAN_2 = (8, 19)
-FR3_ITALIAN_ACCORDION = (8, 21)
-FR3_UKULELE = (8, 24)
-FR3_12_STRING_GUITAR = (8, 25)
-FR3_HAWAIIAN_GUITAR = (8, 26)
-FR3_FUNK_GUITAR = (8, 28)
-FR3_FEEDBACK_GUITAR = (8, 30)
-FR3_GUITAR_FEEDBACK = (8, 31)
-FR3_SYNTH_BASS_3 = (8, 38)
-FR3_SYNTH_BASS_4 = (8, 39)
-FR3_SLOW_VIOLIN = (8, 40)
-FR3_ORCHESTRAL_PAD = (8, 48)
-FR3_SYNTH_STRINGS_3 = (8, 50)
-FR3_BRASS_2 = (8, 61)
-FR3_SYNTH_BRASS_3 = (8, 62)
-FR3_SYNTH_BRASS_4 = (8, 63)
-FR3_SINE_WAVE = (8, 80)
-FR3_TAISHO_KOTO = (8, 107)
-FR3_CASTANETS = (8, 115)
-FR3_CONCERT_BASS_DRUM = (8, 116)
-FR3_MELO_TOM_2 = (8, 117)
-FR3_808_TOM = (8, 118)
-FR3_BURST_NOISE = (9, 125)
-FR3_MANDOLIN = (16, 25)
-FR3_STANDARD = (128, 0)
-FR3_STANDARD_1 = (128, 1)
-FR3_STANDARD_2 = (128, 2)
-FR3_STANDARD_3 = (128, 3)
-FR3_STANDARD_4 = (128, 4)
-FR3_STANDARD_5 = (128, 5)
-FR3_STANDARD_6 = (128, 6)
-FR3_STANDARD_7 = (128, 7)
-FR3_ROOM = (128, 8)
-FR3_ROOM_1 = (128, 9)
-FR3_ROOM_2 = (128, 10)
-FR3_ROOM_3 = (128, 11)
-FR3_ROOM_4 = (128, 12)
-FR3_ROOM_5 = (128, 13)
-FR3_ROOM_6 = (128, 14)
-FR3_ROOM_7 = (128, 15)
-FR3_POWER = (128, 16)
-FR3_POWER_1 = (128, 17)
-FR3_POWER_2 = (128, 18)
-FR3_POWER_3 = (128, 19)
-FR3_ELECTRONIC = (128, 24)
-FR3_TR_808 = (128, 25)
-FR3_JAZZ = (128, 32)
-FR3_JAZZ_1 = (128, 33)
-FR3_JAZZ_2 = (128, 34)
-FR3_JAZZ_3 = (128, 35)
-FR3_JAZZ_4 = (128, 36)
-FR3_BRUSH = (128, 40)
-FR3_BRUSH_1 = (128, 41)
-FR3_BRUSH_2 = (128, 42)
-FR3_ORCHESTRA_KIT = (128, 48)
+insts = {
+    'YAMAHA GRAND PIANO': (0, 0),
+    'BRIGHT YAMAHA GRAND': (0, 1),
+    'ELECTRIC PIANO': (0, 2),
+    'HONKY TONK': (0, 3),
+    'RHODES EP': (0, 4),
+    'LEGEND EP 2': (0, 5),
+    'HARPSICHORD': (0, 6),
+    'CLAVINET': (0, 7),
+    'CELESTA': (0, 8),
+    'GLOCKENSPIEL': (0, 9),
+    'MUSIC BOX': (0, 10),
+    'VIBRAPHONE': (0, 11),
+    'MARIMBA': (0, 12),
+    'XYLOPHONE': (0, 13),
+    'TUBULAR BELLS': (0, 14),
+    'DULCIMER': (0, 15),
+    'DRAWBAR ORGAN': (0, 16),
+    'PERCUSSIVE ORGAN': (0, 17),
+    'ROCK ORGAN': (0, 18),
+    'CHURCH ORGAN': (0, 19),
+    'REED ORGAN': (0, 20),
+    'ACCORDIAN': (0, 21),
+    'HARMONICA': (0, 22),
+    'BANDONEON': (0, 23),
+    'NYLON STRING GUITAR': (0, 24),
+    'STEEL STRING GUITAR': (0, 25),
+    'JAZZ GUITAR': (0, 26),
+    'CLEAN GUITAR': (0, 27),
+    'PALM MUTED GUITAR': (0, 28),
+    'OVERDRIVE GUITAR': (0, 29),
+    'DISTORTION GUITAR': (0, 30),
+    'GUITAR HARMONICS': (0, 31),
+    'ACOUSTIC BASS': (0, 32),
+    'FINGERED BASS': (0, 33),
+    'PICKED BASS': (0, 34),
+    'FRETLESS BASS': (0, 35),
+    'SLAP BASS': (0, 36),
+    'POP BASS': (0, 37),
+    'SYNTH BASS 1': (0, 38),
+    'SYNTH BASS 2': (0, 39),
+    'VIOLIN': (0, 40),
+    'VIOLA': (0, 41),
+    'CELLO': (0, 42),
+    'CONTRABASS': (0, 43),
+    'TREMOLO': (0, 44),
+    'PIZZICATO SECTION': (0, 45),
+    'HARP': (0, 46),
+    'TIMPANI': (0, 47),
+    'STRINGS': (0, 48),
+    'SLOW STRINGS': (0, 49),
+    'SYNTH STRINGS 1': (0, 50),
+    'SYNTH STRINGS 2': (0, 51),
+    'AHH CHOIR': (0, 52),
+    'OHH VOICES': (0, 53),
+    'SYNTH VOICE': (0, 54),
+    'ORCHESTRA HIT': (0, 55),
+    'TRUMPET': (0, 56),
+    'TROMBONE': (0, 57),
+    'TUBA': (0, 58),
+    'MUTED TRUMPET': (0, 59),
+    'FRENCH HORNS': (0, 60),
+    'BRASS SECTION': (0, 61),
+    'SYNTH BRASS 1': (0, 62),
+    'SYNTH BRASS 2': (0, 63),
+    'SOPRANO SAX': (0, 64),
+    'ALTO SAX': (0, 65),
+    'TENOR SAX': (0, 66),
+    'BARITONE SAX': (0, 67),
+    'OBOE': (0, 68),
+    'ENGLISH HORN': (0, 69),
+    'BASSOON': (0, 70),
+    'CLARINET': (0, 71),
+    'PICCOLO': (0, 72),
+    'FLUTE': (0, 73),
+    'RECORDER': (0, 74),
+    'PAN FLUTE': (0, 75),
+    'BLOWN BOTTLE': (0, 76),
+    'SHAKUHACHI': (0, 77),
+    'WHISTLE': (0, 78),
+    'OCARINA': (0, 79),
+    'SQUARE LEAD': (0, 80),
+    'SAW WAVE': (0, 81),
+    'CALLIOPE LEAD': (0, 82),
+    'CHIFFER LEAD': (0, 83),
+    'CHARANG': (0, 84),
+    'SOLO VOX': (0, 85),
+    'FIFTH SAWTOOTH WAVE': (0, 86),
+    'BASS AND LEAD': (0, 87),
+    'FANTASIA': (0, 88),
+    'WARM PAD': (0, 89),
+    'POLYSYNTH': (0, 90),
+    'SPACE VOICE': (0, 91),
+    'BOWED GLASS': (0, 92),
+    'METAL PAD': (0, 93),
+    'HALO PAD': (0, 94),
+    'SWEEP PAD': (0, 95),
+    'ICE RAIN': (0, 96),
+    'SOUNDTRACK': (0, 97),
+    'CRYSTAL': (0, 98),
+    'ATMOSPHERE': (0, 99),
+    'BRIGHTNESS': (0, 100),
+    'GOBLIN': (0, 101),
+    'ECHO DROPS': (0, 102),
+    'STAR THEME': (0, 103),
+    'SITAR': (0, 104),
+    'BANJO': (0, 105),
+    'SHAMISEN': (0, 106),
+    'KOTO': (0, 107),
+    'KALIMBA': (0, 108),
+    'BAGPIPE': (0, 109),
+    'FIDDLE': (0, 110),
+    'SHENAI': (0, 111),
+    'TINKER BELL': (0, 112),
+    'AGOGO': (0, 113),
+    'STEEL DRUMS': (0, 114),
+    'WOODBLOCK': (0, 115),
+    'TAIKO DRUM': (0, 116),
+    'MELODIC TOM': (0, 117),
+    'SYNTH DRUM': (0, 118),
+    'REVERSE CYMBAL': (0, 119),
+    'FRET NOISE': (0, 120),
+    'BREATH NOISE': (0, 121),
+    'SEA SHORE': (0, 122),
+    'BIRD TWEET': (0, 123),
+    'TELEPHONE': (0, 124),
+    'HELICOPTER': (0, 125),
+    'APPLAUSE': (0, 126),
+    'GUN SHOT': (0, 127),
+    'FR3 DETUNED EP 1': (8, 4),
+    'FR3 DETUNED EP 2': (8, 5),
+    'FR3 COUPLED HARPSICHORD': (8, 6),
+    'FR3 CHURCH BELL': (8, 14),
+    'FR3 DETUNED ORGAN 1': (8, 16),
+    'FR3 DETUNED ORGAN 2': (8, 17),
+    'FR3 CHURCH ORGAN 2': (8, 19),
+    'FR3 ITALIAN ACCORDION': (8, 21),
+    'FR3 UKULELE': (8, 24),
+    'FR3 12 STRING GUITAR': (8, 25),
+    'FR3 HAWAIIAN GUITAR': (8, 26),
+    'FR3 FUNK GUITAR': (8, 28),
+    'FR3 FEEDBACK GUITAR': (8, 30),
+    'FR3 GUITAR FEEDBACK': (8, 31),
+    'FR3 SYNTH BASS 3': (8, 38),
+    'FR3 SYNTH BASS 4': (8, 39),
+    'FR3 SLOW VIOLIN': (8, 40),
+    'FR3 ORCHESTRAL PAD': (8, 48),
+    'FR3 SYNTH STRINGS 3': (8, 50),
+    'FR3 BRASS 2': (8, 61),
+    'FR3 SYNTH BRASS 3': (8, 62),
+    'FR3 SYNTH BRASS 4': (8, 63),
+    'FR3 SINE WAVE': (8, 80),
+    'FR3 TAISHO KOTO': (8, 107),
+    'FR3 CASTANETS': (8, 115),
+    'FR3 CONCERT BASS DRUM': (8, 116),
+    'FR3 MELO TOM 2': (8, 117),
+    'FR3 808 TOM': (8, 118),
+    'FR3 BURST NOISE': (9, 125),
+    'FR3 MANDOLIN': (16, 25),
+    'FR3 STANDARD': (128, 0),
+    'FR3 STANDARD 1': (128, 1),
+    'FR3 STANDARD 2': (128, 2),
+    'FR3 STANDARD 3': (128, 3),
+    'FR3 STANDARD 4': (128, 4),
+    'FR3 STANDARD 5': (128, 5),
+    'FR3 STANDARD 6': (128, 6),
+    'FR3 STANDARD 7': (128, 7),
+    'FR3 ROOM': (128, 8),
+    'FR3 ROOM 1': (128, 9),
+    'FR3 ROOM 2': (128, 10),
+    'FR3 ROOM 3': (128, 11),
+    'FR3 ROOM 4': (128, 12),
+    'FR3 ROOM 5': (128, 13),
+    'FR3 ROOM 6': (128, 14),
+    'FR3 ROOM 7': (128, 15),
+    'FR3 POWER': (128, 16),
+    'FR3 POWER 1': (128, 17),
+    'FR3 POWER 2': (128, 18),
+    'FR3 POWER 3': (128, 19),
+    'FR3 ELECTRONIC': (128, 24),
+    'FR3 TR 808': (128, 25),
+    'FR3 JAZZ': (128, 32),
+    'FR3 JAZZ 1': (128, 33),
+    'FR3 JAZZ 2': (128, 34),
+    'FR3 JAZZ 3': (128, 35),
+    'FR3 JAZZ 4': (128, 36),
+    'FR3 BRUSH': (128, 40),
+    'FR3 BRUSH 1': (128, 41),
+    'FR3 BRUSH 2': (128, 42),
+    'FR3 ORCHESTRA KIT': (128, 48),
+}
