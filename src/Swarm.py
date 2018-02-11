@@ -184,10 +184,10 @@ class Attraction:
         # TODO TEMP: ATTRACTION_MULTIPLIER is a function of its position in the nth dimension
         # this means that when the boid will be attracted to the attractor at the top of d1, and repulsed at the base
         att_mul = SP.ATTRACTION_MULTIPLIER
-        # n = 4
-        # proportion = boid.get_loc_ratios()[n]
-        # if proportion < 0.5:
-        #     att_mul = -SP.ATTRACTION_MULTIPLIER
+        n = 4  # which dimension to use
+        proportion = boid.get_loc_ratios()[n]
+        if proportion < 0.5:
+            att_mul = -SP.ATTRACTION_MULTIPLIER
 
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
