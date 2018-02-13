@@ -478,7 +478,7 @@ class RandomNotes(PolyInterpreter):
                 note = random.randrange(0, 127)
                 length = random.random() * 2
                 volume = random.randrange(0, 127)
-                print(note)
+                # print(note)
                 self.send_midi([self.note_on, note, volume], duration=length)
                 heappush(priority_queue, (self.time_elapsed + length, (note, length)))
 

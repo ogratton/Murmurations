@@ -482,8 +482,9 @@ class Swarm(object):
         for i, dim in enumerate(ratios):
             pos.append(v_min[i] + dim*edge)
         # update the attractor that has been still longest with this new position
-        self.attractors[self.att_index].location = array(pos, dtype=float64)
-        self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
+        if self.attractors:
+            self.attractors[self.att_index].location = array(pos, dtype=float64)
+            self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
         return
 
     def update(self):

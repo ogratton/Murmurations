@@ -44,6 +44,11 @@ def rand_colour():
     return random.random(), random.random(), random.random(), 1
 
 
+def invert_colour(colour):
+    r, g, b, a = colour
+    return 1-r, 1-g, 1-b, a
+
+
 class World:
     """
     Collection of OBJ models within the larger simulation.
@@ -133,11 +138,15 @@ class World:
         for box in self.boxes:
             self.render_model(box, fill=False)
 
-        # TODO this may be very slow
-        # TODO also it won't account for changing number of boids if that is implemented
+        # TODO won't account for changing number of boids if that is implemented
         for i, (boids_m, atts) in enumerate(self.swarm_models):
             swarm = self.swarms[i]
             for j, boid_m in enumerate(boids_m):
+
+                # experimental: invert colour if feeding
+                # if swarm.boids[j].feeding:
+                #     boid_m.color = invert_colour(boid_m.color)
+
                 new_loc = list(swarm.boids[j].location)[:3]
                 boid_m.x, boid_m.y, boid_m.z = new_loc
 
@@ -221,7 +230,7 @@ class World:
         """ main update loop of the entire simulation is hidden way down here """
 
         for i, swarm in enumerate(self.swarms):
-            # TODO stigmergy!
+            # stigmergy!
             if i == 0:
                 # LEAD SWARM:
                 # get position of every boid as ratios
@@ -239,6 +248,7 @@ class World:
 class OBJModel:
     """
     Load an OBJ model from file.
+    (Code unchanged from source. See credits file)
     """
 
     def __init__(self, coords=(0, 0, 0), scale=1, color=dark_gray, path=None):
@@ -316,6 +326,13 @@ class Window(pyglet.window.Window):
 
         self.world = World(swarms, [0, 0, -DIST_BACK], self.models)
 
+        # TODO work out how to display text:
+        self.label = pyglet.text.Label('Hello, world',
+                                  font_name='Times New Roman',
+                                  font_size=36,
+                                  x=self.width//2, y=self.height//2,
+                                  anchor_x='center', anchor_y='center')
+
         self.recording = False
 
         # if SP.RANDOM_SEED != SP.TRUE_RANDOM:
@@ -355,10 +372,15 @@ class Window(pyglet.window.Window):
                 self.cube_index = (self.cube_index - 1) % len(self.world.boxes)
 
             elif symbol == pyglet.window.key.R:
+                # toggle recording
                 new_status = not self.recording
                 for i in interps:
                     i.set_recording(new_status)
                 self.recording = new_status
+
+            elif symbol == pyglet.window.key.F:
+                # toggle feeding
+                SP.FEEDING = not SP.FEEDING
 
             elif symbol == pyglet.window.key.ESCAPE:
                 # finish up any recordings
