@@ -71,7 +71,7 @@ def main(port_num):
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = array([10, 50, 7, 0, 0])
-    edge_length = 35  # 35
+    edge_length = 40  # 35
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(array([10+edge_length, 50, 7, 0, 0]), edge_length)
 
@@ -92,11 +92,11 @@ def main(port_num):
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=90, scale=Scales.mel_min, preset="synth", instrument="")
+    start_interp(i1, tempo=90, scale=Scales.min_pen, preset="synth", instrument="")
     interps.append(i1)
 
     i2 = MonoInterpreter(1, midiout, swarm_data[1])
-    start_interp(i2, tempo=90, scale=Scales.mel_min, preset="synth", instrument="goblin")
+    start_interp(i2, tempo=90, scale=Scales.min_pen, preset="synth", instrument="Fantasia")
     interps.append(i2)
 
     # i3 = PolyInterpreter(2, midiout, swarm_data[2])
