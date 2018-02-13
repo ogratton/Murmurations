@@ -71,7 +71,7 @@ def main(port_num):
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = array([10, 50, 7, 0, 0])
-    edge_length = 50  # 35
+    edge_length = 35  # 35
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(array([10+edge_length, 50, 7, 0, 0]), edge_length)
 
@@ -79,9 +79,9 @@ def main(port_num):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(5, cube, 3), 0),
-                    # (Swarm.Swarm(7, cube, follow=7), 1),
-                    (Swarm.Swarm(5, cube2, follow=5), 2),
+                    (Swarm.Swarm(12, cube, 3), 0),
+                    (Swarm.Swarm(7, cube, follow=6), 1),
+                    # (Swarm.Swarm(15, cube2, follow=15), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
@@ -92,13 +92,13 @@ def main(port_num):
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=None, scale=Scales.mel_min, preset="piano lh", instrument="")
+    start_interp(i1, tempo=90, scale=Scales.mel_min, preset="synth", instrument="")
     interps.append(i1)
 
     i2 = MonoInterpreter(1, midiout, swarm_data[1])
-    start_interp(i2, tempo=None, scale=Scales.mel_min, preset="piano rh", instrument="")
+    start_interp(i2, tempo=90, scale=Scales.mel_min, preset="synth", instrument="goblin")
     interps.append(i2)
-    #
+
     # i3 = PolyInterpreter(2, midiout, swarm_data[2])
     # start_interp(i3, tempo=None, scale=Scales.mel_min, preset="glock", instrument="kalimba")
     # interps.append(i3)

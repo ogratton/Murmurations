@@ -181,12 +181,12 @@ class Attraction:
         # priority queue of (distance, change)
         dist_mat = []
 
-        # TODO TEMP: ATTRACTION_MULTIPLIER is a function of its position in the nth dimension
+        # TODO EXPERIMENTAL: ATTRACTION_MULTIPLIER is a function of its position in the nth dimension
         # this means that when the boid will be attracted to the attractor at the top of d1, and repulsed at the base
         att_mul = SP.ATTRACTION_MULTIPLIER
         n = 4  # which dimension to use
         proportion = boid.get_loc_ratios()[n]
-        if proportion < 0.5:
+        if proportion < 0.3:
             att_mul = -SP.ATTRACTION_MULTIPLIER
 
         for attr in boid.attractors:
