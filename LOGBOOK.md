@@ -117,6 +117,16 @@
 ### 2018/02/09 - Week 21
 
 * Properly started work on stigmergy (inter-swarm communication)
-* Attractors become repulsors if a boid is in the lower half of the 5th dimension (an arbitrary design choice but means that using only one attractor is no longer guaranteed chromaticism)
+* Attractors become repulsors if a boid is in the lower portion of the 5th dimension (an arbitrary design choice but means that using only one attractor is no longer guaranteed chromaticism)
 * Tidied up code so I don't have to change stuff in 5 different places every time I want to change settings
 * Minor improvements and bug fixes
+
+### 2018/02/16 - Week 22
+
+* Basic stigmergy implemented:
+	* The first swarm is a leader and all other swarms receive its boids as attractors
+* Implemented 'feeding'
+	* boids only play notes when within a certain range of attractors
+	* this reduces amount of notes at any one time
+	* combined with the attractors becoming repulsors, this leads to 'rests' in the music
+* Velocity of boids is now a component in the time equation for PolyInterpreter (faster boids -> quicker notes)

@@ -2,9 +2,6 @@
 
 Things that need to actually be done rather than vague ideas
 
-* Swarm stigmergy (two swarms at once need SOME kind of interaction)
-	* Maybe have a leading swarm
-	* Some swarms are repulsed by other swarms and some attract, or maybe it changes who knows
 * Finish lit review
 * Design & Implementation sections of report
 * Attractors:

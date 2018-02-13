@@ -298,7 +298,7 @@ class PolyInterpreter(threading.Thread):
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
         # TODO use velocity too
-        data[time_axis] = self.interpret_time(pos[time_axis]) * 2 * (1-pos[vel_axis])  # TODO experimental
+        data[time_axis] = self.interpret_time(pos[time_axis]) * (1-pos[vel_axis])  # TODO experimental
         data[length_axis] = data[time_axis] * self.interpret_articulation(pos[length_axis])
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data

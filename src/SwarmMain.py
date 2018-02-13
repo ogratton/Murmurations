@@ -80,7 +80,7 @@ def main(port_num):
     # format:       swarm,                    channel
     swarm_data = [
                     (Swarm.Swarm(12, cube, 3), 0),
-                    (Swarm.Swarm(7, cube, follow=6), 1),
+                    (Swarm.Swarm(7, cube2, follow=8), 1),
                     # (Swarm.Swarm(15, cube2, follow=15), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
@@ -92,7 +92,7 @@ def main(port_num):
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=90, scale=Scales.min_pen, preset="synth", instrument="")
+    start_interp(i1, tempo=90, scale=Scales.min_pen, preset="piano", instrument="")
     interps.append(i1)
 
     i2 = MonoInterpreter(1, midiout, swarm_data[1])
