@@ -74,14 +74,15 @@ def main(port_num):
     edge_length = 40  # 35
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(array([10+edge_length, 50, 7, 0, 0]), edge_length)
+    cube3 = Swarm.Cube(array([10 + 2*edge_length, 50, 7, 0, 0]), edge_length)
 
     # MAKE SWARM OBJECTS
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
                     (Swarm.Swarm(12, cube, 3), 0),
-                    (Swarm.Swarm(7, cube2, follow=8), 1),
-                    # (Swarm.Swarm(15, cube2, follow=15), 2),
+                    (Swarm.Swarm(7, cube2, follow=12), 1),
+                    (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
@@ -99,9 +100,9 @@ def main(port_num):
     start_interp(i2, tempo=90, scale=Scales.min_pen, preset="synth", instrument="Fantasia")
     interps.append(i2)
 
-    # i3 = PolyInterpreter(2, midiout, swarm_data[2])
-    # start_interp(i3, tempo=None, scale=Scales.mel_min, preset="glock", instrument="kalimba")
-    # interps.append(i3)
+    i3 = MonoInterpreter(2, midiout, swarm_data[2])
+    start_interp(i3, tempo=90, scale=Scales.min_pen, preset="glock", instrument="harp")
+    interps.append(i3)
 
     # start up the midi in stream
     in_stream = None
