@@ -281,6 +281,7 @@ class Boid(object):
         Ensure the speed does not exceed max_speed
         :param max_speed: float
         """
+        # TODO experiment with turning this off. Other than the boids leaving the cube sometimes, it's fine.
         if norm(self.velocity) > max_speed:
             self.velocity = normalise(self.velocity) * max_speed
 
