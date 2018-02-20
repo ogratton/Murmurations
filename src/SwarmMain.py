@@ -34,6 +34,7 @@ def load_config():
     Parameters.SP.FEED_DIST = float(config['SWARM']['FEED_DIST'])
     Parameters.SP.MAX_SPEED = float(config['SWARM']['MAX_SPEED'])
     Parameters.SP.RAND_POINT_SD = float(config['SWARM']['RAND_POINT_SD'])
+    Parameters.SP.REPULSION_POINT = float(config['SWARM']['REPULSION_POINT'])
     Parameters.SP.COHESION_NEIGHBOURHOOD = float(config['SWARM']['COHESION_NEIGHBOURHOOD'])
     Parameters.SP.ALIGNMENT_NEIGHBOURHOOD = float(config['SWARM']['ALIGNMENT_NEIGHBOURHOOD'])
     Parameters.SP.SEPARATION_NEIGHBOURHOOD = float(config['SWARM']['SEPARATION_NEIGHBOURHOOD'])
@@ -80,7 +81,7 @@ def main(port_num):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(12, cube, 3), 0),
+                    (Swarm.Swarm(12, cube, 4), 0),
                     # (Swarm.Swarm(7, cube2, follow=12), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
@@ -93,7 +94,7 @@ def main(port_num):
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=90, scale=Scales.min_pen, preset="piano", instrument="")
+    start_interp(i1, tempo=90, scale=Scales.min_pen, preset="synth", instrument="")
     interps.append(i1)
 
     # i2 = MonoInterpreter(1, midiout, swarm_data[1])

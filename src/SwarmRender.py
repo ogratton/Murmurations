@@ -64,10 +64,11 @@ class World:
         for swarm in swarms:
             self.cubes.add(swarm.cube)
 
-        # TODO stigmergy in development:
-        self.num_leading_boids = len(swarms[0].boids)
-        self.num_dims = len(swarms[0].boids[0].location)
-        self.leads = [zeros(self.num_dims, dtype=float64)]*self.num_leading_boids
+        # stigmergy setup:
+        if swarms[0].boids:  # this line is purely so it is possible to view the attractors on their own if desired
+            self.num_leading_boids = len(swarms[0].boids)
+            self.num_dims = len(swarms[0].boids[0].location)
+            self.leads = [zeros(self.num_dims, dtype=float64)]*self.num_leading_boids
 
         # make the objects for the cube
         self.boxes = []
@@ -86,7 +87,7 @@ class World:
             colour = rand_colour()
             # model_size = (swarm.cube.edge_length/2) * 0.02
             # TODO experimenting with fixed sizes
-            model_size = 0.4
+            model_size = 0.5
 
             boid_models = []
             for boid in swarm.boids:

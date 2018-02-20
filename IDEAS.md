@@ -5,7 +5,6 @@ Decent ones get copied to TODO
 ## Swarm
 
 * Smaller paths for attractors to encourage repetition
-* Stigmery between swarms: Think about how swarms can interact with one another (add their position as attractor)
 * Attractors as food sources (renewable for path-mode but non- for user input mode)
 	* Though that then makes stigmergy between swarms a bit odd...
 * Do away with cubes and have the bounds determined by how the flock moves

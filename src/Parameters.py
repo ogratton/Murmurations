@@ -24,7 +24,8 @@ class SP:
     FEED_DIST = 15
     MAX_SPEED = 0.7                     # recommended max of 1.0
     RAND_POINT_SD = 7.5                 # 7.5
-    COHESION_NEIGHBOURHOOD = 0.5        # NEIGHBOURHOOD is ratio of edgelength (so 0.5 is from half the cube away)
+    REPULSION_POINT = 0.2               # value in the 5th dimension under which attractors become repulsors
+    COHESION_NEIGHBOURHOOD = 0.5        # NEIGHBOURHOOD is ratio of edge_length (so 0.5 is from half the cube away)
     ALIGNMENT_NEIGHBOURHOOD = 0.5
     SEPARATION_NEIGHBOURHOOD = 0.1
     COHESION_MULTIPLIER = 0.0006        # 0.0006

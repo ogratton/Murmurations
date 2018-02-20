@@ -10,7 +10,6 @@ Things that need to actually be done rather than vague ideas
 	* Attractors as food (finite, only play when near them)
 	* Make speed absolute, not relative to cube
 	* Implement some sort of attractor memory
-* Use velocity as factor in sound events
 * Key detection/dynamic scale changing
 	* Lightness/Darkness dimension where the mode changes
 * Improv mode (make attractors move smoothly, not teleport)

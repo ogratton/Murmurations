@@ -186,16 +186,18 @@ class Attraction:
         att_mul = SP.ATTRACTION_MULTIPLIER
         n = 4  # which dimension to use
         proportion = boid.get_loc_ratios()[n]
-        if proportion < 0.3:
+        if proportion < SP.REPULSION_POINT:
             att_mul = -SP.ATTRACTION_MULTIPLIER
 
+        f = False
         for attr in boid.attractors:
             to_attractor = attr.location - boid.location
             dist = norm(to_attractor)
-            boid.feeding = dist < SP.FEED_DIST
+            f = f or dist < SP.FEED_DIST
             # 1/dist makes attraction stronger for closer attractors
             change = (to_attractor - boid.velocity) * att_mul * (1/dist)
             heappush(dist_mat, (dist, list(change)))  # needs to be a list as ndarray is 'ambiguous'
+        boid.feeding = f
 
         # only feel the pull of the nearest <x> attractors
         attention_span = min(SP.ATTRACTORS_NOTICED, len(boid.attractors))
