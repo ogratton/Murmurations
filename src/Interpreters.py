@@ -15,6 +15,8 @@ from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE
                                   NOTE_ON, NOTE_OFF, PROGRAM_CHANGE, PAN)
 
 
+# FIXME in interactive mode, recorded midis tend to have a long period of silence at the end
+
 # TODO TEMP
 # random.seed(SP.RANDOM_SEED)
 
@@ -76,6 +78,7 @@ class PolyInterpreter(threading.Thread):
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
         self.activate_instrument()
+        self.human_channel = 15  # TODO for interaction mode
 
         self.done = False
         # self.start()
@@ -149,6 +152,7 @@ class PolyInterpreter(threading.Thread):
         # should be a distinguishing-enough filename
         # any recording shorter than a second isn't worth keeping anyway
         filename = datetime.now().strftime("./recordings/%Y-%m-%d %H-%M-%S {}.csv".format(self.id))
+
         # Convert the log from [[Number]] to [[String]]
         s_log = [list(map(lambda x: str(x), xs)) for xs in self.log]
 
@@ -183,7 +187,7 @@ class PolyInterpreter(threading.Thread):
 
     def play_note(self, pitch, vol, duration=None):
         """
-        Play a note
+        Play a note with probability
         :param pitch: midi pitch number
         :param vol: 0-127 volume
         :param duration: time until midi event ends (optional)
@@ -297,7 +301,6 @@ class PolyInterpreter(threading.Thread):
         data = [-1] * self.dims
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
-        # TODO use velocity too
         data[time_axis] = self.interpret_time(pos[time_axis]) * (1-pos[vel_axis])  # TODO experimental
         data[length_axis] = data[time_axis] * self.interpret_articulation(pos[length_axis])
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
@@ -309,7 +312,6 @@ class PolyInterpreter(threading.Thread):
         :param message: e.g. [144,47,120] (i.e. note on, B3, loud)
         :param time: in seconds, since last midi-in message
         """
-        # TODO other sound dimensions are ignored/left average as midi input only has so much info
 
         # proportion along the axes (default middle)
         pitch_space = 0.5
@@ -330,7 +332,8 @@ class PolyInterpreter(threading.Thread):
 
             # DEBUG: PLAY THE INCOMING MESSAGE (on a different channel)
             # n.b. this has an alarmingly long delay despite the attractors appearing almost immediately
-            # self.midiout.send_message([self.note_on | 1, message[1], message[2]])
+            # TODO sending to channel 16 to be 'safe'
+            self.send_midi([NOTE_ON | self.human_channel, message[1], message[2]])
 
             # TODO should account for the scale and take note of "wrong" notes
             if message[1] in range(pi_min, pi_min+pi_ran+1):
@@ -341,10 +344,16 @@ class PolyInterpreter(threading.Thread):
             dval = max(min(d_min+d_ran+1, message[2]), d_min)
             dynam_space = (dval - d_min) / d_ran
 
-            if t_min <= time <= t_min+t_ran:
-                time_space = (time-t_min)/t_ran
-            else:
-                print("need something smarter for time: {0}".format(time))
+            time = min(max(time, t_min), t_min+t_ran)
+            time_space = (time - t_min) / t_ran
+            # if t_min <= time <= t_min+t_ran:
+            #     time_space = (time-t_min)/t_ran
+            # else:
+            #     print("need something smarter for time: {0}".format(time))
+
+        if 128 <= message[0] < 144:
+            s = [NOTE_ON | self.human_channel, message[1], 0]
+            self.send_midi(s, duration=0.0001)  # FIXME
 
         self.swarm.place_attractor([dynam_space, pitch_space, time_space, length_space, pan_space])
 
@@ -411,6 +420,8 @@ class PolyInterpreter(threading.Thread):
         self.loop()
         # finish by stopping all the notes that may still be on
         self.send_midi([self.control_change, ALL_SOUND_OFF, 0])
+        # TODO also have to turn off the human input
+        self.send_midi([CONTROL_CHANGE | self.human_channel, ALL_SOUND_OFF, 0])
 
 
 class MonoInterpreter(PolyInterpreter):

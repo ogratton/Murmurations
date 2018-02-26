@@ -26,13 +26,9 @@ Decent ones get copied to TODO
 ## Music
 
 * Extra dimensions can determine scale/key etc
-* Only play when near (i.e. eating) an attractor
 * Add sustain & modulation and stuff
 	* 'let ring'
 	* if using the Sonuus G2M, this could potentially be done via a breakout cable
-* Make instrument-specific presets (e.g. piano, double bass)
-* Dynamics need to change less regularly (but still have the ability for _subito_s)
-* Allow for silence/rests (this _should_ come with the note duration dimension)
 * Attractor input from live input
     * Musician
 	* VR/Wii conductor
@@ -44,7 +40,6 @@ Decent ones get copied to TODO
 ## Graphics
 
 * Fix rotation for boids (match velocity)
-* Add centre of gravity model?
 * Change the way the camera movement works
 * Add MC-Edit-style GUI
     * add swarms (by dragging and dropping?)
@@ -56,7 +51,6 @@ Decent ones get copied to TODO
 
 * Fill in README
 * Write some unit tests (see Observable folder on home PC)
-* Start report paint-by-numbers style (top-down)
 
 
 ## Misc

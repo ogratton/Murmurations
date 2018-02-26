@@ -8,7 +8,7 @@ import random
 import Scales
 import configparser
 import Parameters
-from midi_in_stream import InStream, DummyInStream
+from midi_in_stream import InStream
 
 from numpy import array
 
@@ -82,7 +82,7 @@ def main(port_num):
     # format:       swarm,                    channel
     swarm_data = [
                     (Swarm.Swarm(12, cube, 4), 0),
-                    # (Swarm.Swarm(7, cube2, follow=12), 1),
+                    (Swarm.Swarm(7, cube2, follow=4), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
@@ -94,12 +94,12 @@ def main(port_num):
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=90, scale=Scales.min_pen, preset="synth", instrument="")
+    start_interp(i1, tempo=90, scale=Scales.mel_min, preset="glock", instrument="")
     interps.append(i1)
 
-    # i2 = MonoInterpreter(1, midiout, swarm_data[1])
-    # start_interp(i2, tempo=90, scale=Scales.min_pen, preset="synth", instrument="Fantasia")
-    # interps.append(i2)
+    i2 = MonoInterpreter(1, midiout, swarm_data[1])
+    start_interp(i2, tempo=80, scale=Scales.mel_min, preset="piano lh", instrument="")
+    interps.append(i2)
     #
     # i3 = MonoInterpreter(2, midiout, swarm_data[2])
     # start_interp(i3, tempo=90, scale=Scales.min_pen, preset="glock", instrument="harp")
