@@ -351,11 +351,12 @@ class PolyInterpreter(threading.Thread):
             # else:
             #     print("need something smarter for time: {0}".format(time))
 
+            self.swarm.place_attractor([dynam_space, pitch_space, time_space, length_space, pan_space])
+
         if 128 <= message[0] < 144:
             s = [NOTE_ON | self.human_channel, message[1], 0]
             self.send_midi(s, duration=0.0001)  # FIXME
 
-        self.swarm.place_attractor([dynam_space, pitch_space, time_space, length_space, pan_space])
 
     def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """
