@@ -78,7 +78,10 @@ class PolyInterpreter(threading.Thread):
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
         self.activate_instrument()
-        self.human_channel = 15  # TODO for interaction mode
+
+        # old interactive stuff
+        self.human_channel = 15  # for interaction mode
+        self.send_midi([PROGRAM_CHANGE | self.human_channel, 60 & 0x7F])  # set input sound
 
         self.done = False
         # self.start()
@@ -308,6 +311,7 @@ class PolyInterpreter(threading.Thread):
 
     def backwards_interpret(self, message, time):
         """
+        OLD: FOR USE WITH ATTRACTOR MODE 2, WHICH IS RUBBISH
         Convert a midi input message to boid-space
         :param message: e.g. [144,47,120] (i.e. note on, B3, loud)
         :param time: in seconds, since last midi-in message
@@ -357,6 +361,22 @@ class PolyInterpreter(threading.Thread):
             s = [NOTE_ON | self.human_channel, message[1], 0]
             self.send_midi(s, duration=0.0001)  # FIXME
 
+    def change_bounds(self, _pitch_min, _pitch_range, _dynam_min, _dynam_range, _time_min, _time_range):
+        """
+        Change the interpreters bounds based on the last n notes
+        :return:
+        """
+        # TODO make sure the values aren't silly
+        # TODO shift bounds sensibly based on these readings and on the original values
+        # TODO bare in mind the time values aren't used with beat snapping
+        self.pitch_min = _pitch_min
+        self.pitch_range = _pitch_range
+        self.dynam_min = _dynam_min
+        self.dynam_range = _dynam_range
+        # self.time_min = _time_min
+        # self.time_range = _time_range
+
+        self.refresh()
 
     def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """

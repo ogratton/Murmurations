@@ -93,8 +93,8 @@ def main(port_num):
     midiout.open_port(port_num)
 
     interps = list()
-    i1 = MonoInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=0, scale=Scales.min_pen, preset="piano", instrument="")
+    i1 = PolyInterpreter(0, midiout, swarm_data[0])
+    start_interp(i1, tempo=100, scale=Scales.min_pen, preset="piano", instrument="")
     interps.append(i1)
 
     # i2 = MonoInterpreter(1, midiout, swarm_data[1])
@@ -106,9 +106,9 @@ def main(port_num):
     # interps.append(i3)
 
     # start up the midi in stream
-    in_stream = None
-    if Parameters.SP.ATTRACTOR_MODE == 2:
-        in_stream = InStream(interps, 1)
+    # in_stream = None
+    # if Parameters.SP.ATTRACTOR_MODE == 2:
+    in_stream = InStream(interps, 1)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
@@ -136,5 +136,5 @@ if __name__ == '__main__':
     import os
     port = 0
     if os.name != "nt":
-        port = 2
+        port = 6
     main(port)
