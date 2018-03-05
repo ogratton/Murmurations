@@ -65,7 +65,7 @@ def start_interp(interp, tempo=None, scale=None, preset=None, instrument=None):
     return interp
 
 
-def main(port_num):
+def main(out_port, in_port):
 
     # LOAD PARAMS FROM CONFIG
     load_config()
@@ -81,8 +81,8 @@ def main(port_num):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(12, cube, 4), 0),
-                    # (Swarm.Swarm(7, cube2, follow=4), 1),
+                    (Swarm.Swarm(7, cube, 6), 0),
+                    (Swarm.Swarm(8, cube2, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
@@ -90,16 +90,16 @@ def main(port_num):
 
     # SET UP MIDI
     midiout = rtmidi.MidiOut()
-    midiout.open_port(port_num)
+    midiout.open_port(out_port)
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=100, scale=Scales.min_pen, preset="piano", instrument="")
+    start_interp(i1, tempo=60, scale=Scales.locrian, preset="piano lh", instrument="")
     interps.append(i1)
 
-    # i2 = MonoInterpreter(1, midiout, swarm_data[1])
-    # start_interp(i2, tempo=80, scale=Scales.mel_min, preset="piano lh", instrument="")
-    # interps.append(i2)
+    i2 = MonoInterpreter(1, midiout, swarm_data[1])
+    start_interp(i2, tempo=60, scale=Scales.locrian, preset="piano rh", instrument="")
+    interps.append(i2)
     #
     # i3 = MonoInterpreter(2, midiout, swarm_data[2])
     # start_interp(i3, tempo=90, scale=Scales.min_pen, preset="glock", instrument="harp")
@@ -108,7 +108,7 @@ def main(port_num):
     # start up the midi in stream
     # in_stream = None
     # if Parameters.SP.ATTRACTOR_MODE == 2:
-    in_stream = InStream(interps, 1)
+    in_stream = InStream(interps, in_port)
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
@@ -133,8 +133,10 @@ if __name__ == '__main__':
 
     # on linux I use port 1, windows I use port 1
     # change to whichever port you need
+    out_port = 1
+    in_port = 0
+
     import os
-    port = 0
-    if os.name != "nt":
-        port = 6
-    main(port)
+    # if os.name != "nt":
+    #     out_port = 2
+    main(out_port, in_port)

@@ -23,7 +23,8 @@ class InStream(threading.Thread):
             print("WARNING: failed to open MIDI-in port {0}".format(port))
 
         self.done = False
-        self.run = self.run_new if Parameters.SP.ATTRACTOR_MODE else self.run_old
+        self.run = self.run_new if Parameters.SP.ATTRACTOR_MODE == 1 else self.run_old
+        print(self.run.__name__)
         self.start()
 
     def run_old(self):
@@ -63,7 +64,7 @@ class InStream(threading.Thread):
         #   - time min & range
         #   - dynam min & range
         #   - (if possible, the duration of notes, from note off messages)
-        event_time = 1  # TODO maybe this should adapt to the pace of the music?
+        event_time = 0.5  # TODO maybe this should adapt to the pace of the music?
         buffer_time = 0.05
 
         while not self.done:

@@ -77,11 +77,12 @@ class PolyInterpreter(threading.Thread):
         self.rhythms = None
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
-        self.activate_instrument()
 
         # old interactive stuff
         self.human_channel = 15  # for interaction mode
-        self.send_midi([PROGRAM_CHANGE | self.human_channel, 60 & 0x7F])  # set input sound
+        # self.send_midi([PROGRAM_CHANGE | self.human_channel, 60 & 0x7F])  # set input sound
+
+        self.activate_instrument()
 
         self.done = False
         # self.start()
@@ -242,7 +243,7 @@ class PolyInterpreter(threading.Thread):
         self.beat = 60 / beats_per_min
         # self.rhythms = list(reversed([4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]))  # TODO tinker with
         # self.rhythms = [2, 1, 1/2]
-        self.rhythms = [1/4, 1/2, 1, 3/2, 2, 3, 4]
+        self.rhythms = [1/4, 1/3, 1/2, 1, 3/2, 2, 3, 4]
         # self.rhythms = [3/4, 1/4, 3/4, 1/4, 3/4, 1/4, 3/4, 1/4]  # random swing
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat
@@ -335,8 +336,6 @@ class PolyInterpreter(threading.Thread):
         if 144 <= message[0] < 160:
 
             # DEBUG: PLAY THE INCOMING MESSAGE (on a different channel)
-            # n.b. this has an alarmingly long delay despite the attractors appearing almost immediately
-            # TODO sending to channel 16 to be 'safe'
             self.send_midi([NOTE_ON | self.human_channel, message[1], message[2]])
 
             # TODO should account for the scale and take note of "wrong" notes
@@ -368,7 +367,8 @@ class PolyInterpreter(threading.Thread):
         """
         # TODO make sure the values aren't silly
         # TODO shift bounds sensibly based on these readings and on the original values
-        # TODO bare in mind the time values aren't used with beat snapping
+        # TODO bear in mind the time values aren't used with beat snapping
+        # TODO articulation matching (comes with duration dimension being sent from InStream)
         self.pitch_min = _pitch_min
         self.pitch_range = _pitch_range
         self.dynam_min = _dynam_min
