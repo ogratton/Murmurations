@@ -24,7 +24,7 @@ class InStream(threading.Thread):
 
         self.done = False
         self.run = self.run_new if Parameters.SP.ATTRACTOR_MODE == 1 else self.run_old
-        print(self.run.__name__)
+        # print(self.run.__name__)
         self.start()
 
     def run_old(self):

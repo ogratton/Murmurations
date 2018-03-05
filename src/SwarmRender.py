@@ -56,6 +56,9 @@ class World:
 
     def __init__(self, swarms, coords, models, background_color=sky):
 
+        # TODO turn off attractor rendering
+        self.render_attractors = False
+
         # original copies of each type of model
         self.models = models
 
@@ -98,12 +101,13 @@ class World:
                 boid_models.append(boid_model)
 
             attr_models = []
-            for attr in swarm.attractors:
-                attractor_model = deepcopy(self.models[BOX])
-                attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]
-                attractor_model.color = colour
-                attractor_model.scale = model_size * 0.5
-                attr_models.append(attractor_model)
+            if self.render_attractors:
+                for attr in swarm.attractors:
+                    attractor_model = deepcopy(self.models[BOX])
+                    attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]
+                    attractor_model.color = colour
+                    attractor_model.scale = model_size * 0.5
+                    attr_models.append(attractor_model)
 
             self.swarm_models.append((boid_models, attr_models))
 
