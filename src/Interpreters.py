@@ -31,7 +31,7 @@ vel_axis = -1  # velocity data sits at the end
 class PolyInterpreter(threading.Thread):
     """ Uses every boid as a sound source """
 
-    def __init__(self, id_, midiout, swarm_data):
+    def __init__(self, id_, midiout, swarm_data, play_input=False):
         """
         Make a new interpreter
         """
@@ -78,9 +78,12 @@ class PolyInterpreter(threading.Thread):
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
 
-        # old interactive stuff
-        self.human_channel = 15  # for interaction mode
-        # self.send_midi([PROGRAM_CHANGE | self.human_channel, 60 & 0x7F])  # set input sound
+        # interactive stuff
+        self.play_input = play_input
+        if play_input:
+            self.human_channel = 15  # for interaction mode
+            i = Instruments.insts["RHODES EP"][1]
+            self.send_midi([PROGRAM_CHANGE | self.human_channel, i & 0x7F])  # set input sound
 
         self.activate_instrument()
 
@@ -168,6 +171,9 @@ class PolyInterpreter(threading.Thread):
             writer = csv.writer(csvfile, lineterminator='\n')
             for row in s_log:
                 writer.writerow(row)
+
+            if self.play_input:
+                self.send_midi([CONTROL_CHANGE | self.human_channel, ALL_SOUND_OFF, 0])
 
         print("I{}: Written log to {}".format(self.id, filename))
 
@@ -312,37 +318,49 @@ class PolyInterpreter(threading.Thread):
 
     def backwards_interpret(self, message, time):
         """
-        OLD: FOR USE WITH ATTRACTOR MODE 2, WHICH IS RUBBISH
         Convert a midi input message to boid-space
         :param message: e.g. [144,47,120] (i.e. note on, B3, loud)
         :param time: in seconds, since last midi-in message
         """
 
-        # proportion along the axes (default middle)
-        pitch_space = 0.5
-        dynam_space = 0.5
-        time_space = 0.5
+        # proportion along the axes defaults (middle)
         length_space = 0.5
         pan_space = 0.5
 
         pi_min, pi_ran = self.pitch_min, self.pitch_range
         d_min, d_ran = self.dynam_min, self.dynam_range
-        t_min, t_ran = self.time_min, self.time_range  # TODO note that these are not used when beat is on
-        # TODO length
-        pa_min, pa_max = self.pan_min, self.pan_range
+        t_min, t_ran = self.time_min, self.time_range  # TODO note that these are not used when 'beat' is on
+        # TODO length & pan
+        # pa_min, pa_ran = self.pan_min, self.pan_range
 
         # TODO catch more types of message
         # note on messages
         if 144 <= message[0] < 160:
 
-            # DEBUG: PLAY THE INCOMING MESSAGE (on a different channel)
-            self.send_midi([NOTE_ON | self.human_channel, message[1], message[2]])
+            # PLAY THE INCOMING MESSAGE (on a different channel)
+            if self.play_input:
+                dynam_change = message[2] - 10
+                if dynam_change < 1:
+                    dynam_change = message[2]
+                self.send_midi([NOTE_ON | self.human_channel, message[1], dynam_change])
 
             # TODO should account for the scale and take note of "wrong" notes
-            if message[1] in range(pi_min, pi_min+pi_ran+1):
-                pitch_space = (message[1]-pi_min)/pi_ran
-            else:
-                print("need something smarter for pitch: {0}".format(message[1]))
+            new_pitch = message[1]
+            interval = 12
+            pi_max = pi_min + pi_ran
+            # bump low pitches up as many octaves as it needs to be in range
+            if new_pitch < pi_min:
+                new_pitch += (1 + (pi_min-new_pitch) // interval) * interval
+            # transpose high notes down into the range
+            if new_pitch > pi_max:
+                new_pitch -= (1 + (new_pitch-pi_max) // interval) * interval
+
+            # if it's still out of range then the pitch range must be smaller than our amount
+            # TODO so try again with a smaller amount
+            if not (pi_min <= new_pitch <= pi_max):
+                print("still need something smarter for pitch (tiny ranges)")
+
+            pitch_space = (new_pitch - pi_min) / pi_ran
 
             dval = max(min(d_min+d_ran+1, message[2]), d_min)
             dynam_space = (dval - d_min) / d_ran
@@ -357,8 +375,9 @@ class PolyInterpreter(threading.Thread):
             self.swarm.place_attractor([dynam_space, pitch_space, time_space, length_space, pan_space])
 
         if 128 <= message[0] < 144:
-            s = [NOTE_ON | self.human_channel, message[1], 0]
-            self.send_midi(s, duration=0.0001)  # FIXME
+            if self.play_input:
+                s = [NOTE_ON | self.human_channel, message[1], 0]
+                self.send_midi(s, duration=0.0001)  # FIXME
 
     def change_bounds(self, _pitch_min, _pitch_range, _dynam_min, _dynam_range, _time_min, _time_range):
         """
@@ -442,14 +461,15 @@ class PolyInterpreter(threading.Thread):
         # finish by stopping all the notes that may still be on
         self.send_midi([self.control_change, ALL_SOUND_OFF, 0])
         # TODO also have to turn off the human input
-        self.send_midi([CONTROL_CHANGE | self.human_channel, ALL_SOUND_OFF, 0])
+        if self.play_input:
+            self.send_midi([CONTROL_CHANGE | self.human_channel, ALL_SOUND_OFF, 0])
 
 
 class MonoInterpreter(PolyInterpreter):
     """ Uses the centre of gravity of the swarm, thus only playing one note at a time """
 
-    def __init__(self, id_, midiout, swarm_data):
-        super().__init__(id_, midiout, swarm_data)
+    def __init__(self, id_, midiout, swarm_data, play_input=False):
+        super().__init__(id_, midiout, swarm_data, play_input)
 
     def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """
@@ -492,7 +512,7 @@ class RandomNotes(PolyInterpreter):
 
     def __init__(self, id_, midiout, swarm_data):
         """ we inherit poly for convenience but don't need most of its functionality """
-        super().__init__(id_, midiout, swarm_data)
+        super().__init__(id_, midiout, swarm_data, play_input=False)
 
     def loop(self):
         """ Play any old thing within the MIDI range """

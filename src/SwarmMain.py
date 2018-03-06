@@ -72,7 +72,7 @@ def main(out_port, in_port):
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = array([10, 50, 7, 0, 0])
-    edge_length = 40  # 35
+    edge_length = 35  # 35
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(array([10+edge_length, 50, 7, 0, 0]), edge_length)
     cube3 = Swarm.Cube(array([10 + 2*edge_length, 50, 7, 0, 0]), edge_length)
@@ -81,7 +81,7 @@ def main(out_port, in_port):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0),
+                    (Swarm.Swarm(7, cube, 15), 0),
                     # (Swarm.Swarm(15, cube2, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
@@ -93,8 +93,10 @@ def main(out_port, in_port):
     midiout.open_port(out_port)
 
     interps = list()
-    i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=60, scale=Scales.persian, preset="synth", instrument="fantasia")
+    i1 = PolyInterpreter(0, midiout, swarm_data[0], play_input=True)
+    start_interp(i1, tempo=0, scale=Scales.chrom, preset="piano", instrument="")
+    i1.time_min = 0.01
+    i1.time_range = 1
     interps.append(i1)
 
     # i2 = MonoInterpreter(1, midiout, swarm_data[1])
@@ -106,16 +108,19 @@ def main(out_port, in_port):
     # interps.append(i3)
 
     # start up the midi in stream
-    in_stream = None
-    # if Parameters.SP.ATTRACTOR_MODE == 2:
-    # TODO commented out input for windows
-    # in_stream = InStream(interps, in_port)
+    # in_stream = None
+    if Parameters.SP.ATTRACTOR_MODE == 2:
+        in_stream = InStream(interps, in_port)
+        ren_att = True
+    else:
+        in_stream = None
+        ren_att = False
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
     # creates the window and sets its properties
     # TODO don't really like the idea of passing the swarms and the interpreters
-    Window(swarms, interps, config=config, width=1200, height=900, caption='Murmurations', resizable=True)
+    Window(swarms, interps, ren_att, config=config, width=1200, height=900, caption='Murmurations', resizable=True)
 
     # start the application
     pyglet.app.run()
@@ -139,6 +144,7 @@ if __name__ == '__main__':
 
     import os
     if os.name != "nt":
-        out_port = 1
+        in_port = 1
+        out_port = 2
 
     main(out_port, in_port)

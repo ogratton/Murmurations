@@ -54,10 +54,10 @@ class World:
     Collection of OBJ models within the larger simulation.
     """
 
-    def __init__(self, swarms, coords, models, background_color=sky):
+    def __init__(self, swarms, coords, models, rnd_att, background_color=sky):
 
         # TODO turn off attractor rendering
-        self.render_attractors = False
+        self.render_attractors = rnd_att
 
         # original copies of each type of model
         self.models = models
@@ -165,7 +165,8 @@ class World:
             for j, att in enumerate(atts):
                 new_att = list(swarm.attractors[j].location)[:3]
                 att.x, att.y, att.z = new_att
-                self.render_model(att, frame=True)
+                if swarm.attractors[j].is_active:
+                    self.render_model(att, frame=True)
 
     @staticmethod
     def draw_axes():
@@ -315,7 +316,7 @@ class Window(pyglet.window.Window):
     Takes care of all the viewing functionality
     """
 
-    def __init__(self, swarms, interps, *args, ** kwargs):
+    def __init__(self, swarms, interps, ren_att, *args, ** kwargs):
         super().__init__(*args, **kwargs)
 
         # Load models from files
@@ -327,7 +328,7 @@ class Window(pyglet.window.Window):
         # # current cube to be looking at
         self.cube_index = 0
 
-        self.world = World(swarms, [0, 0, -DIST_BACK], self.models)
+        self.world = World(swarms, [0, 0, -DIST_BACK], self.models, ren_att)
 
         # TODO work out how to display text:
         self.label = pyglet.text.Label('Hello, world',
