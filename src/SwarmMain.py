@@ -82,7 +82,7 @@ def main(out_port, in_port):
     # format:       swarm,                    channel
     swarm_data = [
                     (Swarm.Swarm(7, cube, 6), 0),
-                    # (Swarm.Swarm(8, cube2, follow=7), 1),
+                    # (Swarm.Swarm(15, cube2, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
@@ -93,8 +93,8 @@ def main(out_port, in_port):
     midiout.open_port(out_port)
 
     interps = list()
-    i1 = MonoInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=60, scale=Scales.locrian, preset="alto sax", instrument="")
+    i1 = PolyInterpreter(0, midiout, swarm_data[0])
+    start_interp(i1, tempo=60, scale=Scales.persian, preset="synth", instrument="fantasia")
     interps.append(i1)
 
     # i2 = MonoInterpreter(1, midiout, swarm_data[1])
@@ -137,7 +137,8 @@ if __name__ == '__main__':
     out_port = 0
     in_port = 0
 
-    # import os
-    # if os.name != "nt":
-    #     out_port = 2
+    import os
+    if os.name != "nt":
+        out_port = 1
+
     main(out_port, in_port)

@@ -88,16 +88,17 @@ class World:
         self.swarm_models = []
         for swarm in self.swarms:
             colour = rand_colour()
-            # model_size = (swarm.cube.edge_length/2) * 0.02
+            # boid_size = (swarm.cube.edge_length/2) * 0.02
             # TODO experimenting with fixed sizes
-            model_size = 0.5
+            boid_size = 0.5
+            attractor_size = boid_size * 0.2
 
             boid_models = []
             for boid in swarm.boids:
                 boid_model = deepcopy(self.models[PYRAMID])
                 boid_model.x, boid_model.y, boid_model.z = list(boid.location)[:3]
                 boid_model.color = colour
-                boid_model.scale = model_size
+                boid_model.scale = boid_size
                 boid_models.append(boid_model)
 
             attr_models = []
@@ -106,7 +107,7 @@ class World:
                     attractor_model = deepcopy(self.models[BOX])
                     attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]
                     attractor_model.color = colour
-                    attractor_model.scale = model_size * 0.5
+                    attractor_model.scale = attractor_size
                     attr_models.append(attractor_model)
 
             self.swarm_models.append((boid_models, attr_models))
@@ -135,10 +136,7 @@ class World:
         gl.glRotatef(self.ry, 0, 1, 0)
         gl.glRotatef(self.rz, 0, 0, 1)
 
-        self.draw_axes()
-
-        # for model in self.models:
-        #     self.render_model(model)
+        # self.draw_axes()
 
         for box in self.boxes:
             self.render_model(box, fill=False)
