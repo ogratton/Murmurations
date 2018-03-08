@@ -135,7 +135,7 @@ class World:
         gl.glRotatef(self.ry, 0, 1, 0)
         gl.glRotatef(self.rz, 0, 0, 1)
 
-        self.draw_axes()
+        # self.draw_axes()
 
         # for model in self.models:
         #     self.render_model(model)

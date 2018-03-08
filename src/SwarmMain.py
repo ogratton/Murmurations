@@ -81,8 +81,8 @@ def main(out_port, in_port):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0),
-                    # (Swarm.Swarm(8, cube2, follow=7), 1),
+                    (Swarm.Swarm(7, cube, 4), 0),
+                    (Swarm.Swarm(8, cube2, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
@@ -94,12 +94,12 @@ def main(out_port, in_port):
 
     interps = list()
     i1 = MonoInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=60, scale=Scales.locrian, preset="alto sax", instrument="")
+    start_interp(i1, tempo=0, scale=Scales.blues, preset="alto sax", instrument="")
     interps.append(i1)
 
-    # i2 = MonoInterpreter(1, midiout, swarm_data[1])
-    # start_interp(i2, tempo=60, scale=Scales.locrian, preset="piano rh", instrument="")
-    # interps.append(i2)
+    i2 = MonoInterpreter(1, midiout, swarm_data[1])
+    start_interp(i2, tempo=100, scale=Scales.blues, preset="bari sax", instrument="trumpet")
+    interps.append(i2)
     #
     # i3 = MonoInterpreter(2, midiout, swarm_data[2])
     # start_interp(i3, tempo=90, scale=Scales.min_pen, preset="glock", instrument="harp")
@@ -113,9 +113,17 @@ def main(out_port, in_port):
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
+    # resolution
+    import os
+    if os.name !='nt':
+        w = 1200
+        h = 900
+    else:
+        w = 1920
+        h = 1080
+
     # creates the window and sets its properties
-    # TODO don't really like the idea of passing the swarms and the interpreters
-    Window(swarms, interps, config=config, width=1200, height=900, caption='Murmurations', resizable=True)
+    Window(swarms, interps, config=config, width=w, height=h, caption='Murmurations', resizable=True)
 
     # start the application
     pyglet.app.run()
