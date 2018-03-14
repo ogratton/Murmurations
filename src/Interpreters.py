@@ -75,6 +75,7 @@ class PolyInterpreter(threading.Thread):
         self.set_scale(Scales.chrom)
         self.beat = None
         self.rhythms = None
+        self.time_step = 0.05
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
 
@@ -242,16 +243,19 @@ class PolyInterpreter(threading.Thread):
         """
         self.beat = 60 / beats_per_min
         # self.rhythms = list(reversed([4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]))  # TODO tinker with
-        # self.rhythms = [2, 1, 1/2]
-        self.rhythms = [1/4, 1/3, 1/2, 1, 3/2, 2, 3, 4]
+        self.rhythms = [1/2, 1, 2, 4]
+        # self.rhythms = [1/4, 1/3, 1/2, 1, 3/2, 2, 3, 4]
         # self.rhythms = [3/4, 1/4, 3/4, 1/4, 3/4, 1/4, 3/4, 1/4]  # random swing
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat
+
+        self.time_step = 0.25 * self.beat * min(self.rhythms)  # so that notes tend to land on (fractions of) the beat
 
     def set_time_free(self):
         """ Very dramatic name for a very boring function """
         self.snap_to_beat = False
         self.interpret_time = self.interpret_time_free
+        self.time_step = 0.05  # default
 
     @staticmethod
     def lin_interp(_prop, _min, _range):
@@ -415,7 +419,7 @@ class PolyInterpreter(threading.Thread):
         """
         # set up priority queue of all the boids to be interpreted
         # time_elapsed = 0.0
-        time_step = 0.05
+        # TODO time_step should be smallest time division of beat when beat is on
         boid_heap = []
 
         self.setup_priority_queue(boid_heap, self.time_elapsed)
@@ -429,12 +433,12 @@ class PolyInterpreter(threading.Thread):
                 self.parse_priority_queue(boid_heap, self.time_elapsed)
 
             time_this_loop = timenow() - time_this_loop
-            to_sleep = max(0, time_step - time_this_loop)
+            to_sleep = max(0, self.time_step - time_this_loop)
             if to_sleep == 0:
                 print("OOPS: missed a beat (must be really lagging)")
 
             sleep(to_sleep)
-            self.time_elapsed += time_step
+            self.time_elapsed += self.time_step
 
     def run(self):
         # any necessary setup

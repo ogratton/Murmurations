@@ -259,7 +259,7 @@ class Boid(object):
         if flock:
             rules.append(Alignment())
         # bonus rules don't need the accumulate stage
-        bonus_rules = [Constraint(), Attraction()]
+        bonus_rules = [Constraint, Attraction]
 
         # turns out this is the bottleneck of the whole program...
         for boid in all_boids:
@@ -453,7 +453,7 @@ class Swarm(object):
             print("Unimplemented ATTRACTOR_MODE value: {0}".format(SP.ATTRACTOR_MODE))
             self.update_attractors = self.ua_random
 
-        # TODO STIGMERGY:
+        # STIGMERGY:
         if num_attractors is None:
             # then they are a follower swarm
             # they don't need the update_attractors method
@@ -502,7 +502,7 @@ class Swarm(object):
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
             boid.attractors = atts
-        # for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
+        for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity

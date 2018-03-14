@@ -23,11 +23,11 @@ class InStream(threading.Thread):
             print("WARNING: failed to open MIDI-in port {0}".format(port))
 
         self.done = False
-        self.run = self.run_new if Parameters.SP.ATTRACTOR_MODE == 1 else self.run_old
+        self.run = self.run_bound if Parameters.SP.ATTRACTOR_MODE == 1 else self.run_att
         # print(self.run.__name__)
         self.start()
 
-    def run_old(self):
+    def run_att(self):
         """ For use with attractor mode 2, which is old and bad """
         # TODO experimental timings
         buffer_time = 0.05
@@ -57,7 +57,7 @@ class InStream(threading.Thread):
 
             sleep(0.01)  # TODO need this?
 
-    def run_new(self):
+    def run_bound(self):
         """ For use with attractor mode 1, and is not yet done """
         # gather <event_time> seconds of notes and analyse them for:
         #   - pitch min & range
