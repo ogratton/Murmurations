@@ -72,7 +72,7 @@ def main(out_port, in_port):
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = array([10, 50, 7, 0, 0])
-    edge_length = 40  # 35
+    edge_length = 35  # 35
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(array([10+edge_length, 50, 7, 0, 0]), edge_length)
     cube3 = Swarm.Cube(array([10 + 2*edge_length, 50, 7, 0, 0]), edge_length)
@@ -81,8 +81,8 @@ def main(out_port, in_port):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 4), 0),
-                    # (Swarm.Swarm(8, cube2, follow=7), 1),
+                    (Swarm.Swarm(7, cube, 15), 0),
+                    # (Swarm.Swarm(15, cube2, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
     ]
@@ -106,10 +106,13 @@ def main(out_port, in_port):
     # interps.append(i3)
 
     # start up the midi in stream
-    in_stream = None
-    # if Parameters.SP.ATTRACTOR_MODE == 2:
-    # TODO commented out input for windows
-    # in_stream = InStream(interps, in_port)
+    # in_stream = None
+    if Parameters.SP.ATTRACTOR_MODE == 2:
+        in_stream = InStream(interps, in_port)
+        ren_att = True
+    else:
+        in_stream = None
+        ren_att = False
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
@@ -145,7 +148,9 @@ if __name__ == '__main__':
     out_port = 0
     in_port = 0
 
-    # import os
-    # if os.name != "nt":
-    #     out_port = 2
+    import os
+    if os.name != "nt":
+        in_port = 1
+        out_port = 2
+
     main(out_port, in_port)

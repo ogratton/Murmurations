@@ -54,10 +54,10 @@ class World:
     Collection of OBJ models within the larger simulation.
     """
 
-    def __init__(self, swarms, coords, models, background_color=sky):
+    def __init__(self, swarms, coords, models, rnd_att, background_color=sky):
 
         # TODO turn off attractor rendering
-        self.render_attractors = False
+        self.render_attractors = rnd_att
 
         # original copies of each type of model
         self.models = models
@@ -88,16 +88,17 @@ class World:
         self.swarm_models = []
         for swarm in self.swarms:
             colour = rand_colour()
-            # model_size = (swarm.cube.edge_length/2) * 0.02
+            # boid_size = (swarm.cube.edge_length/2) * 0.02
             # TODO experimenting with fixed sizes
-            model_size = 0.5
+            boid_size = 0.5
+            attractor_size = boid_size * 0.2
 
             boid_models = []
             for boid in swarm.boids:
                 boid_model = deepcopy(self.models[PYRAMID])
                 boid_model.x, boid_model.y, boid_model.z = list(boid.location)[:3]
                 boid_model.color = colour
-                boid_model.scale = model_size
+                boid_model.scale = boid_size
                 boid_models.append(boid_model)
 
             attr_models = []
@@ -106,7 +107,7 @@ class World:
                     attractor_model = deepcopy(self.models[BOX])
                     attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]
                     attractor_model.color = colour
-                    attractor_model.scale = model_size * 0.5
+                    attractor_model.scale = attractor_size
                     attr_models.append(attractor_model)
 
             self.swarm_models.append((boid_models, attr_models))
@@ -137,9 +138,6 @@ class World:
 
         # self.draw_axes()
 
-        # for model in self.models:
-        #     self.render_model(model)
-
         for box in self.boxes:
             self.render_model(box, fill=False)
 
@@ -167,7 +165,8 @@ class World:
             for j, att in enumerate(atts):
                 new_att = list(swarm.attractors[j].location)[:3]
                 att.x, att.y, att.z = new_att
-                self.render_model(att, frame=True)
+                if swarm.attractors[j].is_active:
+                    self.render_model(att, frame=True)
 
     @staticmethod
     def draw_axes():
@@ -317,7 +316,7 @@ class Window(pyglet.window.Window):
     Takes care of all the viewing functionality
     """
 
-    def __init__(self, swarms, interps, *args, ** kwargs):
+    def __init__(self, swarms, interps, ren_att, *args, ** kwargs):
         super().__init__(*args, **kwargs)
 
         # Load models from files
@@ -329,7 +328,7 @@ class Window(pyglet.window.Window):
         # # current cube to be looking at
         self.cube_index = 0
 
-        self.world = World(swarms, [0, 0, -DIST_BACK], self.models)
+        self.world = World(swarms, [0, 0, -DIST_BACK], self.models, ren_att)
 
         # TODO work out how to display text:
         self.label = pyglet.text.Label('Hello, world',

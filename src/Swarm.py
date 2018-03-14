@@ -181,7 +181,7 @@ class Attraction:
         # priority queue of (distance, change)
         dist_mat = []
 
-        # TODO EXPERIMENTAL: ATTRACTION_MULTIPLIER is a function of its position in the nth dimension
+        # EXPERIMENTAL: ATTRACTION_MULTIPLIER is a function of its position in the nth dimension
         # this means that when the boid will be attracted to the attractor at the top of d1, and repulsed at the base
         att_mul = SP.ATTRACTION_MULTIPLIER
         n = 4  # which dimension to use
@@ -191,18 +191,20 @@ class Attraction:
 
         f = False
         for attr in boid.attractors:
-            to_attractor = attr.location - boid.location
-            dist = norm(to_attractor)
-            f = f or dist < SP.FEED_DIST
-            # 1/dist makes attraction stronger for closer attractors
-            change = (to_attractor - boid.velocity) * att_mul * (1/dist)
-            heappush(dist_mat, (dist, list(change)))  # needs to be a list as ndarray is 'ambiguous'
+            if attr.is_active:
+                to_attractor = attr.location - boid.location
+                dist = norm(to_attractor)
+                f = f or dist < SP.FEED_DIST
+                # 1/dist makes attraction stronger for closer attractors
+                change = (to_attractor - boid.velocity) * att_mul * (1/dist)
+                heappush(dist_mat, (dist, list(change)))  # needs to be a list as ndarray is 'ambiguous'
         boid.feeding = f
 
         # only feel the pull of the nearest <x> attractors
         attention_span = min(SP.ATTRACTORS_NOTICED, len(boid.attractors))
         for _ in range(attention_span):
-            boid.adjustment += heappop(dist_mat)[1]
+            if dist_mat:
+                boid.adjustment += heappop(dist_mat)[1]
 
 
 class Constraint:
@@ -343,6 +345,11 @@ class Attractor(object):
         self.t = random.random()  # start a random way along
         self.step = random.randrange(50, 200)/100000  # at a random speed too
 
+        # TODO for interactive mode:
+        self.age = 0
+        self.max_age = 100
+        self.is_active = True
+
         # make a random parametric path
         # in this 3d example, the dimension that we leave "pi" out of varies less
         # so if x is dynamic and x_f is simply cos(4t) then it will move slower and have
@@ -358,6 +365,9 @@ class Attractor(object):
 
     def set_pos(self, new_l):
         self.location = new_l
+        # rejuvenate:
+        self.is_active = True
+        self.age = 0
 
     def step_path_equation(self):
         # TODO set path in n dimensions
@@ -370,6 +380,15 @@ class Attractor(object):
         self.t += self.step
         new_point = array([x, y, z, i, j], dtype=float64)*0.4*self.cube.edge_length + self.cube.centre
         self.set_pos(new_point)
+
+    def inc_age(self):
+        """
+        In order to keep track of how long the attractor has been here
+        (For interactive mode only)
+        """
+        self.age += 1
+        if self.age > self.max_age:
+            self.is_active = False
 
 
 class CentOfMass(object):
@@ -486,7 +505,7 @@ class Swarm(object):
             pos.append(v_min[i] + dim*edge)
         # update the attractor that has been still longest with this new position
         if self.attractors:
-            self.attractors[self.att_index].location = array(pos, dtype=float64)
+            self.attractors[self.att_index].set_pos(array(pos, dtype=float64))
             self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
         return
 
@@ -525,7 +544,8 @@ class Swarm(object):
 
     def ua_midi(self):
         """ "this is handled by the callback function place_attractor """
-        pass
+        for attr in self.attractors:
+            attr.inc_age()
 
     def get_COM(self):
         """
