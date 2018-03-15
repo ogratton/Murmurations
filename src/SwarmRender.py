@@ -20,7 +20,7 @@ Contains render methods for the displayable classes
 """
 
 # TODO do not allow zooming of total > DIST_BACK
-# TODO actually change the whole camera movement controls
+# TODO actually, change the whole camera movement controls
 
 # constants
 DIST_BACK = 50
@@ -56,7 +56,7 @@ class World:
 
     def __init__(self, swarms, coords, models, rnd_att, background_color=sky):
 
-        # TODO turn off attractor rendering
+        # turn off attractor rendering
         self.render_attractors = rnd_att
 
         # original copies of each type of model
@@ -89,7 +89,7 @@ class World:
         for swarm in self.swarms:
             colour = rand_colour()
             # boid_size = (swarm.cube.edge_length/2) * 0.02
-            # TODO experimenting with fixed sizes
+            # fixed sizes
             boid_size = 0.5
             attractor_size = boid_size * 0.2
 
@@ -141,7 +141,7 @@ class World:
         for box in self.boxes:
             self.render_model(box, fill=False)
 
-        # TODO won't account for changing number of boids if that is implemented
+        # TODO Note: won't account for changing number of boids if that is ever implemented
         for i, (boids_m, atts) in enumerate(self.swarm_models):
             swarm = self.swarms[i]
             for j, boid_m in enumerate(boids_m):
@@ -156,8 +156,8 @@ class World:
                 # boid direction based on velocity
                 new_vel = list(normalise(swarm.boids[j].velocity[:3]))
                 # TODO completely wrong and also stupid but seems to be good enough if you don't look too hard
-                # boid_m.rx = math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
-                boid_m.ry = -(90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
+                # boid_m.rx = -90-math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
+                boid_m.ry = (90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
                 boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
 
                 self.render_model(boid_m)

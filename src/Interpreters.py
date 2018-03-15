@@ -255,7 +255,7 @@ class PolyInterpreter(threading.Thread):
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat
 
-        self.time_step = 0.25 * self.beat * min(self.rhythms)  # so that notes tend to land on (fractions of) the beat
+        self.time_step = 0.375 * self.beat * min(self.rhythms)  # so that notes tend to land on (fractions of) the beat
 
     def set_time_free(self):
         """ Very dramatic name for a very boring function """

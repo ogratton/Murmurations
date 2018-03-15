@@ -72,7 +72,7 @@ def main(out_port, in_port):
 
     # DEFINE BOUNDING BOX(ES)
     cube_min = array([10, 50, 7, 0, 0])
-    edge_length = 35  # 35
+    edge_length = 40  # 35
     cube = Swarm.Cube(cube_min, edge_length)
     cube2 = Swarm.Cube(array([10+edge_length, 50, 7, 0, 0]), edge_length)
     cube3 = Swarm.Cube(array([10 + 2*edge_length, 50, 7, 0, 0]), edge_length)
@@ -81,7 +81,7 @@ def main(out_port, in_port):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 15), 0),
+                    (Swarm.Swarm(7, cube, 6), 0),
                     # (Swarm.Swarm(15, cube2, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
@@ -94,11 +94,11 @@ def main(out_port, in_port):
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=90, scale=Scales.min_pen, preset="piano", instrument="harp")
+    start_interp(i1, tempo=130, scale=Scales.satie, preset="piano", instrument="")
     interps.append(i1)
 
     # i2 = PolyInterpreter(1, midiout, swarm_data[1])
-    # start_interp(i2, tempo=120, scale=Scales.min_pen, preset="piano", instrument="")
+    # start_interp(i2, tempo=70, scale=Scales.satie, preset="glock", instrument="kalimba")
     # interps.append(i2)
     #
     # i3 = MonoInterpreter(2, midiout, swarm_data[2])
@@ -126,7 +126,7 @@ def main(out_port, in_port):
         h = 1080
 
     # creates the window and sets its properties
-    Window(swarms, interps, config=config, width=w, height=h, caption='Murmurations', resizable=True)
+    Window(swarms, interps, ren_att, config=config, width=w, height=h, caption='Murmurations', resizable=True)
 
     # start the application
     pyglet.app.run()

@@ -1,6 +1,6 @@
 {
 	"instrument":"GLOCKENSPIEL",
-	"pitch_min":48,
+	"pitch_min":52,
 	"pitch_range":24,
 	"time_min":0.05,
 	"time_range":0.25,
