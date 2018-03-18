@@ -81,7 +81,7 @@ def main(out_port, in_port):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 0),
+                    (Swarm.Swarm(7, cube, 6), 3),
                     # (Swarm.Swarm(15, cube2, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
                     # (Swarm.Swarm(3, cube, 6), 9)
@@ -151,6 +151,6 @@ if __name__ == '__main__':
     import os
     if os.name != "nt":
         in_port = 1
-        out_port = 2
+        out_port = 3
 
     main(out_port, in_port)
