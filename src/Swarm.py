@@ -343,7 +343,7 @@ class Attractor(object):
         # TODO experimental values used here
         self.cube = cube
         self.t = random.random()  # start a random way along
-        self.step = random.randrange(50, 200)/100000  # at a random speed too
+        self.step = random.randrange(50, 250)/100000  # at a random speed too
 
         # TODO for interactive mode:
         self.age = 0
