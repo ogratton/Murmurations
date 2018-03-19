@@ -354,14 +354,43 @@ class Attractor(object):
         # in this 3d example, the dimension that we leave "pi" out of varies less
         # so if x is dynamic and x_f is simply cos(4t) then it will move slower and have
         # less dynamic interest
-        a, b, c, d, e = random.randint(1, 8), random.randint(1, 7), random.randint(1, 5), \
-            random.randint(1, 4), random.randint(1, 6)
-        # TODO make smaller paths (that loop faster and lead to repetition if followed)
-        self.x_f = lambda t: cos(a * pi * t)
-        self.y_f = lambda t: sin(b * pi * t)
-        self.z_f = lambda t: sin(c * pi * t)
-        self.i_f = lambda t: sin(d * pi * t)
-        self.j_f = lambda t: cos(e * pi * t)
+        # TODO very inelegant
+        a1, b1, c1, d1, e1 = random.randint(1, 8), random.randint(1, 8), random.randint(1, 8), \
+            random.randint(1, 8), random.randint(1, 8)
+        a2, b2, c2, d2, e2 = self.rand_coeff(), self.rand_coeff(), self.rand_coeff(), \
+                             self.rand_coeff(), self.rand_coeff()
+
+        t1, t2, t3, t4, t5 = self.rand_trig(), self.rand_trig(), self.rand_trig(), \
+                             self.rand_trig(), self.rand_trig()
+
+        p1, p2, p3, p4, p5 = self.pi_or_no(), self.pi_or_no(), self.pi_or_no(),\
+                             self.pi_or_no(), self.pi_or_no()
+
+        self.x_f = lambda t: a2 * t1(a1 * p1 * t)
+        self.y_f = lambda t: b2 * t2(b1 * p2 * t)
+        self.z_f = lambda t: c2 * t3(c1 * p3 * t)
+        self.i_f = lambda t: d2 * t4(d1 * p4 * t)
+        self.j_f = lambda t: e2 * t5(e1 * p5 * t)
+
+    @staticmethod
+    def rand_coeff():
+        """ return coefficient between 0.2 and 1.0 """
+        return 0.2 + 0.8*random.random()
+
+    @staticmethod
+    def rand_trig():
+        """ return sin or cos """
+        if random.random() < 0.5:
+            return sin
+        else:
+            return cos
+
+    @staticmethod
+    def pi_or_no():
+        if random.random() < 0.1:
+            return 1
+        else:
+            return pi
 
     def set_pos(self, new_l):
         self.location = new_l

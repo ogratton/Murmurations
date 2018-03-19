@@ -112,7 +112,7 @@ def main(out_port, in_port):
         ren_att = True
     else:
         in_stream = None
-        ren_att = False
+        ren_att = True
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
@@ -151,6 +151,6 @@ if __name__ == '__main__':
     import os
     if os.name != "nt":
         in_port = 1
-        out_port = 3
+        out_port = 1
 
     main(out_port, in_port)
