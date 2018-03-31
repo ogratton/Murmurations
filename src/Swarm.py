@@ -550,7 +550,7 @@ class Swarm(object):
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
             boid.attractors = atts
-        for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
+        # for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity

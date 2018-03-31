@@ -81,10 +81,10 @@ def main(out_port, in_port):
     # TODO make the 'follow' implicit
     # format:       swarm,                    channel
     swarm_data = [
-                    (Swarm.Swarm(7, cube, 6), 3),
-                    # (Swarm.Swarm(15, cube2, follow=7), 1),
+                    (Swarm.Swarm(13, cube, 6), 3),
+                    # (Swarm.Swarm(7, cube, follow=7), 1),
                     # (Swarm.Swarm(15, cube3, follow=12), 2),
-                    # (Swarm.Swarm(3, cube, 6), 9)
+                    # (Swarm.Swarm(4, cube2, follow=7), 9)
     ]
     swarms = list(map(lambda x: x[0], swarm_data))
 
@@ -94,15 +94,15 @@ def main(out_port, in_port):
 
     interps = list()
     i1 = PolyInterpreter(0, midiout, swarm_data[0])
-    start_interp(i1, tempo=130, scale=Scales.satie, preset="piano", instrument="")
+    start_interp(i1, tempo=120, scale=Scales.satie, preset="piano", instrument="")
     interps.append(i1)
 
     # i2 = PolyInterpreter(1, midiout, swarm_data[1])
-    # start_interp(i2, tempo=70, scale=Scales.satie, preset="glock", instrument="kalimba")
+    # start_interp(i2, tempo=130, scale=Scales.chrom, preset="piano", instrument="")
     # interps.append(i2)
-    #
-    # i3 = MonoInterpreter(2, midiout, swarm_data[2])
-    # start_interp(i3, tempo=90, scale=Scales.min_pen, preset="glock", instrument="harp")
+    # #
+    # i3 = PolyInterpreter(2, midiout, swarm_data[2])
+    # start_interp(i3, tempo=90, scale=Scales.satie, preset="synth", instrument="fantasia")
     # interps.append(i3)
 
     # start up the midi in stream
@@ -112,7 +112,7 @@ def main(out_port, in_port):
         ren_att = True
     else:
         in_stream = None
-        ren_att = True
+        ren_att = False
 
     config = pyglet.gl.Config(sample_buffers=1, samples=4)
 
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
     import os
     if os.name != "nt":
-        in_port = 1
+        in_port = 0
         out_port = 1
 
     main(out_port, in_port)

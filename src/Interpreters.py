@@ -404,11 +404,7 @@ class PolyInterpreter(threading.Thread):
     def setup_priority_queue(self, boid_heap, time_elapsed):
         """ Initialise a queue with the sound agents we will use """
         for boid in self.swarm.boids:
-            # TODO the next few lines are copied in parse_priority_queue. fix if bothered
             next_data = self.interpret(boid.get_loc_ratios())
-            if boid.feeding or not SP.FEEDING:
-                self.pan_note(next_data[pan_axis])
-                self.play_note(next_data[pitch_axis], next_data[dynam_axis], duration=next_data[length_axis])
             heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
             heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
 
@@ -424,7 +420,7 @@ class PolyInterpreter(threading.Thread):
             next_data = self.interpret(boid.get_loc_ratios())
             if boid.feeding or not SP.FEEDING:
                 self.pan_note(data[pan_axis])
-                self.play_note(next_data[pitch_axis], next_data[dynam_axis], duration=data[length_axis])
+                self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
             # schedule next events
             heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
             heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
@@ -479,7 +475,6 @@ class MonoInterpreter(PolyInterpreter):
         """ Initialise a queue with the sound agents we will use """
         com = self.swarm.get_COM()
         data = self.interpret(com.get_loc_ratios())
-        # TODO there's an odd delay at the start
         self.pan_note(data[pan_axis])
         self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
         # self.send_midi([self.note_on, data[pitch_axis], data[dynam_axis]])
@@ -498,7 +493,7 @@ class MonoInterpreter(PolyInterpreter):
             # interpret next data
             next_data = self.interpret(com.get_loc_ratios())
             self.pan_note(data[pan_axis])
-            self.play_note(next_data[pitch_axis], next_data[dynam_axis], duration=data[length_axis])
+            self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
             # schedule next events
             heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, com)))
             heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, com)))
