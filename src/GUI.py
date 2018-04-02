@@ -12,7 +12,7 @@ class GuiForm(QtCore.QObject):
     def __init__(self):
         super(GuiForm, self).__init__()
         self.ui = None
-        self.ui = uic.loadUi('settings.ui', self.ui)
+        self.ui = uic.loadUi('GUIsettings.ui', self.ui)
 
         # TODO we're going to have to update all sliders every time we change
         self.swarm_in_focus = 0

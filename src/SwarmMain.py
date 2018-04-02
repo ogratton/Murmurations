@@ -8,7 +8,7 @@ import random
 import Scales
 import configparser
 import Parameters
-from midi_in_stream import InStream
+from InStream import InStream
 
 from numpy import array
 
