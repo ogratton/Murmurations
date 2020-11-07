@@ -1,6 +1,6 @@
 import os
 
-from .SwarmMain import main
+from .swarm_main import main
 
 if __name__ == "__main__":
 

@@ -1,5 +1,5 @@
 import threading
-from . import Parameters
+from . import parameters
 
 from rtmidi import MidiIn
 from time import sleep, time as timenow
@@ -24,7 +24,7 @@ class InStream(threading.Thread):
             print("WARNING: failed to open MIDI-in port {0}".format(port))
 
         self.done = False
-        self.run = self.run_bound if Parameters.SP.ATTRACTOR_MODE == 1 else self.run_att
+        self.run = self.run_bound if parameters.SP.ATTRACTOR_MODE == 1 else self.run_att
         # print(self.run.__name__)
         self.start()
 

@@ -6,9 +6,9 @@ from time import sleep, time as timenow
 from datetime import datetime
 import csv
 
-from .Parameters import IP, SP
-from . import Scales
-from . import Instruments
+from .parameters import IP, SP
+from . import scales
+from . import instruments
 import random
 from heapq import heappush, heappop
 from rtmidi.midiconstants import (
@@ -46,7 +46,7 @@ class PolyInterpreter(threading.Thread):
         self.id = id_
         self.midiout = midiout
         self.swarm, self.channel = swarm_data
-        self.instrument = Instruments.insts["HARP"]  # default instrument
+        self.instrument = instruments.insts["HARP"]  # default instrument
 
         # make sure we're targeting the right channel with our MIDI messages
         self.control_change = CONTROL_CHANGE | self.channel
@@ -79,7 +79,7 @@ class PolyInterpreter(threading.Thread):
         self.scale = None
         self.notes = None
         self.range = 0
-        self.set_scale(Scales.chrom)
+        self.set_scale(scales.chrom)
         self.beat = None
         self.rhythms = None
         self.time_step = 0.05
@@ -90,7 +90,7 @@ class PolyInterpreter(threading.Thread):
         self.play_input = play_input
         if play_input:
             self.human_channel = 15  # for interaction mode
-            i = Instruments.insts["RHODES EP"][1]
+            i = instruments.insts["RHODES EP"][1]
             self.send_midi(
                 [PROGRAM_CHANGE | self.human_channel, i & 0x7F]
             )  # set input sound
@@ -238,11 +238,11 @@ class PolyInterpreter(threading.Thread):
 
     def set_instrument(self, inst):
         try:
-            self.instrument = Instruments.insts[inst.upper()]
+            self.instrument = instruments.insts[inst.upper()]
             self.activate_instrument()
         except KeyError:
             print(
-                'WARNING: "{}" not found. Please check spelling or consult Instruments.py for a full list'.format(
+                'WARNING: "{}" not found. Please check spelling or consult instruments.py for a full list'.format(
                     inst
                 )
             )
@@ -251,10 +251,10 @@ class PolyInterpreter(threading.Thread):
         """
         Set the musical scale for the interpreter
         Assumes lowest pitch is the tonic
-        :param scale: a scale from 'Scales.py' (in the form of a list of intervals)
+        :param scale: a scale from 'scales.py' (in the form of a list of intervals)
         """
         self.scale = scale
-        self.notes = Scales.gen_range(
+        self.notes = scales.gen_range(
             self.scale, lowest=self.pitch_min, note_range=self.pitch_range
         )
         self.range = len(self.notes)

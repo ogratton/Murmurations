@@ -9,11 +9,11 @@ import random
 import os
 import math
 from copy import deepcopy
-from .Parameters import DP, SP
+from .parameters import DP, SP
 from numpy import zeros, float64
 
 
-from .Swarm import normalise
+from .swarm import normalise
 
 """
 Render the swarm objects

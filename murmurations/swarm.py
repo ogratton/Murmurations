@@ -4,7 +4,7 @@
 import random
 from numpy import array, zeros, float64, nditer, append
 from numpy.linalg import norm
-from .Parameters import SP
+from .parameters import SP
 from heapq import heappush, heappop
 from math import cos, sin, pi
 
