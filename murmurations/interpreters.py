@@ -1,16 +1,12 @@
-import threading
+import csv
 import json
-from time import sleep, time as timenow
-
+import random
+import threading
 # for logs
 from datetime import datetime
-import csv
-
-from .parameters import IP, SP
-from . import scales
-from . import instruments
-import random
 from heapq import heappush, heappop
+from time import sleep, time as timenow
+
 from rtmidi.midiconstants import (
     ALL_SOUND_OFF,
     BANK_SELECT_MSB,
@@ -21,6 +17,9 @@ from rtmidi.midiconstants import (
     PAN,
 )
 
+from . import instruments
+from . import scales
+from .parameters import IP, SP
 
 # FIXME in interactive mode, recorded midis tend to have a long period of silence at the end
 

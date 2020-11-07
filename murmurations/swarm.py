@@ -2,11 +2,13 @@
 # https://github.com/tmarble/pyboids/blob/master/boids.py
 
 import random
-from numpy import array, zeros, float64, nditer, append
-from numpy.linalg import norm
-from .parameters import SP
 from heapq import heappush, heappop
 from math import cos, sin, pi
+
+from numpy import array, zeros, float64, nditer, append
+from numpy.linalg import norm
+
+from .parameters import SP
 
 # TODO TEMP
 # random.seed(SP.RANDOM_SEED)

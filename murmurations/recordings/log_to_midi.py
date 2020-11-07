@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-from .MidiFile import *
-from rtmidi.midiconstants import CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE
 import csv
+import sys
 
 # GUI stuff
-from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication
-from PyQt5.QtGui import QIcon
-import sys
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication
+from rtmidi.midiconstants import CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE
+
+from .MidiFile import *
 
 """
 Used for converting real-time MIDI performances to re-playable .mid files.

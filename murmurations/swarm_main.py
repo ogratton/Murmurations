@@ -1,16 +1,14 @@
-from . import swarm
-from .swarm_render import Window
+import configparser
+
 import pyglet
 import rtmidi
-from .interpreters import *
-
-import random
-from . import scales
-import configparser
-from . import parameters
-from .in_stream import InStream
-
 from numpy import array
+
+from . import parameters
+from . import swarm
+from .in_stream import InStream
+from .interpreters import *
+from .swarm_render import Window
 
 """
 Main method for running the swarm simulation

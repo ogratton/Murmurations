@@ -1,8 +1,9 @@
 import threading
-from . import parameters
+from time import sleep, time as timenow
 
 from rtmidi import MidiIn
-from time import sleep, time as timenow
+
+from . import parameters
 
 
 class InStream(threading.Thread):

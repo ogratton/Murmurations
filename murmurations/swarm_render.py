@@ -2,17 +2,17 @@
 # http://www.poketcode.com/pyglet_demos.html
 # https://github.com/jjstrydom/pyglet_examples
 
+import math
+import os
+import random
+from copy import deepcopy
+
 import pyglet
+from numpy import zeros, float64
 from pyglet.gl import gl
 from pyglet.gl import glu
-import random
-import os
-import math
-from copy import deepcopy
+
 from .parameters import DP, SP
-from numpy import zeros, float64
-
-
 from .swarm import normalise
 
 """
