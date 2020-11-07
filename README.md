@@ -4,10 +4,7 @@
 
 ## Dependencies:
 
-* Python 3
-* python-rtmidi
-* pyglet
-* PyQt5 (for settings GUI only)
+See `requirements-*` files
 
 ## How to run:
 

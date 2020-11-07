@@ -1,0 +1,5 @@
+pyglet
+python-rtmidi
+PyQt5
+PyQt5-stubs
+numpy

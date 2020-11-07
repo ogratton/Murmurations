@@ -1,0 +1,6 @@
+alsa-utils
+libasound2-dev
+libjack-dev
+libjack0
+jackd
+qjackctl
