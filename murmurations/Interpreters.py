@@ -6,9 +6,9 @@ from time import sleep, time as timenow
 from datetime import datetime
 import csv
 
-from Parameters import IP, SP
-import Scales
-import Instruments
+from .Parameters import IP, SP
+from . import Scales
+from . import Instruments
 import random
 from heapq import heappush, heappop
 from rtmidi.midiconstants import (
@@ -169,7 +169,7 @@ class PolyInterpreter(threading.Thread):
         # should be a distinguishing-enough filename
         # any recording shorter than a second isn't worth keeping anyway
         filename = datetime.now().strftime(
-            "./recordings/%Y-%m-%d %H-%M-%S {}.csv".format(self.id)
+            "murmurations/recordings/%Y-%m-%d %H-%M-%S {}.csv".format(self.id)
         )
 
         # Convert the log from [[Number]] to [[String]]

@@ -1,6 +1,6 @@
 /env/
-/src/.idea/
-/src/__pycache__/
-/src/recordings/__pycache__/
+/murmurations/.idea/
+/murmurations/__pycache__/
+/murmurations/recordings/__pycache__/
 /.idea/
 /Videos/archive/

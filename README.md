@@ -8,7 +8,7 @@ See `requirements-*` files
 
 ## How to run:
 
-Run SwarmMain.py and hope for the best.
+Run `python -m murmurations` and hope for the best.
 
 The settings GUI is not yet implemented, so customisation must be done manually in the following places:
 * config.ini

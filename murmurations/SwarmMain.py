@@ -1,27 +1,28 @@
-import Swarm
-from SwarmRender import Window
+from . import Swarm
+from .SwarmRender import Window
 import pyglet
 import rtmidi
-from Interpreters import *
+from .Interpreters import *
 
 import random
-import Scales
+from . import Scales
 import configparser
-import Parameters
-from InStream import InStream
+from . import Parameters
+from .InStream import InStream
 
 from numpy import array
 
 """
 Main method for running the swarm simulation
-
 """
+
+CONFIG_PATH = "murmurations/config.ini"
 
 
 def load_config():
     config = configparser.ConfigParser()
     # TODO error catching
-    config.read("config.ini")
+    config.read(CONFIG_PATH)
 
     Parameters.DP.UPDATE_RATE = int(config["DEFAULT"]["UPDATE_RATE"])
 
@@ -67,7 +68,7 @@ def load_config():
 
 def start_interp(interp, tempo=None, scale=None, preset=None, instrument=None):
     if preset:
-        preset_path = "./presets/{}.json".format(preset)
+        preset_path = "murmurations/presets/{}.json".format(preset)
         interp.setup_interp(preset_path)
     if tempo:
         interp.set_tempo(tempo)
@@ -164,19 +165,3 @@ def main(out_port, in_port):
         in_stream.done = True
         in_stream.join()
     print("Exiting")
-
-
-if __name__ == "__main__":
-
-    # on linux I use port 1, windows I use port 1
-    # change to whichever port you need
-    out_port = 0
-    in_port = 0
-
-    import os
-
-    if os.name != "nt":
-        in_port = 0
-        out_port = 1
-
-    main(out_port, in_port)

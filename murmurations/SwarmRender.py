@@ -9,11 +9,11 @@ import random
 import os
 import math
 from copy import deepcopy
-from Parameters import DP, SP
+from .Parameters import DP, SP
 from numpy import zeros, float64
 
 
-from Swarm import normalise
+from .Swarm import normalise
 
 """
 Render the swarm objects
@@ -354,7 +354,9 @@ class Window(pyglet.window.Window):
         self.models = []
         self.model_names = ["pyramid.obj", "uv_sphere.obj", "box.obj"]
         for name in self.model_names:
-            self.models.append(OBJModel((0, 0, 0), path=os.path.join("obj", name)))
+            self.models.append(
+                OBJModel((0, 0, 0), path=os.path.join("murmurations", "obj", name))
+            )
 
         # # current cube to be looking at
         self.cube_index = 0

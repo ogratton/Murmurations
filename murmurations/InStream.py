@@ -1,5 +1,5 @@
 import threading
-import Parameters
+from . import Parameters
 
 from rtmidi import MidiIn
 from time import sleep, time as timenow

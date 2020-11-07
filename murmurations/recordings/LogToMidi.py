@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from MidiFile import *
+from .MidiFile import *
 from rtmidi.midiconstants import CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE
 import csv
 
