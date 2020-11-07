@@ -1,3 +1,4 @@
+black
 pyglet
 python-rtmidi
 PyQt5
