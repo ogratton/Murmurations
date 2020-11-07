@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 from MidiFile import *
-from rtmidi.midiconstants import (CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE)
+from rtmidi.midiconstants import CONTROL_CHANGE, NOTE_ON, NOTE_OFF, PROGRAM_CHANGE
 import csv
 
 # GUI stuff
-from PyQt5.QtWidgets import (QMainWindow, QTextEdit,
-                             QAction, QFileDialog, QApplication)
+from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication
 from PyQt5.QtGui import QIcon
 import sys
 
@@ -45,7 +44,7 @@ class MidiMaker:
     @staticmethod
     def calculate_offset(log_paths):
         """ Find the earliest timestamp in all the logs and treat that as 0 """
-        lowest_timestamp = float('inf')
+        lowest_timestamp = float("inf")
         for log in log_paths:
             # read the first line of the file
             with open(log) as file:
@@ -77,7 +76,9 @@ class MidiMaker:
                 # CONTROL_CHANGE
                 if 0 <= (command - CONTROL_CHANGE) < 16:
                     control_type, value = int(fields[0]), int(fields[1])
-                    self.myMIDI.addControllerEvent(self.currentTrack, channel, time, control_type, value)
+                    self.myMIDI.addControllerEvent(
+                        self.currentTrack, channel, time, control_type, value
+                    )
                 # PROGRAM_CHANGE
                 elif 0 <= (command - PROGRAM_CHANGE) < 16:
                     prog = int(fields[0])
@@ -86,7 +87,9 @@ class MidiMaker:
                 elif 0 <= (command - NOTE_ON) < 16:
                     pitch, volume = int(fields[0]), int(fields[1])
                     duration = float(fields[2])
-                    self.myMIDI.addNote(self.currentTrack, channel, pitch, time, duration, volume)
+                    self.myMIDI.addNote(
+                        self.currentTrack, channel, pitch, time, duration, volume
+                    )
                 # NOTE_OFF
                 elif 0 <= (command - NOTE_OFF) < 16:
                     # this is actually handled by the note_on having duration
@@ -120,6 +123,7 @@ class Example(QMainWindow):
         fltr = "CSV (*.csv)"
 
         return QFileDialog.getOpenFileNames(self, "wow", filter=fltr)
+
 
 if __name__ == "__main__":
 

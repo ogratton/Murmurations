@@ -14,6 +14,7 @@ from numpy import zeros, float64
 
 
 from Swarm import normalise
+
 """
 Render the swarm objects
 Contains render methods for the displayable classes
@@ -26,13 +27,13 @@ Contains render methods for the displayable classes
 DIST_BACK = 50
 
 # colours
-dark_gray = (.75, .75, .75, 1)
-white     = (1.0, 1.0, 1.0, 1)
-red       = (1.0, 0.0, 0.0, 1)
-green     = (0.0, 1.0, 0.0, 1)
-blue      = (0.0, 0.0, 1.0, 1)
-sky       = (0.3, 0.6, 1.0, 1)
-black     = (0.0, 0.0, 0.0, 1)
+dark_gray = (0.75, 0.75, 0.75, 1)
+white = (1.0, 1.0, 1.0, 1)
+red = (1.0, 0.0, 0.0, 1)
+green = (0.0, 1.0, 0.0, 1)
+blue = (0.0, 0.0, 1.0, 1)
+sky = (0.3, 0.6, 1.0, 1)
+black = (0.0, 0.0, 0.0, 1)
 
 # models
 PYRAMID = 0
@@ -46,7 +47,7 @@ def rand_colour():
 
 def invert_colour(colour):
     r, g, b, a = colour
-    return 1-r, 1-g, 1-b, a
+    return 1 - r, 1 - g, 1 - b, a
 
 
 class World:
@@ -68,10 +69,12 @@ class World:
             self.cubes.add(swarm.cube)
 
         # stigmergy setup:
-        if swarms[0].boids:  # this line is purely so it is possible to view the attractors on their own if desired
+        if swarms[
+            0
+        ].boids:  # this line is purely so it is possible to view the attractors on their own if desired
             self.num_leading_boids = len(swarms[0].boids)
             self.num_dims = len(swarms[0].boids[0].location)
-            self.leads = [zeros(self.num_dims, dtype=float64)]*self.num_leading_boids
+            self.leads = [zeros(self.num_dims, dtype=float64)] * self.num_leading_boids
 
         # make the objects for the cube
         self.boxes = []
@@ -82,7 +85,7 @@ class World:
                 box_model = deepcopy(self.models[BOX])
             box_model.x, box_model.y, box_model.z = list(cube.centre)[:3]
             box_model.color = red  # doesn't matter cos not filled in
-            box_model.scale = cube.edge_length/2
+            box_model.scale = cube.edge_length / 2
             self.boxes.append(box_model)
 
         self.swarm_models = []
@@ -105,7 +108,9 @@ class World:
             if self.render_attractors:
                 for attr in swarm.attractors:
                     attractor_model = deepcopy(self.models[BOX])
-                    attractor_model.x, attractor_model.y, attractor_model.z = list(attr.location)[:3]
+                    attractor_model.x, attractor_model.y, attractor_model.z = list(
+                        attr.location
+                    )[:3]
                     attractor_model.color = colour
                     attractor_model.scale = attractor_size
                     attr_models.append(attractor_model)
@@ -157,8 +162,17 @@ class World:
                 new_vel = list(normalise(swarm.boids[j].velocity[:3]))
                 # TODO completely wrong and also stupid but seems to be good enough if you don't look too hard
                 # boid_m.rx = -90-math.degrees(math.asin(new_vel[2]/math.sqrt(new_vel[1]**2 + new_vel[2]**2)))
-                boid_m.ry = (90-math.degrees(math.asin(new_vel[0]/math.sqrt(new_vel[2]**2 + new_vel[0]**2))))
-                boid_m.rz = -(90-math.degrees(math.asin(new_vel[1]/math.sqrt(new_vel[0]**2 + new_vel[1]**2))))
+                boid_m.ry = 90 - math.degrees(
+                    math.asin(new_vel[0] / math.sqrt(new_vel[2] ** 2 + new_vel[0] ** 2))
+                )
+                boid_m.rz = -(
+                    90
+                    - math.degrees(
+                        math.asin(
+                            new_vel[1] / math.sqrt(new_vel[0] ** 2 + new_vel[1] ** 2)
+                        )
+                    )
+                )
 
                 self.render_model(boid_m)
 
@@ -176,11 +190,11 @@ class World:
         d = 1000
         gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
         gl.glColor4f(*red)
-        pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v3f', (0, 0, 0,  d, 0, 0)))
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ("v3f", (0, 0, 0, d, 0, 0)))
         gl.glColor4f(*green)
-        pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v3f', (0, 0, 0,  0, d, 0)))
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ("v3f", (0, 0, 0, 0, d, 0)))
         gl.glColor4f(*blue)
-        pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v3f', (0, 0, 0,  0, 0, d)))
+        pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ("v3f", (0, 0, 0, 0, 0, d)))
 
     def render_model(self, model, fill=True, frame=True):
 
@@ -221,12 +235,20 @@ class World:
         gl.glScalef(model.scale, model.scale, model.scale)
 
         # draws the quads
-        pyglet.graphics.draw_indexed(len(model.vertices) // 3, gl.GL_QUADS, model.quad_indices,
-                                     ('v3f', model.vertices))
+        pyglet.graphics.draw_indexed(
+            len(model.vertices) // 3,
+            gl.GL_QUADS,
+            model.quad_indices,
+            ("v3f", model.vertices),
+        )
 
         # draws the triangles
-        pyglet.graphics.draw_indexed(len(model.vertices) // 3, gl.GL_TRIANGLES, model.triangle_indices,
-                                     ('v3f', model.vertices))
+        pyglet.graphics.draw_indexed(
+            len(model.vertices) // 3,
+            gl.GL_TRIANGLES,
+            model.triangle_indices,
+            ("v3f", model.vertices),
+        )
 
         gl.glPopMatrix()
 
@@ -287,13 +309,13 @@ class OBJModel:
                 data = line.split()
 
                 # every line that begins with a 'v' is a vertex
-                if data[0] == 'v':
+                if data[0] == "v":
                     # loads the vertices
                     x, y, z = data[1:4]
                     self.vertices.extend((float(x), float(y), float(z)))
 
                 # every line that begins with an 'f' is a face
-                elif data[0] == 'f':
+                elif data[0] == "f":
                     # loads the faces
                     for f in data[1:]:
                         if len(data) == 5:
@@ -301,14 +323,23 @@ class OBJModel:
                             # Note: in obj files the first index is 1, so we must subtract one for each
                             # retrieved value
                             vi_1, vi_2, vi_3, vi_4 = data[1:5]
-                            self.quad_indices.extend((int(vi_1) - 1, int(vi_2) - 1, int(vi_3) - 1, int(vi_4) - 1))
+                            self.quad_indices.extend(
+                                (
+                                    int(vi_1) - 1,
+                                    int(vi_2) - 1,
+                                    int(vi_3) - 1,
+                                    int(vi_4) - 1,
+                                )
+                            )
 
                         elif len(data) == 4:
                             # triangles
                             # Note: in obj files the first index is 1, so we must subtract one for each
                             # retrieved value
                             vi_1, vi_2, vi_3 = data[1:4]
-                            self.triangle_indices.extend((int(vi_1) - 1, int(vi_2) - 1, int(vi_3) - 1))
+                            self.triangle_indices.extend(
+                                (int(vi_1) - 1, int(vi_2) - 1, int(vi_3) - 1)
+                            )
 
 
 class Window(pyglet.window.Window):
@@ -316,14 +347,14 @@ class Window(pyglet.window.Window):
     Takes care of all the viewing functionality
     """
 
-    def __init__(self, swarms, interps, ren_att, *args, ** kwargs):
+    def __init__(self, swarms, interps, ren_att, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Load models from files
         self.models = []
-        self.model_names = ['pyramid.obj', 'uv_sphere.obj', 'box.obj']
+        self.model_names = ["pyramid.obj", "uv_sphere.obj", "box.obj"]
         for name in self.model_names:
-            self.models.append(OBJModel((0, 0, 0), path=os.path.join('obj', name)))
+            self.models.append(OBJModel((0, 0, 0), path=os.path.join("obj", name)))
 
         # # current cube to be looking at
         self.cube_index = 0
@@ -331,11 +362,15 @@ class Window(pyglet.window.Window):
         self.world = World(swarms, [0, 0, -DIST_BACK], self.models, ren_att)
 
         # TODO work out how to display text:
-        self.label = pyglet.text.Label('Hello, world',
-                                  font_name='Times New Roman',
-                                  font_size=36,
-                                  x=self.width//2, y=self.height//2,
-                                  anchor_x='center', anchor_y='center')
+        self.label = pyglet.text.Label(
+            "Hello, world",
+            font_name="Times New Roman",
+            font_size=36,
+            x=self.width // 2,
+            y=self.height // 2,
+            anchor_x="center",
+            anchor_y="center",
+        )
 
         self.recording = False
 
@@ -417,4 +452,4 @@ class Window(pyglet.window.Window):
             self.world.cy = self.world.boxes[self.cube_index].y
             self.world.cz = self.world.boxes[self.cube_index].z
 
-        pyglet.clock.schedule_interval(update, 1/DP.UPDATE_RATE)
+        pyglet.clock.schedule_interval(update, 1 / DP.UPDATE_RATE)

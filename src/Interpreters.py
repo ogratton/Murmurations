@@ -10,9 +10,16 @@ from Parameters import IP, SP
 import Scales
 import Instruments
 import random
-from heapq import (heappush, heappop)
-from rtmidi.midiconstants import (ALL_SOUND_OFF, BANK_SELECT_MSB, CONTROL_CHANGE,
-                                  NOTE_ON, NOTE_OFF, PROGRAM_CHANGE, PAN)
+from heapq import heappush, heappop
+from rtmidi.midiconstants import (
+    ALL_SOUND_OFF,
+    BANK_SELECT_MSB,
+    CONTROL_CHANGE,
+    NOTE_ON,
+    NOTE_OFF,
+    PROGRAM_CHANGE,
+    PAN,
+)
 
 
 # FIXME in interactive mode, recorded midis tend to have a long period of silence at the end
@@ -84,7 +91,9 @@ class PolyInterpreter(threading.Thread):
         if play_input:
             self.human_channel = 15  # for interaction mode
             i = Instruments.insts["RHODES EP"][1]
-            self.send_midi([PROGRAM_CHANGE | self.human_channel, i & 0x7F])  # set input sound
+            self.send_midi(
+                [PROGRAM_CHANGE | self.human_channel, i & 0x7F]
+            )  # set input sound
 
         self.activate_instrument()
 
@@ -100,27 +109,27 @@ class PolyInterpreter(threading.Thread):
         data = json.load(open(json_file))
 
         for d in data.items():
-            if d[0] == 'instrument':
+            if d[0] == "instrument":
                 self.set_instrument(d[1])
-            elif d[0] == 'pitch_min':
+            elif d[0] == "pitch_min":
                 self.pitch_min = d[1]
-            elif d[0] == 'pitch_range':
+            elif d[0] == "pitch_range":
                 self.pitch_range = d[1]
-            elif d[0] == 'dynam_min':
+            elif d[0] == "dynam_min":
                 self.dynam_min = d[1]
-            elif d[0] == 'dynam_range':
+            elif d[0] == "dynam_range":
                 self.dynam_range = d[1]
-            elif d[0] == 'time_min':
+            elif d[0] == "time_min":
                 self.time_min = d[1]
-            elif d[0] == 'time_range':
+            elif d[0] == "time_range":
                 self.time_range = d[1]
-            elif d[0] == 'probability':
+            elif d[0] == "probability":
                 self.probability = d[1]
-            elif d[0] == 'note_offs':
+            elif d[0] == "note_offs":
                 self.do_note_offs = d[1]
-            elif d[0] == 'artic_min':
+            elif d[0] == "artic_min":
                 self.artic_min = d[1]
-            elif d[0] == 'artic_range':
+            elif d[0] == "artic_range":
                 self.artic_range = d[1]
             else:
                 print("Unexpected parameter: {}".format(d[0]))
@@ -159,7 +168,9 @@ class PolyInterpreter(threading.Thread):
         """ Write self.log to a pretty CSV """
         # should be a distinguishing-enough filename
         # any recording shorter than a second isn't worth keeping anyway
-        filename = datetime.now().strftime("./recordings/%Y-%m-%d %H-%M-%S {}.csv".format(self.id))
+        filename = datetime.now().strftime(
+            "./recordings/%Y-%m-%d %H-%M-%S {}.csv".format(self.id)
+        )
 
         # Convert the log from [[Number]] to [[String]]
         s_log = [list(map(lambda x: str(x), xs)) for xs in self.log]
@@ -168,8 +179,8 @@ class PolyInterpreter(threading.Thread):
         self.log = list()
 
         # Write to the file
-        with open(filename, 'w') as csvfile:
-            writer = csv.writer(csvfile, lineterminator='\n')
+        with open(filename, "w") as csvfile:
+            writer = csv.writer(csvfile, lineterminator="\n")
             for row in s_log:
                 writer.writerow(row)
 
@@ -209,7 +220,9 @@ class PolyInterpreter(threading.Thread):
     def stop_note(self, pitch):
         """ stop a note playing """
         if self.do_note_offs:
-            self.send_midi([self.note_on, pitch, 0], duration=0.0001)  # FIXME spoofing note_off with note_on
+            self.send_midi(
+                [self.note_on, pitch, 0], duration=0.0001
+            )  # FIXME spoofing note_off with note_on
 
     def pan_note(self, val):
         """ Send a pan control message """
@@ -228,7 +241,11 @@ class PolyInterpreter(threading.Thread):
             self.instrument = Instruments.insts[inst.upper()]
             self.activate_instrument()
         except KeyError:
-            print("WARNING: \"{}\" not found. Please check spelling or consult Instruments.py for a full list".format(inst))
+            print(
+                'WARNING: "{}" not found. Please check spelling or consult Instruments.py for a full list'.format(
+                    inst
+                )
+            )
 
     def set_scale(self, scale):
         """
@@ -237,7 +254,9 @@ class PolyInterpreter(threading.Thread):
         :param scale: a scale from 'Scales.py' (in the form of a list of intervals)
         """
         self.scale = scale
-        self.notes = Scales.gen_range(self.scale, lowest=self.pitch_min, note_range=self.pitch_range)
+        self.notes = Scales.gen_range(
+            self.scale, lowest=self.pitch_min, note_range=self.pitch_range
+        )
         self.range = len(self.notes)
 
     def set_tempo(self, beats_per_min):
@@ -249,13 +268,15 @@ class PolyInterpreter(threading.Thread):
         """
         self.beat = 60 / beats_per_min
         # self.rhythms = list(reversed([4, 3, 3, 2, 2, 3/2, 1, 1, 1, 1/2, 1/2, 1/2, 1/4]))  # TODO tinker with
-        self.rhythms = [1/2, 1, 2, 4]
+        self.rhythms = [1 / 2, 1, 2, 4]
         # self.rhythms = [1/4, 1/3, 1/2, 1, 3/2, 2, 3, 4]
         # self.rhythms = [3/4, 1/4, 3/4, 1/4, 3/4, 1/4, 3/4, 1/4]  # random swing
         self.snap_to_beat = True
         self.interpret_time = self.interpret_time_beat
 
-        self.time_step = 0.375 * self.beat * min(self.rhythms)  # so that notes tend to land on (fractions of) the beat
+        self.time_step = (
+            0.375 * self.beat * min(self.rhythms)
+        )  # so that notes tend to land on (fractions of) the beat
 
     def set_time_free(self):
         """ Very dramatic name for a very boring function """
@@ -315,8 +336,11 @@ class PolyInterpreter(threading.Thread):
         data = [-1] * self.dims
         data[dynam_axis] = self.interpret_dynam(pos[dynam_axis])
         data[pitch_axis] = self.interpret_pitch(pos[pitch_axis])
-        data[time_axis] = self.interpret_time(pos[time_axis]) * (1-pos[vel_axis])  # TODO experimental
-        data[length_axis] = data[time_axis] * self.interpret_articulation(pos[length_axis])
+        # TODO experimental:
+        data[time_axis] = self.interpret_time(pos[time_axis]) * (1 - pos[vel_axis])
+        data[length_axis] = data[time_axis] * self.interpret_articulation(
+            pos[length_axis]
+        )
         data[pan_axis] = self.interpret_pan(pos[pan_axis])
         return data
 
@@ -333,7 +357,8 @@ class PolyInterpreter(threading.Thread):
 
         pi_min, pi_ran = self.pitch_min, self.pitch_range
         d_min, d_ran = self.dynam_min, self.dynam_range
-        t_min, t_ran = self.time_min, self.time_range  # TODO note that these are not used when 'beat' is on
+        # TODO note that these are not used when 'beat' is on:
+        t_min, t_ran = (self.time_min, self.time_range)
         # TODO length & pan
         # pa_min, pa_ran = self.pan_min, self.pan_range
 
@@ -354,10 +379,10 @@ class PolyInterpreter(threading.Thread):
             pi_max = pi_min + pi_ran
             # bump low pitches up as many octaves as it needs to be in range
             if new_pitch < pi_min:
-                new_pitch += (1 + (pi_min-new_pitch) // interval) * interval
+                new_pitch += (1 + (pi_min - new_pitch) // interval) * interval
             # transpose high notes down into the range
             if new_pitch > pi_max:
-                new_pitch -= (1 + (new_pitch-pi_max) // interval) * interval
+                new_pitch -= (1 + (new_pitch - pi_max) // interval) * interval
 
             # if it's still out of range then the pitch range must be smaller than our amount
             # TODO so try again with a smaller amount
@@ -366,24 +391,28 @@ class PolyInterpreter(threading.Thread):
 
             pitch_space = (new_pitch - pi_min) / pi_ran
 
-            dval = max(min(d_min+d_ran+1, message[2]), d_min)
+            dval = max(min(d_min + d_ran + 1, message[2]), d_min)
             dynam_space = (dval - d_min) / d_ran
 
-            time = min(max(time, t_min), t_min+t_ran)
+            time = min(max(time, t_min), t_min + t_ran)
             time_space = (time - t_min) / t_ran
             # if t_min <= time <= t_min+t_ran:
             #     time_space = (time-t_min)/t_ran
             # else:
             #     print("need something smarter for time: {0}".format(time))
 
-            self.swarm.place_attractor([dynam_space, pitch_space, time_space, length_space, pan_space])
+            self.swarm.place_attractor(
+                [dynam_space, pitch_space, time_space, length_space, pan_space]
+            )
 
         if 128 <= message[0] < 144:
             if self.play_input:
                 s = [NOTE_ON | self.human_channel, message[1], 0]
                 self.send_midi(s, duration=0.0001)  # FIXME
 
-    def change_bounds(self, _pitch_min, _pitch_range, _dynam_min, _dynam_range, _time_min, _time_range):
+    def change_bounds(
+        self, _pitch_min, _pitch_range, _dynam_min, _dynam_range, _time_min, _time_range
+    ):
         """
         Change the interpreters bounds based on the last n notes
         :return:
@@ -405,8 +434,20 @@ class PolyInterpreter(threading.Thread):
         """ Initialise a queue with the sound agents we will use """
         for boid in self.swarm.boids:
             next_data = self.interpret(boid.get_loc_ratios())
-            heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
-            heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
+            heappush(
+                boid_heap,
+                (
+                    time_elapsed + next_data[length_axis],
+                    (self.EVENT_OFF, next_data, boid),
+                ),
+            )
+            heappush(
+                boid_heap,
+                (
+                    time_elapsed + next_data[time_axis],
+                    (self.EVENT_START, next_data, boid),
+                ),
+            )
 
     def parse_priority_queue(self, boid_heap, time_elapsed):
         """ Parse the data from the head of the queue """
@@ -420,10 +461,24 @@ class PolyInterpreter(threading.Thread):
             next_data = self.interpret(boid.get_loc_ratios())
             if boid.feeding or not SP.FEEDING:
                 self.pan_note(data[pan_axis])
-                self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
+                self.play_note(
+                    data[pitch_axis], data[dynam_axis], duration=data[length_axis]
+                )
             # schedule next events
-            heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, boid)))
-            heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, boid)))
+            heappush(
+                boid_heap,
+                (
+                    time_elapsed + next_data[length_axis],
+                    (self.EVENT_OFF, next_data, boid),
+                ),
+            )
+            heappush(
+                boid_heap,
+                (
+                    time_elapsed + next_data[time_axis],
+                    (self.EVENT_START, next_data, boid),
+                ),
+            )
         else:
             print("Unexpected event type:", str(tag))
 
@@ -478,8 +533,12 @@ class MonoInterpreter(PolyInterpreter):
         self.pan_note(data[pan_axis])
         self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
         # self.send_midi([self.note_on, data[pitch_axis], data[dynam_axis]])
-        heappush(boid_heap, (time_elapsed + data[length_axis], (self.EVENT_OFF, data, com)))
-        heappush(boid_heap, (time_elapsed + data[time_axis], (self.EVENT_START, data, com)))
+        heappush(
+            boid_heap, (time_elapsed + data[length_axis], (self.EVENT_OFF, data, com))
+        )
+        heappush(
+            boid_heap, (time_elapsed + data[time_axis], (self.EVENT_START, data, com))
+        )
 
     def parse_priority_queue(self, boid_heap, time_elapsed):
         """ Parse the data from the head of the queue """
@@ -493,10 +552,24 @@ class MonoInterpreter(PolyInterpreter):
             # interpret next data
             next_data = self.interpret(com.get_loc_ratios())
             self.pan_note(data[pan_axis])
-            self.play_note(data[pitch_axis], data[dynam_axis], duration=data[length_axis])
+            self.play_note(
+                data[pitch_axis], data[dynam_axis], duration=data[length_axis]
+            )
             # schedule next events
-            heappush(boid_heap, (time_elapsed + next_data[length_axis], (self.EVENT_OFF, next_data, com)))
-            heappush(boid_heap, (time_elapsed + next_data[time_axis], (self.EVENT_START, next_data, com)))
+            heappush(
+                boid_heap,
+                (
+                    time_elapsed + next_data[length_axis],
+                    (self.EVENT_OFF, next_data, com),
+                ),
+            )
+            heappush(
+                boid_heap,
+                (
+                    time_elapsed + next_data[time_axis],
+                    (self.EVENT_START, next_data, com),
+                ),
+            )
             pass
         else:
             print("Unexpected event type:", str(tag))

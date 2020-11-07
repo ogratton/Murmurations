@@ -10,6 +10,7 @@ class InStream(threading.Thread):
     Polls midi-in and publish the events
     Based on the midiin_callback code from python rt-midi examples
     """
+
     def __init__(self, interpreters, port):
         super(InStream, self).__init__()
         self.interpreters = interpreters
@@ -69,7 +70,7 @@ class InStream(threading.Thread):
 
         while not self.done:
             started = timenow()
-            p_min, d_min, t_min = [float('inf')] * 3
+            p_min, d_min, t_min = [float("inf")] * 3
             p_max, d_max, t_max = [0] * 3
             event_notes = list()
 
@@ -109,7 +110,7 @@ class InStream(threading.Thread):
 
             # if there's anything to report
             if num_note_ons:
-                p_rng, d_rng, t_rng = (p_max-p_min), (d_max-d_min), (t_max-t_min)
+                p_rng, d_rng, t_rng = (p_max - p_min), (d_max - d_min), (t_max - t_min)
 
                 for interp in self.interpreters:
                     # print(p_min, p_rng, d_min, d_rng, t_min, t_rng)

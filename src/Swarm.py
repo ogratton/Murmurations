@@ -5,13 +5,14 @@ import random
 from numpy import array, zeros, float64, nditer, append
 from numpy.linalg import norm
 from Parameters import SP
-from heapq import (heappush, heappop)
-from math import (cos, sin, pi)
+from heapq import heappush, heappop
+from math import cos, sin, pi
 
 # TODO TEMP
 # random.seed(SP.RANDOM_SEED)
 
 DIMS = 5  # for when dimensions must be hardcoded
+
 
 def random_range(lower=0.0, upper=1.0):
     """
@@ -39,14 +40,14 @@ def rand_point_in_cube(cube, dims):
     :return:
     """
     edge = cube.edge_length
-    sd = edge/SP.RAND_POINT_SD
+    sd = edge / SP.RAND_POINT_SD
 
     points = []
 
     for i in range(dims):
         p = 0
         while True:
-            p = random.gauss(edge/2, sd)
+            p = random.gauss(edge / 2, sd)
             if max(0, min(p, edge)) not in [0, edge]:
                 break
         points.append(p + cube.v_min[i])
@@ -60,7 +61,7 @@ def normalise(vector):
     :param vector: array
     :return: array normalised
     """
-    return vector/norm(vector)
+    return vector / norm(vector)
 
 
 class Cube(object):
@@ -94,9 +95,9 @@ class Rule(object):
         Initialise aggregators change and num
         Set potency of rule ('neighbourhood')
         """
-        self.change = zeros(DIMS, dtype=float64)    # velocity correction
-        self.num = 0                    # number of participants
-        self.neighbourhood = 0.5        # sphere of view of boid as ratio of cube edge length (overwritten later)
+        self.change = zeros(DIMS, dtype=float64)  # velocity correction
+        self.num = 0  # number of participants
+        self.neighbourhood = 0.5  # sphere of view of boid as ratio of cube edge length (overwritten later)
 
     def accumulate(self, boid, other, distance):
         """
@@ -162,7 +163,7 @@ class Separation(Rule):
         repulsion = boid.location - other.location
         if distance > 0:
             # this normalises the repulsion vector and makes closer boids repel more
-            self.change += repulsion / distance**2  # makes it an inverse square rule
+            self.change += repulsion / distance ** 2  # makes it an inverse square rule
         self.num += 1
 
     def add_adjustment(self, boid):
@@ -196,8 +197,10 @@ class Attraction:
                 dist = norm(to_attractor)
                 f = f or dist < SP.FEED_DIST
                 # 1/dist makes attraction stronger for closer attractors
-                change = (to_attractor - boid.velocity) * att_mul * (1/dist)
-                heappush(dist_mat, (dist, list(change)))  # needs to be a list as ndarray is 'ambiguous'
+                change = (to_attractor - boid.velocity) * att_mul * (1 / dist)
+                heappush(
+                    dist_mat, (dist, list(change))
+                )  # needs to be a list as ndarray is 'ambiguous'
         boid.feeding = f
 
         # only feel the pull of the nearest <x> attractors
@@ -238,7 +241,9 @@ class Boid(object):
         self.location = rand_point_in_cube(cube, DIMS)
 
         self.velocity = random_vector(DIMS, -1.0, 1.0)  # vx vy vz
-        self.adjustment = zeros(DIMS, dtype=float64)  # to accumulate corrections from rules
+        self.adjustment = zeros(
+            DIMS, dtype=float64
+        )  # to accumulate corrections from rules
         self.turning = False
         self.feeding = False
 
@@ -269,10 +274,10 @@ class Boid(object):
             try:
                 distance = dist_mat[key]
             except KeyError:
-                distance = norm(self.location-boid.location)
+                distance = norm(self.location - boid.location)
                 dist_mat[key] = distance
             for rule in rules:
-                if distance < rule.neighbourhood*self.cube.edge_length:
+                if distance < rule.neighbourhood * self.cube.edge_length:
                     rule.accumulate(self, boid, distance)
         self.adjustment = zeros(DIMS, dtype=float64)  # reset adjustment vector
         for rule in rules:  # save corrections to the adjustment
@@ -301,8 +306,8 @@ class Boid(object):
         """
         loc = self.get_location()
         # this looks weird but it's just a faster way of iterating over the loc array and clamping values
-        for dim in nditer(loc, op_flags=['readwrite']):
-            dim[...] = min(0.99, max(0.0, dim/self.cube.edge_length))
+        for dim in nditer(loc, op_flags=["readwrite"]):
+            dim[...] = min(0.99, max(0.0, dim / self.cube.edge_length))
 
         # append velocity to the end (as a fraction of max_speed)
         vel_frac = self.velocity / SP.MAX_SPEED
@@ -320,30 +325,38 @@ class Boid(object):
         # they are moving so they don't ever stop.
         # Now that we have attractors, this is unnecessary
         if norm(velocity) > 0:
-            velocity += (normalise(velocity) * random_range(0.0, SP.MOTION_CONSTANT))
+            velocity += normalise(velocity) * random_range(0.0, SP.MOTION_CONSTANT)
 
         self.velocity = velocity
         self.limit_speed(SP.MAX_SPEED)
         self.location = self.location + self.velocity
 
         if SP.BOUNDING_SPHERE:
-            self.turning = (norm(self.location-self.cube.centre) >= self.cube.edge_length*SP.TURNING_RATIO/2)
+            self.turning = (
+                norm(self.location - self.cube.centre)
+                >= self.cube.edge_length * SP.TURNING_RATIO / 2
+            )
         else:
             self.turning = False
             for dim in range(len(self.location)):
-                self.turning = self.turning or norm(self.location[dim]-self.cube.centre[dim]) >= self.cube.edge_length*SP.TURNING_RATIO/2
+                self.turning = (
+                    self.turning
+                    or norm(self.location[dim] - self.cube.centre[dim])
+                    >= self.cube.edge_length * SP.TURNING_RATIO / 2
+                )
 
 
 class Attractor(object):
     """
     Attracts boid towards it (by the Attraction rule)
     """
+
     def __init__(self, location, cube):
         self.location = location
         # TODO experimental values used here
         self.cube = cube
         self.t = random.random()  # start a random way along
-        self.step = random.randrange(50, 250)/100000  # at a random speed too
+        self.step = random.randrange(50, 250) / 100000  # at a random speed too
 
         # TODO for interactive mode:
         self.age = 0
@@ -355,16 +368,36 @@ class Attractor(object):
         # so if x is dynamic and x_f is simply cos(4t) then it will move slower and have
         # less dynamic interest
         # TODO very inelegant
-        a1, b1, c1, d1, e1 = random.randint(1, 8), random.randint(1, 8), random.randint(1, 8), \
-            random.randint(1, 8), random.randint(1, 8)
-        a2, b2, c2, d2, e2 = self.rand_coeff(), self.rand_coeff(), self.rand_coeff(), \
-                             self.rand_coeff(), self.rand_coeff()
+        a1, b1, c1, d1, e1 = (
+            random.randint(1, 8),
+            random.randint(1, 8),
+            random.randint(1, 8),
+            random.randint(1, 8),
+            random.randint(1, 8),
+        )
+        a2, b2, c2, d2, e2 = (
+            self.rand_coeff(),
+            self.rand_coeff(),
+            self.rand_coeff(),
+            self.rand_coeff(),
+            self.rand_coeff(),
+        )
 
-        t1, t2, t3, t4, t5 = self.rand_trig(), self.rand_trig(), self.rand_trig(), \
-                             self.rand_trig(), self.rand_trig()
+        t1, t2, t3, t4, t5 = (
+            self.rand_trig(),
+            self.rand_trig(),
+            self.rand_trig(),
+            self.rand_trig(),
+            self.rand_trig(),
+        )
 
-        p1, p2, p3, p4, p5 = self.pi_or_no(), self.pi_or_no(), self.pi_or_no(),\
-                             self.pi_or_no(), self.pi_or_no()
+        p1, p2, p3, p4, p5 = (
+            self.pi_or_no(),
+            self.pi_or_no(),
+            self.pi_or_no(),
+            self.pi_or_no(),
+            self.pi_or_no(),
+        )
 
         self.x_f = lambda t: a2 * t1(a1 * p1 * t)
         self.y_f = lambda t: b2 * t2(b1 * p2 * t)
@@ -375,7 +408,7 @@ class Attractor(object):
     @staticmethod
     def rand_coeff():
         """ return coefficient between 0.2 and 1.0 """
-        return 0.2 + 0.8*random.random()
+        return 0.2 + 0.8 * random.random()
 
     @staticmethod
     def rand_trig():
@@ -407,7 +440,10 @@ class Attractor(object):
         i = self.i_f(self.t)
         j = self.j_f(self.t)
         self.t += self.step
-        new_point = array([x, y, z, i, j], dtype=float64)*0.4*self.cube.edge_length + self.cube.centre
+        new_point = (
+            array([x, y, z, i, j], dtype=float64) * 0.4 * self.cube.edge_length
+            + self.cube.centre
+        )
         self.set_pos(new_point)
 
     def inc_age(self):
@@ -424,6 +460,7 @@ class CentOfMass(object):
     """
     The centre of mass of a swarm
     """
+
     def __init__(self, location, velocity, v_min, edge_length):
         """
         Set up an initial (probably wrong) centre of mass object
@@ -461,8 +498,8 @@ class CentOfMass(object):
         :return: a list of 0-1 proportions of how far the COM is along each axis
         """
         loc = self.get_location()
-        for dim in nditer(loc, op_flags=['readwrite']):
-            dim[...] = min(0.99, max(0.0, dim/self.edge_length))
+        for dim in nditer(loc, op_flags=["readwrite"]):
+            dim[...] = min(0.99, max(0.0, dim / self.edge_length))
 
         # append velocity to the end (as a fraction of max_speed)
         vel_frac = self.velocity / SP.MAX_SPEED
@@ -475,6 +512,7 @@ class Swarm(object):
     """
     A swarm of boids
     """
+
     def __init__(self, num_boids, cube, num_attractors=None, follow=None):
         """
         Set up a swarm
@@ -516,10 +554,14 @@ class Swarm(object):
 
         for i in range(num_boids):
             self.boids.append(Boid(cube, self.attractors, i))
-        self.c_o_m = CentOfMass(cube.centre, zeros(DIMS, dtype=float64), cube.v_min, cube.edge_length)
+        self.c_o_m = CentOfMass(
+            cube.centre, zeros(DIMS, dtype=float64), cube.v_min, cube.edge_length
+        )
 
     def __repr__(self):
-        return "Swarm of {0} boids in cube with min vertex {1}".format(self.num_boids, self.cube.v_min)
+        return "Swarm of {0} boids in cube with min vertex {1}".format(
+            self.num_boids, self.cube.v_min
+        )
 
     def place_attractor(self, ratios):
         """
@@ -531,11 +573,13 @@ class Swarm(object):
         edge = self.cube.edge_length
         pos = []
         for i, dim in enumerate(ratios):
-            pos.append(v_min[i] + dim*edge)
+            pos.append(v_min[i] + dim * edge)
         # update the attractor that has been still longest with this new position
         if self.attractors:
             self.attractors[self.att_index].set_pos(array(pos, dtype=float64))
-            self.att_index = (self.att_index + 1) % self.num_attractors  # TODO div0 risk
+            self.att_index = (
+                self.att_index + 1
+            ) % self.num_attractors  # TODO div0 risk
         return
 
     def update(self):
@@ -550,7 +594,7 @@ class Swarm(object):
         for boid in self.boids:
             boid.calc_v(self.boids, dist_mat)
             boid.attractors = atts
-        # for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
+            # for boid in self.boids:  # TODO is this line necessary? (calc all v first or one at a time?)
             boid.update()
             p_acc = p_acc + boid.location
             v_acc = v_acc + boid.velocity
