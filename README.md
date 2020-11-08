@@ -20,3 +20,7 @@ The settings GUI is not yet implemented, so customisation must be done manually 
     * can add new swarms and change instruments and all sorts
 
 It's all a bit messy around there though, so here's hoping I get the GUI sorted
+
+## Midi synth:
+
+On Linux, ensure you have a midi synth running (e.g. Qsynth)
